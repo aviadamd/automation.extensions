@@ -1,4 +1,4 @@
-package org.poc;
+package org.poc.mongo;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
