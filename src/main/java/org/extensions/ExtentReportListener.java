@@ -4,6 +4,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import static java.util.Arrays.deepToString;
 
 @Aspect
+@Slf4j
 @Component
 @Configuration
 public class ExtentReportListener implements
@@ -44,86 +46,77 @@ public class ExtentReportListener implements
     private static final List<PassTestInfo> passTests = new ArrayList<>();
 
     @Override
-    public void beforeAll(ExtensionContext context) throws IOException {
-        if (context.getRequiredTestClass() != null) {
-            if (context.getElement().isPresent()) {
-                Optional<ReportConfiguration> configuration = Optional.ofNullable(context.getElement().get().getAnnotation(ReportConfiguration.class));
-                if (configuration.isPresent()) {
+    public void beforeAll(ExtensionContext context) {
+        if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
+            Optional<ReportConfiguration> configuration = Optional.ofNullable(context.getElement().get().getAnnotation(ReportConfiguration.class));
+            if (configuration.isPresent()) {
+                try {
                     this.extentReports = new ExtentReports();
                     this.sparkReporter = new ExtentSparkReporter(configuration.get().reportPath() + "/Spark.html");
-                    extentReports.attachReporter(sparkReporter);
-                    sparkReporter.loadJSONConfig(new File(configuration.get().reportJsonSettingsPath()));
+                    this.extentReports.attachReporter(this.sparkReporter);
+                    this.sparkReporter.loadJSONConfig(new File(configuration.get().reportJsonSettingsPath()));
+                } catch (Exception exception) {
+                    log.error("sparkReporter.loadJSONConfig error " + exception.getMessage());
                 }
             }
         }
     }
-
     @Override
     public void beforeEach(ExtensionContext context) {
-        if (context.getRequiredTestMethod() != null) {
-            if (context.getElement().isPresent()) {
-                Optional<TestInfo> reportTest = Optional.ofNullable(context.getElement().get().getAnnotation(TestInfo.class));
-                if (reportTest.isPresent()) {
-                    extentTest = this.extentReports.createTest(context.getRequiredTestMethod().getName());
-                    extentTest.assignCategory(reportTest.get().assignCategory());
-                    extentTest.assignAuthor(reportTest.get().assignAuthor());
-                    extentTest.assignDevice(reportTest.get().assignDevice());
-                    extentTest.info(context.getRequiredTestMethod().getName() + " started");
-                }
+        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
+            Optional<TestInfo> reportTest = Optional.ofNullable(context.getElement().get().getAnnotation(TestInfo.class));
+            if (reportTest.isPresent()) {
+                extentTest = this.extentReports.createTest(context.getRequiredTestMethod().getName());
+                extentTest.assignCategory(reportTest.get().assignCategory());
+                extentTest.assignAuthor(reportTest.get().assignAuthor());
+                extentTest.assignDevice(reportTest.get().assignDevice());
+                extentTest.info(context.getRequiredTestMethod().getName() + " started");
             }
         }
     }
-
     @Override
     public void afterEach(ExtensionContext context) {
-        if (context.getRequiredTestMethod() != null) {
+        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent()) {
             extentTest.info("method " + context.getRequiredTestMethod().getName() + " finished");
         }
     }
     @Override
     public void testSuccessful(ExtensionContext context) {
-        if (context.getRequiredTestClass() != null) {
-
-            context.getElement().ifPresent(element -> {
-                Optional<Repeat> repeat = Optional.ofNullable(element.getAnnotation(Repeat.class));
-                Optional<TestInfo> reportTest = Optional.ofNullable(element.getAnnotation(TestInfo.class));
-                if (repeat.isPresent() && reportTest.isPresent()) {
-                    passTests.add(new PassTestInfo(
-                            context.getRequiredTestClass().getSimpleName(),
-                            context.getRequiredTestMethod().getName(),
-                            new TestInfoData(reportTest.get()))
-                    );
-                }
-            });
-
+        if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
+            Optional<Repeat> repeat = Optional.ofNullable(context.getElement().get().getAnnotation(Repeat.class));
+            Optional<TestInfo> reportTest = Optional.ofNullable(context.getElement().get().getAnnotation(TestInfo.class));
+            if (repeat.isPresent() && reportTest.isPresent()) {
+                passTests.add(new PassTestInfo(
+                        context.getRequiredTestClass().getSimpleName(),
+                        context.getRequiredTestMethod().getName(),
+                        new TestInfoData(reportTest.get()))
+                );
+            }
             extentTest.pass(context.getRequiredTestClass().getSimpleName() + " pass");
             extentTest.pass(context.getRequiredTestMethod().getName() + " pass");
         }
     }
     @Override
     public void testFailed(ExtensionContext context, Throwable throwable) {
-        if (context.getRequiredTestClass() != null) {
-            if (context.getExecutionException().isPresent()) {
+        if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getExecutionException().isPresent()) {
+            Throwable error = context.getExecutionException().get();
 
-                Throwable error = context.getExecutionException().get();
+            context.getElement().ifPresent(element -> {
+                Optional<Repeat> repeat = Optional.ofNullable(element.getAnnotation(Repeat.class));
+                Optional<TestInfo> reportTest = Optional.ofNullable(element.getAnnotation(TestInfo.class));
+                if (repeat.isPresent() && reportTest.isPresent()) {
+                    failTests.add(new ErrorTestInfo(
+                            context.getRequiredTestClass().getSimpleName(),
+                            context.getRequiredTestMethod().getName(),
+                            new TestInfoData(reportTest.get()),
+                            repeat.get().onStatus(),
+                            error.getMessage()));
+                }
+            });
 
-                context.getElement().ifPresent(element -> {
-                    Optional<Repeat> repeat = Optional.ofNullable(element.getAnnotation(Repeat.class));
-                    Optional<TestInfo> reportTest = Optional.ofNullable(element.getAnnotation(TestInfo.class));
-                    if (repeat.isPresent() && reportTest.isPresent()) {
-                        failTests.add(new ErrorTestInfo(
-                                context.getRequiredTestClass().getSimpleName(),
-                                context.getRequiredTestMethod().getName(),
-                                new TestInfoData(reportTest.get()),
-                                repeat.get().onStatus(),
-                                error.getMessage()));
-                    }
-                });
-
-                extentTest.fail("fail from class " + context.getRequiredTestClass().getSimpleName());
-                extentTest.fail("fail from method " + context.getRequiredTestMethod().getName());
-                extentTest.fail("error message " + error.getMessage());
-            }
+            extentTest.fail("fail from class " + context.getRequiredTestClass().getSimpleName());
+            extentTest.fail("fail from method " + context.getRequiredTestMethod().getName());
+            extentTest.fail("error message " + error.getMessage());
         }
     }
 
