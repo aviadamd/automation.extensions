@@ -1,4 +1,4 @@
-package org.extensions.anontations;
+package org.extensions.anontations.mongo;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,9 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface MySqlConnector {
-    String connection();
-    int dbId();
-    String userName();
-    String userPassword();
+public @interface MongoManager {
+    String host();
+    MongoConnector[] mongoConnectors();
 }

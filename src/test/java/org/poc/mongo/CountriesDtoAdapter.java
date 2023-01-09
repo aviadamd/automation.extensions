@@ -6,7 +6,6 @@ import org.mongo.DocumentAdapter;
 import org.poc.mySql.Countries;
 
 public class CountriesDtoAdapter extends BasicDBObject {
-
     private CountriesDtoAdapter() {}
 
     public static Document toDocument(Countries countries) {

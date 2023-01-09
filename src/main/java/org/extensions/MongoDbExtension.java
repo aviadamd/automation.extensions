@@ -1,9 +1,9 @@
 package org.extensions;
 
-import org.extensions.anontations.MongoManager;
+import org.extensions.anontations.mongo.MongoManager;
 import org.mongo.MongoCollectionImplementation;
 import org.mongo.MongoConnection;
-import org.extensions.anontations.MongoConnector;
+import org.extensions.anontations.mongo.MongoConnector;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -33,7 +33,6 @@ public class MongoDbExtension implements BeforeEachCallback, AfterAllCallback {
             mongoManager.ifPresent(mongoConnector -> {
                 for (MongoConnector mongoConnection: mongoManager.get().mongoConnectors()) {
                     mongoRepo.get(mongoConnection.dbId()).close();
-
                 }
             });
         }

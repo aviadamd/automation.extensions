@@ -6,6 +6,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.ibatis.jdbc.SQL;
 import org.junit.jupiter.api.Assertions;
+import org.springframework.context.annotation.Description;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -41,6 +42,7 @@ public class MySqlSharedConnector {
         }
     }
 
+    @Description("step ")
     public MySqlSharedConnector step(Consumer<SharedQuery> sharedQuery) {
         try {
             sharedQuery.accept(this.sharedQuery);

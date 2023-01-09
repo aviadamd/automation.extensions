@@ -1,9 +1,9 @@
-package org.filesUtils.jsonReader;
+package org.files.jsonReader;
 
 import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.databind.MappingIterator;
-import org.filesUtils.FileGeneratorExtensions;
-import org.filesUtils.JsonFileExtensions;
+import org.files.FileGeneratorExtensions;
+import org.files.JsonFileExtensions;
 
 import java.io.File;
 import java.util.List;

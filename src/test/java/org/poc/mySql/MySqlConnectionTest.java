@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.extensions.MySqlDbExtension;
 import org.extensions.ExtentReportListener;
-import org.extensions.anontations.MySqlConnector;
+import org.extensions.anontations.Repeat;
+import org.extensions.anontations.mySql.MySqlConnector;
+import org.extensions.anontations.mySql.MySqlConnectorManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -19,10 +21,12 @@ import java.util.List;
         generateExtraReportsBy = { Status.FAIL, Status.SKIP },
         reportJsonSettingsPath = "src/main/resources/reportConfig.json")
 @ExtendWith(value = { ExtentReportListener.class, MySqlDbExtension.class })
-@MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", dbId = 1, userName = "root", userPassword = "5311072BsAviad")
+@MySqlConnectorManager(connector = {
+        @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", dbId = 1, userName = "root", userPassword = "5311072BsAviad")
+})
 public class MySqlConnectionTest {
-
     @Test
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestInfo(assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
     public void mySqlConnectionTest() {
         MySqlDbExtension.mySqlRepo

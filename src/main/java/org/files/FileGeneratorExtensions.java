@@ -1,10 +1,9 @@
-package org.filesUtils;
+package org.files;
 
 import java.io.File;
 import java.util.HashMap;
 
 public class FileGeneratorExtensions {
-
     private String path;
     private File file;
     private int fileNumber;

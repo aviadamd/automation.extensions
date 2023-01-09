@@ -1,4 +1,4 @@
-package org.filesUtils.pdfReader;
+package org.files.pdfReader;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -38,6 +38,14 @@ public class PdfReader {
 
     public Actions build() {
         return this.build;
+    }
+
+    public void close() {
+        try {
+            if (this.build != null) this.build().pdDocument.close();
+        } catch (Exception exception) {
+            log.error("PdfReaderExtensions close file error " + exception.getMessage());
+        }
     }
 
     public static class Actions {
@@ -113,14 +121,6 @@ public class PdfReader {
             } catch (Exception exception) {
                 log.error("PdfReaderExtensions save pdf exception " + exception.getMessage());
                 return false;
-            }
-        }
-
-        public void close() {
-            try {
-                this.pdDocument.close();
-            } catch (Exception exception) {
-                log.error("PdfReaderExtensions close file error " + exception.getMessage());
             }
         }
     }

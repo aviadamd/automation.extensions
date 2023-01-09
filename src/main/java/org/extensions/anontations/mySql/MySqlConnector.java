@@ -1,4 +1,4 @@
-package org.filesUtils.pdfReader;
+package org.extensions.anontations.mySql;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface PdfConnector {
-    int fileId();
-    String path();
+public @interface MySqlConnector {
+    String connection();
+    int dbId();
+    String userName();
+    String userPassword();
 }
