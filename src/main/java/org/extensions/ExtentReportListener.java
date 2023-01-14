@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 import org.springframework.stereotype.Component;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -123,19 +122,22 @@ public class ExtentReportListener implements
     @Override
     public void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            ReportConfiguration configuration = context.getElement().get().getAnnotation(ReportConfiguration.class);
 
-            for (Status status: configuration.generateExtraReportsBy()) {
-                final String reportPath = configuration.reportPath() + "/" + status.toString() + ".html";
-                if (status != Status.PASS && status != Status.INFO) {
-                    this.sparkReporter = new ExtentSparkReporter(reportPath);
-                    this.extentReports.attachReporter(this.sparkReporter.filter().statusFilter().as(new Status[]{ status }).apply());
+            Optional<ReportConfiguration> reportConfiguration = Optional.ofNullable(context.getElement().get().getAnnotation(ReportConfiguration.class));
+
+            if (reportConfiguration.isPresent()) {
+                for (Status status : reportConfiguration.get().generateExtraReportsBy()) {
+                    String reportPath = reportConfiguration.get().reportPath() + "/" + status.toString() + ".html";
+                    if (status != Status.PASS && status != Status.INFO) {
+                        this.sparkReporter = new ExtentSparkReporter(reportPath);
+                        this.extentReports.attachReporter(this.sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
+                    }
                 }
             }
 
             this.extentReports.flush();
 
-            final String className = context.getRequiredTestClass().getSimpleName();
+            String className = context.getRequiredTestClass().getSimpleName();
             if (passTests.size() > 0) {
                 String path = "pass".concat(className).concat(".json");
                 JsonReadAndWriteExtensions pass = new JsonReadAndWriteExtensions(path,1);
