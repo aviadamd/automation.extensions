@@ -5,9 +5,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 import io.restassured.path.json.JsonPath;
-import io.restassured.path.json.mapper.factory.DefaultJackson2ObjectMapperFactory;
 import io.restassured.response.Response;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,9 +60,6 @@ public class RestAssuredBuilder {
         }
     }
     public JsonPath getJsonPath(Response response) {
-        return response.then()
-                .extract()
-                .jsonPath()
-                .using(new DefaultJackson2ObjectMapperFactory());
+        return response.then().extract().jsonPath();
     }
 }

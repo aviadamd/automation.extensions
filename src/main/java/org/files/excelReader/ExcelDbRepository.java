@@ -3,11 +3,10 @@ package org.files.excelReader;
 import com.codoid.products.fillo.Recordset;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MultiValuedMap;
-
 import java.util.*;
 import java.util.function.Predicate;
 
-import static base.excelReader.ExcelDbReaderExtensions.queryResultMap;
+import static org.files.excelReader.ExcelDbReaderExtensions.queryResultMap;
 
 @Slf4j
 public class ExcelDbRepository extends ExcelDbReaderExtensions.QueryBuilder {

@@ -5,6 +5,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.ibatis.jdbc.SQL;
+import org.extensions.anontations.Step;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.context.annotation.Description;
 
@@ -42,7 +43,7 @@ public class MySqlSharedConnector {
         }
     }
 
-    @Description("step ")
+    @Description("step")
     public MySqlSharedConnector step(Consumer<SharedQuery> sharedQuery) {
         try {
             sharedQuery.accept(this.sharedQuery);
@@ -54,10 +55,12 @@ public class MySqlSharedConnector {
     public static class SharedQuery {
         private SQL sqlQuery;
         private final Connection connection;
-
         public Connection getConnection() { return this.connection; }
         public SharedQuery(Connection connection) { this.connection = connection; }
-        public void setQuery(SQL sqlQuery) { this.sqlQuery = sqlQuery; }
+        public SharedQuery setQuery(SQL sqlQuery) {
+            this.sqlQuery = sqlQuery;
+            return this;
+        }
 
         public Optional<ResultSet> resultSet() {
             Optional<ResultSet> resultSet = Optional.empty();
@@ -68,7 +71,6 @@ public class MySqlSharedConnector {
             }
             return resultSet;
         }
-
         public <T> List<T> queryToObjectsList(Class<T> tClass) {
             try {
                 BeanListHandler<T> beanListHandler = new BeanListHandler<>(tClass);

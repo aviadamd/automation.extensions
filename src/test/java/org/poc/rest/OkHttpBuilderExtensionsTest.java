@@ -12,7 +12,6 @@ import java.util.Map;
 @Slf4j
 public class OkHttpBuilderExtensionsTest {
     private OkHttpBuilderExtensions okHttpBuilderExtensions;
-
     @BeforeEach
     public void init() {
         this.okHttpBuilderExtensions = new OkHttpBuilderExtensions();

@@ -1,24 +1,26 @@
 package org.poc.mySql;
 
-import com.mongodb.BasicDBObject;
 import org.bson.types.ObjectId;
 
-public class Countries extends BasicDBObject {
-    private ObjectId _id;
+public class Country {
+
+    private int _id;
     private String name;
     private String countryCode;
-    private String District;
-    private String Population;
-    public Countries() {}
+    private String district;
+    private String population;
 
-    public Countries(ObjectId _id, String name, String countryCode, String district, String population) {
+    public Country() {}
+
+    public Country(int _id, String name, String countryCode, String district, String population) {
         this._id = _id;
         this.name = name;
         this.countryCode = countryCode;
-        District = district;
-        Population = population;
+        this.district = district;
+        this.population = population;
     }
-    public ObjectId  getId() {
+
+    public int getId() {
         return _id;
     }
     public String getName() {
@@ -28,12 +30,13 @@ public class Countries extends BasicDBObject {
         return countryCode;
     }
     public String getDistrict() {
-        return District;
+        return district;
     }
     public String getPopulation() {
-        return Population;
+        return population;
     }
-    public void setId(ObjectId  _id) {
+
+    public void setId(int  _id) {
         this._id = _id;
     }
     public void setName(String name) {
@@ -43,19 +46,20 @@ public class Countries extends BasicDBObject {
         this.countryCode = countryCode;
     }
     public void setDistrict(String district) {
-        District = district;
+        this.district = district;
     }
     public void setPopulation(String population) {
-        Population = population;
+        this.population = population;
     }
+
     @Override
     public String toString() {
         return "Countries{" +
                 "id='" + _id + '\'' +
                 ", name='" + name + '\'' +
                 ", countryCode='" + countryCode + '\'' +
-                ", District='" + District + '\'' +
-                ", Population='" + Population + '\'' +
+                ", District='" + district + '\'' +
+                ", Population='" + population + '\'' +
                 '}';
     }
 }

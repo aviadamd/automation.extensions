@@ -5,10 +5,7 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
+import org.base.AspectExtension;
 import org.extensions.anontations.Repeat;
 import org.extensions.dto.FailTestInfo;
 import org.extensions.dto.PassTestInfo;
@@ -18,16 +15,12 @@ import org.junit.jupiter.api.extension.*;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestInfo;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Description;
 import org.springframework.stereotype.Component;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import static java.util.Arrays.deepToString;
 
-@Aspect
 @Slf4j
 @Component
 @Configuration
@@ -53,6 +46,7 @@ public class ExtentReportListener implements
                     this.sparkReporter = new ExtentSparkReporter(configuration.get().reportPath() + "/Spark.html");
                     this.extentReports.attachReporter(this.sparkReporter);
                     this.sparkReporter.loadJSONConfig(new File(configuration.get().reportSettingsPath()));
+                    AspectExtension aspectExtension = new AspectExtension();
                 } catch (Exception exception) {
                     log.error("sparkReporter.loadJSONConfig error " + exception.getMessage());
                 }
@@ -96,7 +90,7 @@ public class ExtentReportListener implements
     @Override
     public void testFailed(ExtensionContext context, Throwable throwable) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getExecutionException().isPresent()) {
-            Throwable error = context.getExecutionException().get();
+            String error = context.getExecutionException().get().getMessage();
 
             context.getElement().ifPresent(element -> {
                 Optional<TestInfo> reportTest = Optional.ofNullable(element.getAnnotation(TestInfo.class));
@@ -106,7 +100,7 @@ public class ExtentReportListener implements
                             context.getRequiredTestClass().getSimpleName(),
                             context.getRequiredTestMethod().getName(),
                             new TestMetaData(testInfo),
-                            error.getMessage()
+                            error
                     );
                     repeat.ifPresent(value -> failTestInfo.setStatus(value.onStatus()));
                     failTests.add(failTestInfo);
@@ -115,7 +109,7 @@ public class ExtentReportListener implements
 
             extentTest.fail("fail from class " + context.getRequiredTestClass().getSimpleName());
             extentTest.fail("fail from method " + context.getRequiredTestMethod().getName());
-            extentTest.fail("error message " + error.getMessage());
+            extentTest.fail("error message " + error);
         }
     }
 
@@ -149,14 +143,5 @@ public class ExtentReportListener implements
             }
         }
     }
-    @Before(value = "execution(* *(..)) && @annotation(org.springframework.context.annotation.Description)")
-    public void before(JoinPoint joinPoint) {
-        String step = ((MethodSignature)joinPoint.getSignature()).getMethod().getAnnotation(Description.class).value();
-        String methodName = joinPoint.getSignature().getName();
-        String classParams = deepToString(((MethodSignature) joinPoint.getSignature()).getParameterNames());
-        List<Object> methodParams = new ArrayList<>(Arrays.asList(joinPoint.getArgs()));
-        extentTest.info("1.STEP METHODS : " + methodName + "  |  STEP DESC : " + step + "");
-        extentTest.info("2. STEP DATA : " + classParams + "");
-        extentTest.info("3. STEP PARAMS : " + methodParams + "");
-    }
+
 }

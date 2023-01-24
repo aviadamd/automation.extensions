@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestInfo;
-
+import org.base.BaseMobile;
 import java.util.List;
 
 @Slf4j
@@ -21,25 +21,27 @@ import java.util.List;
         generateExtraReportsBy = { Status.FAIL, Status.SKIP },
         reportSettingsPath = "src/main/resources/reportConfig.json")
 @ExtendWith(value = { ExtentReportListener.class, MySqlDbExtension.class })
-@MySqlConnectorManager(connector = {
-        @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", dbId = 1, userName = "root", userPassword = "5311072BsAviad")
-})
-public class MySqlConnectionTest {
+@MySqlConnectorManager(connector = { @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", dbId = 1, userName = "root", userPassword = "5311072BsAviad") })
+public class MySqlConnectionTest extends BaseMobile {
+
     @Test
     @TestInfo(assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void mySqlConnectionTest() {
-        MySqlDbExtension.mySqlRepo
+        this.mySqlDbExtension()
+                .getMySqlRepo()
                 .get(1)
                 .step(action -> {
-                    action.setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }});
-                    List<Countries> countriesList = action.queryToObjectsList(Countries.class);
-                    for (Countries countries: countriesList) {
-                        log.info(countries.getId().toString());
-                        log.info(countries.getName());
-                        log.info(countries.getCountryCode());
-                        log.info(countries.getDistrict());
-                        log.info(countries.getPopulation());
+                    List<Country> countriesList = action
+                            .setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }})
+                            .queryToObjectsList(Country.class);
+
+                    for (Country countries: countriesList) {
+                        log.info("id: " + countries.getId());
+                        log.info("name: " + countries.getName());
+                        log.info("code: " + countries.getCountryCode());
+                        log.info("district: " + countries.getDistrict());
+                        log.info("population: " + countries.getPopulation());
                     }
                 })
                 .build();

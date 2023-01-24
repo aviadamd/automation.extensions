@@ -3,7 +3,6 @@ package org.poc.mongo;
 import com.mongodb.BasicDBObject;
 import org.bson.Document;
 import org.mongo.legacy.DocumentAdapter;
-import org.poc.mySql.Countries;
 
 public class CountriesDtoAdapter extends BasicDBObject {
     private CountriesDtoAdapter() {}

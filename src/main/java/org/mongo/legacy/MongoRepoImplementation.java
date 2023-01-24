@@ -108,7 +108,7 @@ public class MongoRepoImplementation implements MongoRepo {
     @Override
     public void insertElement(Document document) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).insertOne(document);
+          //  this.mongoDatabase.getCollection(this.collectionName).insertOne(document);
         } catch (Exception e) {
             log.error("insertElement error: " + e.getMessage());
         }
@@ -117,7 +117,7 @@ public class MongoRepoImplementation implements MongoRepo {
     @Override
     public <T> void insertElement(MongoCollection<T> collection, T document) {
         try {
-            collection.insertOne(document);
+           // collection.insertOne(document);
         } catch (Exception e) {
             log.error("insertElement error: " + e.getMessage());
         }
@@ -126,7 +126,7 @@ public class MongoRepoImplementation implements MongoRepo {
     @Override
     public void insertElements(List<Document> documentList) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).insertMany(documentList);
+         //   this.mongoDatabase.getCollection(this.collectionName).insertMany(documentList);
         } catch (Exception e) {
             log.error("insertElements error: " + e.getMessage());
         }
@@ -135,7 +135,7 @@ public class MongoRepoImplementation implements MongoRepo {
     @Override
     public <T> void insertElements(MongoCollection<T> collection, List<T> document) {
         try {
-            collection.insertMany(document);
+    //        collection.insertMany(document);
         } catch (Exception e) {
             log.error("insertElement error: " + e.getMessage());
         }
@@ -145,7 +145,7 @@ public class MongoRepoImplementation implements MongoRepo {
     public void replaceElement(String key, Object oldObject, Document document) {
         try {
             Document find = new Document(key, oldObject);
-            this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
+       //     this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
         } catch (Exception e) {
             log.error("replaceElement error: " + e.getMessage());
         }
@@ -156,7 +156,7 @@ public class MongoRepoImplementation implements MongoRepo {
         try {
             for (Map.Entry<String, Object> entry : documents.entrySet()) {
                 Document find = new Document(entry.getKey(), entry.getValue());
-                this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
+         //       this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
             }
         } catch (Exception e) {
             log.error("replaceElements error: " + e.getMessage());

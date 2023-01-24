@@ -3,7 +3,7 @@ package org.poc.excel;
 import lombok.extern.slf4j.Slf4j;
 import org.files.excelReader.ClassPogo;
 import org.files.excelReader.ExcelDbRepository;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -18,10 +18,10 @@ public class ExcelDbReaderExtensionsTest {
     @BeforeEach
     public void init() {
         path = "C:\\Users\\Lenovo\\IdeaProjects\\mobile.automation.extensions\\src\\test\\resources\\Book1.xlsx";
-        this.excelDbRepository = new ExcelDbRepository(path);
+        this.excelDbRepository = new ExcelDbRepository(this.path);
     }
 
-    @AfterClass
+    @AfterEach
     public void tearDown() {
         this.excelDbRepository.close();
     }
