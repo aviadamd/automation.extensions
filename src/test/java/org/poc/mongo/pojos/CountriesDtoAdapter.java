@@ -1,4 +1,4 @@
-package org.poc.mongo;
+package org.poc.mongo.pojos;
 
 import com.mongodb.BasicDBObject;
 import org.bson.Document;

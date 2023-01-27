@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MongoMorphiaDbExtension implements BeforeEachCallback, AfterAllCallback {
-    public static Map<Integer, MorphiaRepository> repository = new HashMap<>();
+    private final static Map<Integer, MorphiaRepository> repository = new HashMap<>();
+    public Map<Integer, MorphiaRepository> getRepository() { return repository; }
 
     @Override
     public void beforeEach(ExtensionContext extensionContext) {

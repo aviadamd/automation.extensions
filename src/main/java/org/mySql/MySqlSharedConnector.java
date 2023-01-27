@@ -5,16 +5,12 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.ibatis.jdbc.SQL;
-import org.extensions.anontations.Step;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.context.annotation.Description;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -31,7 +27,7 @@ public class MySqlSharedConnector {
             this.connection = DriverManager.getConnection(connection);
             this.sharedQuery = new SharedQuery(this.connection);
         } catch (Exception exception) {
-            Assertions.fail(exception.getMessage(), exception);
+             Assertions.fail(exception.getMessage(), exception);
         }
     }
     public MySqlSharedConnector(String connection, String user, String pass) {
@@ -62,15 +58,6 @@ public class MySqlSharedConnector {
             return this;
         }
 
-        public Optional<ResultSet> resultSet() {
-            Optional<ResultSet> resultSet = Optional.empty();
-            try {
-                return Optional.ofNullable(this.connection.createStatement().executeQuery(this.sqlQuery.toString()));
-            } catch (Exception exception) {
-                Assertions.fail(exception.getMessage(), exception);
-            }
-            return resultSet;
-        }
         public <T> List<T> queryToObjectsList(Class<T> tClass) {
             try {
                 BeanListHandler<T> beanListHandler = new BeanListHandler<>(tClass);

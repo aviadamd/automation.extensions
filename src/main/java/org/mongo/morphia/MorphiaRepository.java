@@ -4,31 +4,46 @@ import dev.morphia.DeleteOptions;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Query;
 import dev.morphia.query.experimental.filters.Filter;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class MorphiaRepository {
 
     private final MorphiaMongoConnection repository;
 
+    public MorphiaMongoConnection getRepository() { return repository; }
+
     public MorphiaRepository(String uri, String dbName) {
-        this.repository = new MorphiaMongoConnection(uri, dbName);
+        this.repository = new  MorphiaMongoConnection(uri, dbName);
     }
 
+    @SuppressWarnings("removal")
     public <T> Query<T> query(Class<T> tClass) { return this.repository.getDatastore().createQuery(tClass); }
 
-    public <T> void insert(T t) { this.repository.getDatastore().insert(t); }
+    public <T> void insert(T t) {
+        this.repository.getDatastore().insert(t);
+    }
+
+    public <T> void insert(List<T> t) {
+        log.debug("list size " + t.size());
+        log.debug("insert " + t.toString());
+        this.repository.getDatastore().insert(t);
+    }
 
     public <T> void save(T t) {
         this.repository.getDatastore().save(t);
     }
-
     public <T> void delete(T t) {
         this.repository.getDatastore().delete(t);
     }
-
+    public <T> Optional<T> findBy(Filter filter, Class<T> tClass) {
+        return Optional.ofNullable(this.repository.getDatastore().find(tClass).filter(filter).first());
+    }
     public <T> List<T> findsBy(Class<T> tClass, FindOptions findOptions) {
         return this.repository.getDatastore()
                 .find(tClass)
@@ -61,5 +76,7 @@ public class MorphiaRepository {
                 .find(tClass)
                 .delete(new DeleteOptions().multi(true));
     }
-
+    public void close() {
+        this.repository.getDatastore().getDatabase().drop();
+    }
 }

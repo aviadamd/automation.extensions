@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class JsonReadAndWriteExtensions {
-
     private final JsonReaderExtensions jsonReaderExtensions;
     private final JsonWriterExtensions jsonWriterExtensions;
 

@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 public @interface ReportConfiguration {
     String reportPath();
     String reportSettingsPath();
-    Status[] generateExtraReportsBy() default Status.PASS;
+    Status[] extraReportsBy() default Status.PASS;
 }

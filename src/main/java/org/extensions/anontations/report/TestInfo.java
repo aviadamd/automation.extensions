@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface TestInfo {
+    int testId();
     String assignCategory();
     String assignAuthor();
     String assignDevice();

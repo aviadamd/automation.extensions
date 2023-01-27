@@ -1,19 +1,26 @@
-package org.extensions.dto;
+package org.extensions.mongo.pojo;
 
 import com.aventstack.extentreports.Status;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.Date;
+import com.mongodb.BasicDBObject;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import org.bson.types.ObjectId;
+import org.extensions.dto.TestMetaData;
 
-@JsonPropertyOrder({ "id","className", "testName", "status", "error","testInfo"})
-public class FailTestInfo {
-    private Date id;
+import java.util.Arrays;
+
+@Entity("failTestInfo")
+public class FailTestInfoMongo extends BasicDBObject {
+    @Id
+    private ObjectId id;
     private String className;
     private String testName;
     private Status[] status;
     private String error;
     private TestMetaData testInfo;
-    public FailTestInfo() {}
-    public FailTestInfo(Date id, String className, String testName, TestMetaData testInfo, String error) {
+
+    public FailTestInfoMongo() {}
+    public FailTestInfoMongo(ObjectId id, String className, String testName, TestMetaData testInfo, String error) {
         this.id = id;
         this.className = className;
         this.testName = testName;
@@ -21,7 +28,7 @@ public class FailTestInfo {
         this.testInfo = testInfo;
     }
 
-    public Date getId() { return id; }
+    public ObjectId getId() { return id; }
     public Status[] getStatus() {
         return status;
     }
@@ -36,7 +43,7 @@ public class FailTestInfo {
         return testInfo;
     }
     public void setStatus(Status[] status) { this.status = status; }
-    public void setId(Date id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
     public void setClassName(String className) {
@@ -50,5 +57,17 @@ public class FailTestInfo {
     }
     public void setTestInfo(TestMetaData testInfo) {
         this.testInfo = testInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "FailTestInfoMongo{" +
+                "id=" + id +
+                ", className='" + className + '\'' +
+                ", testName='" + testName + '\'' +
+                ", status=" + Arrays.toString(status) +
+                ", error='" + error + '\'' +
+                ", testInfo=" + testInfo +
+                '}';
     }
 }

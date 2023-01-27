@@ -12,7 +12,9 @@ import java.util.Optional;
 public class PdfReaderExtension implements
         BeforeEachCallback,
         AfterAllCallback {
-    public static HashMap<Integer,PdfReader> pdfReader = new HashMap<>();
+
+    private static final HashMap<Integer,PdfReader> pdfReader = new HashMap<>();
+    public HashMap<Integer, PdfReader> getPdfReader() { return pdfReader; }
 
     @Override
     public void beforeEach(ExtensionContext extensionContext) {

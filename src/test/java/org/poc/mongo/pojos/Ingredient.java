@@ -1,4 +1,4 @@
-package org.poc.mongo;
+package org.poc.mongo.pojos;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
