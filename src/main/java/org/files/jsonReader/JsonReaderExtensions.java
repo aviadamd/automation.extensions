@@ -94,4 +94,12 @@ public class JsonReaderExtensions {
         }
         return MappingIterator.emptyIterator();
     }
+
+    public <T> T readValue(Class<T> valueType) {
+        try {
+            return this.objectMapper.readValue(this.file, valueType);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
 }

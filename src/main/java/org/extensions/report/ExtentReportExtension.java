@@ -109,11 +109,12 @@ public class ExtentReportExtension implements
             extentTest.pass("test " + testMethod + " pass");
         }
     }
+
     @Override
     public void testFailed(ExtensionContext context, Throwable throwable) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getExecutionException().isPresent()) {
-            String error = context.getExecutionException().get().getMessage();
 
+            String error = context.getExecutionException().get().getMessage();
             String testClass = context.getRequiredTestClass().getSimpleName();
             String testMethod = context.getRequiredTestMethod().getName();
 
@@ -121,11 +122,11 @@ public class ExtentReportExtension implements
                 Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
                 Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
                 reportTest.ifPresent(testInfo -> {
-                     FailTestInfo failTestInfo = new FailTestInfo(new Date(), testClass, testMethod, new TestMetaData(testInfo), error);
-                     repeat.ifPresent(value -> failTestInfo.setStatus(value.onStatus()));
-                     failTests.add(failTestInfo);
-                     FailTestInfoMongo failTestInfoMongo = new FailTestInfoMongo(new ObjectId(), testClass, testMethod, new TestMetaData(testInfo), error);
-                     failTestsMongo.add(failTestInfoMongo);
+                    FailTestInfo failTestInfo = new FailTestInfo(new Date(), testClass, testMethod, new TestMetaData(testInfo), error);
+                    repeat.ifPresent(value -> failTestInfo.setStatus(value.onStatus()));
+                    failTests.add(failTestInfo);
+                    FailTestInfoMongo failTestInfoMongo = new FailTestInfoMongo(new ObjectId(), testClass, testMethod, new TestMetaData(testInfo), error);
+                    failTestsMongo.add(failTestInfoMongo);
                 });
             });
 
@@ -134,7 +135,6 @@ public class ExtentReportExtension implements
             extentTest.fail("error message " + error);
         }
     }
-
     @Override
     public void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -168,7 +168,7 @@ public class ExtentReportExtension implements
                 mongo.close();
             }
 
-            if (passTestsMongo.size() > 0) {
+            if (failTestsMongo.size() > 0) {
                 MongoRepoImplementation mongo = new MongoRepoImplementation("mongodb://localhost:27017","testResults","FailTestResults");
                 List<Document> failMongoReport = FailTestAdapter.toDocuments(failTestsMongo);
                 mongo.insertElements(failMongoReport);
@@ -176,7 +176,6 @@ public class ExtentReportExtension implements
             }
         }
     }
-
     @Override
     public  <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {

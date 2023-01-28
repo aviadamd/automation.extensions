@@ -41,20 +41,37 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
      */
     public SeleniumWebDriverManager(Class<? extends WebDriver> driverInstance, WebDriverListener driverListener, Duration driverWaitDuration) {
         try {
-            WebDriverManager manager = WebDriverManager.getInstance(driverInstance);
-            if (driverInstance.getDeclaringClass().isInstance(FirefoxDriver.class)) {
-                DesiredCapabilities capabilities = new DesiredCapabilities();
-                FirefoxOptions options = new FirefoxOptions();
-                capabilities.merge(options);
-                manager.capabilities(capabilities);
-            }
-            this.driver.set(new EventFiringDecorator<>(WebDriver.class, driverListener).decorate(manager.create()));
+            WebDriverManager instance = this.manager(driverInstance);
+            this.driver.set(new EventFiringDecorator<>(WebDriver.class, driverListener).decorate(instance.clearDriverCache().create()));
             this.webDriverWait.set(new WebDriverWait(this.driver.get(), driverWaitDuration));
         } catch (Exception exception) {
             Assertions.fail("init driver fails ", exception);
         }
     }
 
+    private WebDriverManager manager(Class<? extends WebDriver> driverInstance) {
+        WebDriverManager instance = WebDriverManager.getInstance(driverInstance);
+        instance.setup();
+        return instance;
+    }
+    private DesiredCapabilities firefoxOptions() {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
+        firefoxOptions.addArguments("disable-restore-session-state");
+        firefoxOptions.addArguments("start-maximized");
+        firefoxOptions.addArguments("--disable-gpu");
+        firefoxOptions.addArguments("--start-fullscreen");
+        firefoxOptions.addArguments("--disable-extensions");
+        firefoxOptions.addArguments("--disable-popup-blocking");
+        firefoxOptions.addArguments("--disable-notifications");
+        firefoxOptions.addArguments("--window-size=1920,1080");
+        firefoxOptions.addArguments("--no-sandbox");
+        firefoxOptions.addArguments("--dns-prefetch-disable");
+        firefoxOptions.addArguments("enable-automation");
+        firefoxOptions.addArguments("disable-features=NetworkService");
+        capabilities.merge(firefoxOptions);
+        return capabilities;
+    }
     @Override
     public void get(String url) {
         this.getDriver().get(url);

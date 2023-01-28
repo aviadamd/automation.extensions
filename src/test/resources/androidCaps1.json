@@ -1,0 +1,9 @@
+{
+  "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
+  "appPackage" : "com.ideomobile.hapoalim",
+  "automationName" : "appium",
+  "platformVersion" : "11",
+  "avd" : "Pixel_XL_API_30",
+  "udid" : "Pixel_XL_API_30",
+  "appBundleId": "com.ideomobile.hapoalim"
+}
