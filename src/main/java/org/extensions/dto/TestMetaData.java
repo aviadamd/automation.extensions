@@ -1,13 +1,13 @@
 package org.extensions.dto;
 
-import org.extensions.anontations.report.TestInfo;
+import org.extensions.anontations.report.TestReportInfo;
 
 public class TestMetaData {
     private final String assignCategory;
     private final String assignAuthor;
     private final String assignDevice;
 
-    public TestMetaData(TestInfo testInfo) {
+    public TestMetaData(TestReportInfo testInfo) {
         this.assignCategory = testInfo.assignCategory();
         this.assignAuthor = testInfo.assignAuthor();
         this.assignDevice = testInfo.assignDevice();

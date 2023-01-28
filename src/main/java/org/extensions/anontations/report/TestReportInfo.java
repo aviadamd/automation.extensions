@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface TestInfo {
+public @interface TestReportInfo {
     int testId();
     String assignCategory();
     String assignAuthor();

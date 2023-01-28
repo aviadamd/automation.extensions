@@ -1,4 +1,4 @@
-package org.mobile.elementsData;
+package org.mobile.data;
 
 
 public class ElementsAttributes {

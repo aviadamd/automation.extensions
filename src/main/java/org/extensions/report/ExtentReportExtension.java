@@ -18,16 +18,13 @@ import org.files.jsonReader.JsonReadAndWriteExtensions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.extensions.anontations.report.ReportConfiguration;
-import org.extensions.anontations.report.TestInfo;
+import org.extensions.anontations.report.TestReportInfo;
 import org.mongo.legacy.MongoRepoImplementation;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import static com.aventstack.extentreports.reporter.configuration.ViewName.*;
 
 @Slf4j
@@ -40,9 +37,10 @@ public class ExtentReportExtension implements
         AfterEachCallback,
         AfterAllCallback,
         JunitAnnotationHandler.ExtensionContextHandler {
+
     public static ExtentTest extentTest;
-    private ExtentSparkReporter sparkReporter;
-    private ExtentReports extentReports = new ExtentReports();
+    private static ExtentSparkReporter sparkReporter;
+    private static ExtentReports extentReports = new ExtentReports();
     private static final List<FailTestInfo> failTests = new ArrayList<>();
     private static final List<PassTestInfo> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
@@ -54,14 +52,14 @@ public class ExtentReportExtension implements
             Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
             if (reportConfiguration.isPresent()) {
                 try {
-                    this.extentReports = new ExtentReports();
-                    this.sparkReporter = new ExtentSparkReporter(reportConfiguration.get().reportPath() + "/Spark.html");
-                    this.sparkReporter.viewConfigurer()
+                    extentReports = new ExtentReports();
+                    sparkReporter = new ExtentSparkReporter(reportConfiguration.get().reportPath() + "/Spark.html");
+                    sparkReporter.viewConfigurer()
                             .viewOrder()
                             .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
                             .apply();
-                    this.extentReports.attachReporter(this.sparkReporter);
-                    this.sparkReporter.loadJSONConfig(new File(reportConfiguration.get().reportSettingsPath()));
+                    extentReports.attachReporter(sparkReporter);
+                    sparkReporter.loadJSONConfig(new File(reportConfiguration.get().reportSettingsPath()));
                 } catch (Exception exception) {
                     Assertions.fail("Extent report initiation error ", exception);
                 }
@@ -71,11 +69,11 @@ public class ExtentReportExtension implements
     @Override
     public void beforeEach(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
-            Optional<TestInfo> reportTest = this.readAnnotation(context, TestInfo.class);
+            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             if (reportTest.isPresent()) {
                 String testClass = context.getRequiredTestClass().getSimpleName();
                 String testMethod = context.getRequiredTestMethod().getName();
-                extentTest = this.extentReports
+                extentTest = extentReports
                         .createTest(testMethod)
                         .createNode(testMethod)
                         .assignCategory(reportTest.get().assignCategory())
@@ -97,7 +95,7 @@ public class ExtentReportExtension implements
     @Override
     public void testSuccessful(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
-            Optional<TestInfo> reportTest = this.readAnnotation(context, TestInfo.class);
+            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             reportTest.ifPresent(testInfo -> {
                 String testClass = context.getRequiredTestClass().getSimpleName();
                 String testMethod = context.getRequiredTestMethod().getName();
@@ -121,7 +119,7 @@ public class ExtentReportExtension implements
 
             context.getElement().ifPresent(element -> {
                 Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
-                Optional<TestInfo> reportTest = this.readAnnotation(context, TestInfo.class);
+                Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
                 reportTest.ifPresent(testInfo -> {
                      FailTestInfo failTestInfo = new FailTestInfo(new Date(), testClass, testMethod, new TestMetaData(testInfo), error);
                      repeat.ifPresent(value -> failTestInfo.setStatus(value.onStatus()));
@@ -145,12 +143,12 @@ public class ExtentReportExtension implements
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
                 for (Status status : reportConfiguration.get().extraReportsBy()) {
                     String reportPath = reportConfiguration.get().reportPath() + "/" + status.toString() + ".html";
-                    this.sparkReporter = new ExtentSparkReporter(reportPath);
-                    this.extentReports.attachReporter(this.sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
+                    sparkReporter = new ExtentSparkReporter(reportPath);
+                    extentReports.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
                 }
             }
 
-            this.extentReports.flush();
+            extentReports.flush();
             String className = context.getRequiredTestClass().getSimpleName();
 
             if (passTests.size() > 0) {

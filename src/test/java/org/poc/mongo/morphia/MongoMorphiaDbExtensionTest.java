@@ -6,7 +6,7 @@ import dev.morphia.query.Query;
 import dev.morphia.query.Sort;
 import dev.morphia.query.experimental.filters.Filters;
 import lombok.extern.slf4j.Slf4j;
-import org.base.BaseMobile;
+import org.base.ObjectsBeans;
 import org.bson.types.ObjectId;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.mongo.MongoMorphiaDbExtension;
@@ -14,7 +14,7 @@ import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.mongo.MongoMorphiaManager;
 import org.extensions.anontations.report.ReportConfiguration;
-import org.extensions.anontations.report.TestInfo;
+import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.poc.mongo.pojos.Ingredient;
@@ -36,10 +36,10 @@ import static dev.morphia.query.experimental.filters.Filters.eq;
         @MongoMorphiaConnector(dbId = 1, dbName = "ingredientsDb"),
         @MongoMorphiaConnector(dbId = 2, dbName = "ingredientsDb")
 })
-public class MongoMorphiaDbExtensionTest extends BaseMobile {
+public class MongoMorphiaDbExtensionTest extends ObjectsBeans {
 
     @Test
-    @TestInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void morphiaTest() {
         Ingredient bread = new Ingredient(new ObjectId(),"Bread", true);

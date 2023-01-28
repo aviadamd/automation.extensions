@@ -12,12 +12,8 @@ import org.extensions.anontations.mongo.MongoManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
-import org.extensions.anontations.report.TestInfo;
+import org.extensions.anontations.report.TestReportInfo;
 import org.poc.mongo.pojos.Countries;
-
-import java.util.*;
-import static java.util.Arrays.asList;
-import static org.extensions.report.ExtentReportExtension.extentTest;
 import static org.extensions.mongo.MongoDbExtension.mongoRepo;
 
 @Slf4j
@@ -32,7 +28,7 @@ import static org.extensions.mongo.MongoDbExtension.mongoRepo;
 })
 public class MongoDbExtensionTest {
     @Test
-    @TestInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     void testMongoConnection() {
         MongoCollection<Countries> collection = mongoRepo.get(1).createObject(Countries.class);

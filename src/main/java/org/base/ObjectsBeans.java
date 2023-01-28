@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Configuration
-public class BaseMobile {
+public class ObjectsBeans {
     @Bean
     public MySqlDbExtension mySqlDbExtension() {
         return new MySqlDbExtension();
@@ -18,7 +18,6 @@ public class BaseMobile {
     public MongoMorphiaDbExtension morphiaDbExtension() {
         return new MongoMorphiaDbExtension();
     }
-
     @Bean
     public PdfReaderExtension pdfReaderExtension() {
         return new PdfReaderExtension();
