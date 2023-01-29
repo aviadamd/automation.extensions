@@ -21,7 +21,7 @@ import static org.extensions.mongo.MongoDbExtension.mongoRepo;
 @ReportConfiguration(
         reportPath = "target/reports",
         extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "src/main/resources/reportConfig.json")
+        reportSettingsPath = "project.report.config")
 @MongoManager(host = "mongodb://localhost:27017", mongoConnectors = {
         @MongoConnector(dbId = 1, dbName = "mobileDb", collectionName = "mobileCollection1"),
         @MongoConnector(dbId = 2, dbName = "mobileDb", collectionName = "mobileCollection2")

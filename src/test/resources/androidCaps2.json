@@ -1,6 +1,6 @@
 {
   "client": "android",
-  "appiumUrl": "http://localhost:4724/wd/hub",
+  "appiumUrl": "http://127.0.0.1:4724/wd/hub",
   "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
   "appPackage" : "com.ideomobile.hapoalim",
   "automationName" : "UiAutomator2",

@@ -6,7 +6,7 @@ import org.apache.commons.validator.GenericValidator;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import static org.staticData.MobileRegexConstants.*;
+import static org.staticData.StringsRegexsConstants.*;
 
 @Slf4j
 public class StringsUtilities extends NumberUtils {
@@ -71,7 +71,7 @@ public class StringsUtilities extends NumberUtils {
     public static String hebrewTextLeftToRight(String text) {
         return text == null ? "" : text
                 .replaceAll(HEBREW_LEFT_TO_RIGHT, EMPTY_STRING)
-                .replaceAll(MobileRegexConstants.LEFT_TO_RIGHT_MARK, EMPTY_STRING);
+                .replaceAll(StringsRegexsConstants.LEFT_TO_RIGHT_MARK, EMPTY_STRING);
     }
 
     /**

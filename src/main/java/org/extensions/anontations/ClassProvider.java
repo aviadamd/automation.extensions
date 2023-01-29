@@ -1,4 +1,4 @@
-package org.extensions.anontations.mobile;
+package org.extensions.anontations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface DriverProvider {
-    String jsonCapsPath();
+public @interface ClassProvider {
+    Class<?> classObject();
 }

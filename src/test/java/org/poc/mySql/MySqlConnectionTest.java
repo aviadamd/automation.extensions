@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
-import org.base.ObjectsBeans;
+import org.extensions.ObjectsBeans;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(value = { ExtentReportExtension.class, MySqlDbExtension.class })
-@ReportConfiguration(reportPath = "target/reports", extraReportsBy = { Status.FAIL, Status.SKIP }, reportSettingsPath = "src/main/resources/reportConfig.json")
+@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { Status.FAIL, Status.SKIP }, reportSettingsPath = "src/main/resources/reportConfig.json")
 @MySqlConnectorManager(connector = { @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", dbId = 1, userName = "root", userPassword = "5311072BsAviad") })
 public class MySqlConnectionTest extends ObjectsBeans {
 

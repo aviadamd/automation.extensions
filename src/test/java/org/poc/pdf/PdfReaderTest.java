@@ -2,7 +2,7 @@ package org.poc.pdf;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.base.ObjectsBeans;
+import org.extensions.ObjectsBeans;
 import org.extensions.pdf.PdfReaderExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.anontations.Repeat;
@@ -19,7 +19,7 @@ import org.extensions.anontations.report.TestReportInfo;
 @ReportConfiguration(
         reportPath = "target/reports",
         extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "src/main/resources/reportConfig.json")
+        reportSettingsPath = "project.report.config")
 @PdfConnector(pdfFileConfig = {
         @PdfFileConfig(fileId = 1, path = "src/test/resources/sample.pdf"),
         @PdfFileConfig(fileId = 2, path = "src/test/resources/sample.pdf")

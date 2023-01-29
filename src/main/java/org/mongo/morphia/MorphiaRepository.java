@@ -13,13 +13,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class MorphiaRepository {
-
-    private final MorphiaMongoConnection repository;
-
+    private MorphiaMongoConnection repository;
     public MorphiaMongoConnection getRepository() { return repository; }
-
+    public MorphiaRepository() {}
     public MorphiaRepository(String uri, String dbName) {
-        this.repository = new  MorphiaMongoConnection(uri, dbName);
+        this.repository = new MorphiaMongoConnection(uri, dbName);
+    }
+    public MorphiaRepository setMorphiaRepository(String uri, String dbName) {
+        this.repository = new MorphiaMongoConnection(uri, dbName);
+        return this;
     }
 
     @SuppressWarnings("removal")
@@ -30,8 +32,6 @@ public class MorphiaRepository {
     }
 
     public <T> void insert(List<T> t) {
-        log.debug("list size " + t.size());
-        log.debug("insert " + t.toString());
         this.repository.getDatastore().insert(t);
     }
 

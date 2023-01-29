@@ -6,7 +6,7 @@ import dev.morphia.query.Query;
 import dev.morphia.query.Sort;
 import dev.morphia.query.experimental.filters.Filters;
 import lombok.extern.slf4j.Slf4j;
-import org.base.ObjectsBeans;
+import org.extensions.ObjectsBeans;
 import org.bson.types.ObjectId;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.mongo.MongoMorphiaDbExtension;
@@ -18,12 +18,9 @@ import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.poc.mongo.pojos.Ingredient;
-
 import java.util.List;
 import java.util.Optional;
-
 import static dev.morphia.query.experimental.filters.Filters.eq;
-
 
 @SuppressWarnings("removal")
 @Slf4j
@@ -31,7 +28,7 @@ import static dev.morphia.query.experimental.filters.Filters.eq;
 @ReportConfiguration(
         reportPath = "target/reports",
         extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "src/main/resources/reportConfig.json")
+        reportSettingsPath = "project.report.config")
 @MongoMorphiaManager(host = "mongodb://localhost:27017", mongoConnectors = {
         @MongoMorphiaConnector(dbId = 1, dbName = "ingredientsDb"),
         @MongoMorphiaConnector(dbId = 2, dbName = "ingredientsDb")

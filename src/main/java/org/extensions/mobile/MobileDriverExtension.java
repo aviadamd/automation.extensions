@@ -1,43 +1,51 @@
-package org.extensions.report;
+package org.extensions.mobile;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.ViewName;
-import lombok.extern.slf4j.Slf4j;
+import org.automation.base.mobile.MobileDriverManager;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.extensions.anontations.Repeat;
-import org.extensions.dto.*;
+import org.extensions.anontations.mobile.DriverProvider;
+import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.TestReportInfo;
+import org.extensions.dto.FailTestInfo;
+import org.extensions.dto.PassTestInfo;
+import org.extensions.dto.TestMetaData;
 import org.extensions.mongo.FailTestAdapter;
 import org.extensions.mongo.PassTestAdapter;
 import org.extensions.mongo.pojo.FailTestInfoMongo;
 import org.extensions.mongo.pojo.PassTestInfoMongo;
+import org.extensions.report.JunitAnnotationHandler;
 import org.files.jsonReader.JsonReadAndWriteExtensions;
+import org.files.jsonReader.JsonReaderExtensions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.extensions.anontations.report.ReportConfiguration;
-import org.extensions.anontations.report.TestReportInfo;
 import org.mongo.legacy.MongoRepoImplementation;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import static com.aventstack.extentreports.reporter.configuration.ViewName.*;
+import static com.aventstack.extentreports.reporter.configuration.ViewName.LOG;
 
-@Slf4j
-@Component
-@Configuration
-public class ExtentReportExtension implements
-        TestWatcher, BeforeAllCallback,
-        BeforeEachCallback, AfterEachCallback,
-        AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
-
+public class MobileDriverExtension implements
+        TestWatcher,
+        BeforeAllCallback,
+        BeforeEachCallback,
+        AfterEachCallback,
+        AfterAllCallback,
+        JunitAnnotationHandler.ExtensionContextHandler ,
+        ParameterResolver {
     public static ExtentTest extentTest;
     private static ExtentSparkReporter sparkReporter;
     private static ExtentReports extentReports = new ExtentReports();
+    private static final AtomicReference<MobileDriverManager> manager = new AtomicReference<>();
     private static final List<FailTestInfo> failTests = new ArrayList<>();
     private static final List<PassTestInfo> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
@@ -49,13 +57,13 @@ public class ExtentReportExtension implements
             if (reportConfiguration.isPresent()) {
                 try {
                     extentReports = new ExtentReports();
-                    sparkReporter = new ExtentSparkReporter(System.getProperty(reportConfiguration.get().reportPath()) + "/Spark.html");
+                    sparkReporter = new ExtentSparkReporter(reportConfiguration.get().reportPath() + "/Spark.html");
                     sparkReporter.viewConfigurer()
                             .viewOrder()
                             .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
                             .apply();
                     extentReports.attachReporter(sparkReporter);
-                    sparkReporter.loadJSONConfig(new File(System.getProperty(reportConfiguration.get().reportSettingsPath()) + "/reportConfig.json"));
+                    sparkReporter.loadJSONConfig(new File(reportConfiguration.get().reportSettingsPath()));
                 } catch (Exception exception) {
                     Assertions.fail("Extent report initiation error ", exception);
                 }
@@ -162,7 +170,7 @@ public class ExtentReportExtension implements
 
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
                 for (Status status : reportConfiguration.get().extraReportsBy()) {
-                    String reportPath = System.getProperty(reportConfiguration.get().reportPath()) + "/" + status.toString() + ".html";
+                    String reportPath = reportConfiguration.get().reportPath() + "/" + status.toString() + ".html";
                     sparkReporter = new ExtentSparkReporter(reportPath);
                     extentReports.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
                 }
@@ -201,6 +209,26 @@ public class ExtentReportExtension implements
     }
 
     @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
+        return parameterContext.getParameter().getType() == MobileDriverManager.class;
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
+        try {
+            context.getElement().ifPresent(contextExtension -> {
+                Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
+                provider.ifPresent(params -> {
+                    AtomicReference<String> setJsonPath = new AtomicReference<>("");
+                    setJsonPath.set(System.getProperty(params.jsonCapsPath()));
+                    AtomicReference<Optional<CapsReader>> capsReader = new AtomicReference<>(this.capabilitiesFromJson(setJsonPath.get()));
+                    capsReader.get().ifPresent(caps -> manager.set(new MobileDriverManager(caps.getJsonObject().getClient(), caps.getCapabilities(), caps.getJsonObject().getAppiumUrl())));
+                });
+            });
+        } catch (Exception ignore) {}
+        return manager.get();
+    }
+    @Override
     public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
@@ -213,4 +241,31 @@ public class ExtentReportExtension implements
         return Optional.empty();
     }
 
+    public Optional<CapsReader> capabilitiesFromJson(String jsonPath)  {
+        try {
+
+            JsonReaderExtensions readerExtensions = new JsonReaderExtensions(new File(jsonPath));
+            Optional<CapabilitiesObject> capsObject = readerExtensions.readValue(CapabilitiesObject.class);
+
+            if (capsObject.isPresent()) {
+                DesiredCapabilities capabilities = new DesiredCapabilities();
+                capabilities.setCapability("appium:app", capsObject.get().getAppPath());
+                capabilities.setCapability("appium:appPackage", capsObject.get().getAppPackage());
+                capabilities.setCapability("appium:automationName", capsObject.get().getAutomationName());
+                capabilities.setCapability("appium:platformVersion", capsObject.get().getPlatformVersion());
+                capabilities.setCapability("appium:avd", capsObject.get().getAvd());
+                capabilities.setCapability("appium:udid", capsObject.get().getUdid());
+                capabilities.setCapability("appium:newCommandTimeout", Integer.parseInt(("15000")));
+                capabilities.setCapability("appium:autoGrantPermissions", true);
+                capabilities.setCapability("appium:noReset", true);
+                return Optional.of(new CapsReader(capabilities, capsObject.get()));
+            }
+
+            Assertions.fail("fail load capabilities from json " + jsonPath);
+        } catch (Exception exception) {
+            Assertions.fail("fail load capabilities from json " + jsonPath ,exception);
+        }
+
+        return Optional.empty();
+    }
 }
