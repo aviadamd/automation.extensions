@@ -1,51 +1,50 @@
 package org.poc.mobile;
 
-import com.aventstack.extentreports.Status;
-import org.base.mobile.MobileDriverManager.MobileDriverType;
-import org.extensions.MobileDriverExtension;
+import org.base.mobile.MobileDriverExtension;
 import org.base.mobile.MobileDriverManager;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.MobileDriverProvider;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.openqa.selenium.By;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-
+import org.mobile.elements.PageFactoryGenerator;
 import java.time.Duration;
-
+import static com.aventstack.extentreports.Status.FAIL;
+import static com.aventstack.extentreports.Status.SKIP;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 
 @Execution(ExecutionMode.CONCURRENT)
+@TestInstance(value = Lifecycle.PER_METHOD)
 @ExtendWith(value = { MobileDriverExtension.class })
 @ReportConfiguration(
         reportPath = "target/reports",
-        extraReportsBy = { Status.FAIL, Status.SKIP },
+        extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "src/main/resources/reportConfig.json")
 public class MobileBasePocTest {
-
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @MobileDriverProvider(driverProvider = {
-            @DriverProvider(
-                    url = "http://localhost:4723/wd/hub",
-                    driverType = MobileDriverType.ANDROID,
-                    jsonCapsPath = "src/test/resources/androidCaps1.json"
-            ),
-            @DriverProvider(
-                    url = "http://localhost:4724/wd/hub",
-                    driverType = MobileDriverType.ANDROID,
-                    jsonCapsPath = "src/test/resources/androidCaps2.json"
-            )
-    })
+    @Repeat(onStatus = { FAIL, SKIP })
+    @DriverProvider(dirPath = "user.dir", jsonCapsPath = "\\src\\test\\resources\\androidCaps1.json")
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
+    public void a_mobileTest(MobileDriverManager manager) {
+        LoginPage loginPage = new PageFactoryGenerator().init(manager.getMobileDriver(), LoginPage.class);
+        manager.oveRideTimeOut(Duration.ofSeconds(20), Duration.ofSeconds(5)).click(elementToBeClickable(loginPage.onBoarding));
+        manager.sendKeys(elementToBeClickable(loginPage.userNameField),"aviad12345");
+        manager.sendKeys(elementToBeClickable(loginPage.userPasswordField),"ss123456");
+        manager.oveRideTimeOut(Duration.ofSeconds(5), Duration.ofSeconds(1)).click(elementToBeClickable(loginPage.continueButton));
+    }
+    @Test
+    @Repeat(onStatus = { FAIL, SKIP })
+    @DriverProvider(dirPath = "user.dir", jsonCapsPath = "\\src\\test\\resources\\androidCaps2.json")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
-    public void mobileTest(MobileDriverManager manager) {
-        String loginEle = "com.ideomobile.hapoalim:id/login_user_name_view_automation";
-        manager.oveRideTimeOut(Duration.ofSeconds(20), Duration.ofSeconds(5)).click(elementToBeClickable(By.id(loginEle)));
-        manager.sendKeys(ExpectedConditions.elementToBeClickable(By.id(loginEle)),"aviad12345");
+    public void b_mobileTest(MobileDriverManager manager) {
+        LoginPage loginPage = new PageFactoryGenerator().init(manager.getMobileDriver(), LoginPage.class);
+        manager.oveRideTimeOut(Duration.ofSeconds(20), Duration.ofSeconds(5)).click(elementToBeClickable(loginPage.onBoarding));
+        manager.sendKeys(elementToBeClickable(loginPage.userNameField),"aviad12345");
+        manager.sendKeys(elementToBeClickable(loginPage.userPasswordField),"ss123456");
+        manager.oveRideTimeOut(Duration.ofSeconds(5), Duration.ofSeconds(1)).click(elementToBeClickable(loginPage.continueButton));
     }
 }

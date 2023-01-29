@@ -9,20 +9,15 @@ import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
 import lombok.extern.slf4j.Slf4j;
 import org.base.WebElementGestures;
-import org.extensions.DriverEventListener;
+import org.base.DriverEventListener;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.support.events.EventFiringDecorator;
-import org.openqa.selenium.support.events.WebDriverListener;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.EnumMap;
@@ -41,13 +36,14 @@ public class MobileDriverManager implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
-    public AppiumFluentWait<WebDriver> getWebDriverWait() { return webDriverWait.get(); }
-    public AndroidDriver getAndroidDriver() { return androidDriver.get(); }
-    public IOSDriver getIosDriver() { return iosDriver.get(); }
+    private final ThreadLocal<AppiumFluentWait<AndroidDriver>> webDriverWaitAndroid = new ThreadLocal<>();
+    private final ThreadLocal<AppiumFluentWait<IOSDriver>> webDriverWaitIos = new ThreadLocal<>();
+    public ThreadLocal<AppiumFluentWait<WebDriver>> getWebDriverWait() { return webDriverWait; }
+
     public WebDriver getMobileDriver() {
         if (System.getProperty("client").equals("android")) {
-            return this.getAndroidDriver();
-        } else return this.getIosDriver();
+            return this.androidDriver.get();
+        } else return this.iosDriver.get();
     }
 
     public MobileDriverManager oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
@@ -55,26 +51,41 @@ public class MobileDriverManager implements
         this.pollingEvery = pollingEvery;
         return this;
     }
-    public MobileDriverManager(MobileDriverType type, DesiredCapabilities caps, String url) {
+    public MobileDriverManager(String type, DesiredCapabilities caps, String url) {
         try {
             switch (type) {
-                case IOS:
+                case "ios":
                     this.iosDriver.set(new IOSDriver(new URL(url), caps));
-                    EventFiringDecorator<IOSDriver> iosDecorator = new EventFiringDecorator<>(new DriverEventListener());
-                    iosDecorator.decorate(this.iosDriver.get());
+                    this.iosDecorator(this.iosDriver.get());
+                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
+                    this.webDriverWaitIos.set(new AppiumFluentWait<>(this.iosDriver.get()));
                     break;
-                case ANDROID:
+                case "android":
                     this.androidDriver.set(new AndroidDriver(new URL(url), caps));
-                    EventFiringDecorator<AndroidDriver> androidDecorator = new EventFiringDecorator<>(new DriverEventListener());
-                    androidDecorator.decorate(this.androidDriver.get());
+                    this.androidDecorator(this.androidDriver.get());
+                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
+                    this.webDriverWaitAndroid.set(new AppiumFluentWait<>(this.androidDriver.get()));
                     break;
             }
-            this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
         } catch (Exception exception) {
             Assertions.fail("init driver fail ", exception);
         }
     }
-
+    private void iosDecorator(IOSDriver iosDriver) {
+         ThreadLocal<EventFiringDecorator<IOSDriver>> iosDecorator = new ThreadLocal<>();
+         iosDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
+         iosDecorator.get().decorate(iosDriver);
+    }
+    private void androidDecorator(AndroidDriver androidDriver) {
+        ThreadLocal<EventFiringDecorator<AndroidDriver>> androidDecorator = new ThreadLocal<>();
+        androidDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
+        androidDecorator.get().decorate(androidDriver);
+    }
+    public void activate(String appBundle) {
+        if (System.getProperty("client").equals("android")) {
+            this.androidDriver.get().activateApp(appBundle);
+        } else this.iosDriver.get().activateApp(appBundle);
+    }
     @Override
     public Response execute(String driverCommand, Map<String, ?> map) {
         if (System.getProperty("client").equals("android")) {
@@ -168,6 +179,7 @@ public class MobileDriverManager implements
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {
         this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(expectedCondition)
@@ -181,6 +193,7 @@ public class MobileDriverManager implements
         expectedConditions.stream().parallel().forEach(condition -> {
             try {
                 this.getWebDriverWait()
+                        .get()
                         .withTimeout(this.generalTimeOut)
                         .pollingEvery(this.pollingEvery)
                         .until(condition)
@@ -195,6 +208,7 @@ public class MobileDriverManager implements
 
     public void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend) {
         this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(expectedCondition)
@@ -204,6 +218,7 @@ public class MobileDriverManager implements
     @Override
     public void sendKeys(WebElement element, CharSequence... keysToSend) {
         this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> ExpectedConditions.elementToBeClickable(element));
@@ -212,6 +227,7 @@ public class MobileDriverManager implements
     @Override
     public String getAttribute(WebElement element, String name) {
         return this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getAttribute(name));
@@ -220,6 +236,7 @@ public class MobileDriverManager implements
     @Override
     public String getText(WebElement element) {
         return this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getText());
@@ -227,24 +244,24 @@ public class MobileDriverManager implements
 
     public List<WebElement> findElements(By by) {
         return this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElements(by));
     }
     public WebElement findElement(By by) {
         return this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElement(by));
     }
     public String getPageSource() {
         return this.getWebDriverWait()
+                .get()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(WebDriver::getPageSource);
     }
-    public enum MobileDriverType {
-        ANDROID,
-        IOS
-    }
+
 }

@@ -2,9 +2,10 @@ package org.base.mobile;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({"appPath","appPackage", "automationName", "platformVersion","avd","udid","appBundleId"})
+@JsonPropertyOrder({"client", "appiumUrl","appPath","appPackage", "automationName", "platformVersion","avd","udid","appBundleId"})
 public class CapabilitiesObject {
-
+    private String client;
+    private String appiumUrl;
     private String appPath;
     private String appPackage;
     private String automationName;
@@ -14,7 +15,9 @@ public class CapabilitiesObject {
     private String appBundleId;
 
     public CapabilitiesObject() {}
-    public CapabilitiesObject(String appPath, String appPackage, String automationName, String platformVersion, String avd, String udid, String appBundleId) {
+    public CapabilitiesObject(String client, String appiumUrl, String appPath, String appPackage, String automationName, String platformVersion, String avd, String udid, String appBundleId) {
+        this.client = client;
+        this.appiumUrl = appiumUrl;
         this.appPath = appPath;
         this.appPackage = appPackage;
         this.automationName = automationName;
@@ -24,6 +27,8 @@ public class CapabilitiesObject {
         this.appBundleId = appBundleId;
     }
 
+    public void setClient(String client) { this.client = client; }
+    public void setAppiumUrl(String appiumUrl) { this.appiumUrl = appiumUrl; }
     public void setAppPath(String appPath) { this.appPath = appPath; }
     public void setAppPackage(String appPackage) { this.appPackage = appPackage; }
     public void setAutomationName(String automationName) { this.automationName = automationName; }
@@ -31,18 +36,23 @@ public class CapabilitiesObject {
     public void setAvd(String avd) { this.avd = avd; }
     public void setUdid(String udid) { this.udid = udid; }
     public void setAppBundleId(String appBundleId) { this.appBundleId = appBundleId; }
-    public String getAppPath() { return appPath; }
-    public String getAppPackage() { return appPackage; }
-    public String getAutomationName() { return automationName; }
-    public String getPlatformVersion() { return platformVersion; }
-    public String getAvd() { return avd; }
-    public String getUdid() { return udid; }
-    public String getAppBundleId() {return appBundleId; }
+
+    public String getClient() { return this.client; }
+    public String getAppiumUrl() { return this.appiumUrl; }
+    public String getAppPath() { return this.appPath; }
+    public String getAppPackage() { return this.appPackage; }
+    public String getAutomationName() { return this.automationName; }
+    public String getPlatformVersion() { return this.platformVersion; }
+    public String getAvd() { return this.avd; }
+    public String getUdid() { return this.udid; }
+    public String getAppBundleId() { return this.appBundleId; }
 
     @Override
     public String toString() {
         return "CapabilitiesObject{" +
-                "appPath='" + appPath + '\'' +
+                "client='" + client + '\'' +
+                ", appiumUrl='" + appiumUrl + '\'' +
+                ", appPath='" + appPath + '\'' +
                 ", appPackage='" + appPackage + '\'' +
                 ", automationName='" + automationName + '\'' +
                 ", platformVersion='" + platformVersion + '\'' +

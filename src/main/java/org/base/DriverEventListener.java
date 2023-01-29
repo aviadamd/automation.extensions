@@ -1,4 +1,4 @@
-package org.extensions;
+package org.base;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;

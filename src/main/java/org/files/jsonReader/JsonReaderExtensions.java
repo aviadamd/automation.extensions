@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 public class JsonReaderExtensions {
@@ -95,11 +96,12 @@ public class JsonReaderExtensions {
         return MappingIterator.emptyIterator();
     }
 
-    public <T> T readValue(Class<T> valueType) {
+    public <T> Optional<T> readValue(Class<T> valueType) {
         try {
-            return this.objectMapper.readValue(this.file, valueType);
+            return Optional.ofNullable(this.objectMapper.readValue(this.file, valueType));
         } catch (Exception exception) {
-            return null;
+            log.error("readValue " + exception.getMessage());
+            return Optional.empty();
         }
     }
 }
