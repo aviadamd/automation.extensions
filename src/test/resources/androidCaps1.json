@@ -1,11 +1,9 @@
 {
   "client": "android",
-  "appiumUrl": "http://127.0.0.1:4723/wd/hub",
+  "appiumBasePath" : "http://127.0.0.1:4723/wd/hub",
   "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
-  "appPackage" : "com.ideomobile.hapoalim",
-  "automationName" : "UiAutomator2",
   "platformVersion" : "11",
-  "avd" : "Pixel_XL_API_30",
-  "udid" : "Pixel_XL_API_30",
+  "avd" : "Pixel_5_API_30",
+  "udid" : "emulator-5556",
   "appBundleId": "com.ideomobile.hapoalim"
 }

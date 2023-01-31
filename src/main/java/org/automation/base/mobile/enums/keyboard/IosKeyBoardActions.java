@@ -1,4 +1,4 @@
-package org.mobile.enums.keyboard;
+package org.automation.base.mobile.enums.keyboard;
 
 public enum IosKeyBoardActions {
     DELETE("1"),

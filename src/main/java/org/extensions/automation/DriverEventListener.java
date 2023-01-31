@@ -1,19 +1,24 @@
-package org.extensions;
+package org.extensions.automation;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
+import org.extensions.report.ExtentTestManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.events.WebDriverListener;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import static org.extensions.report.ExtentReportExtension.extentTest;
-
 @Slf4j
 public class DriverEventListener implements WebDriverListener {
+
+    @Override
+    public void onError(Object target, Method method, Object[] args, InvocationTargetException e) {
+        this.print(Status.INFO,"driver event listener on error trigger " + e.getMessage());
+    }
 
     @Override
     public void beforeGet(WebDriver driver, String url) {
@@ -66,12 +71,12 @@ public class DriverEventListener implements WebDriverListener {
 
     @Override
     public void afterResetInputState(WebDriver driver) {
-        WebDriverListener.super.afterResetInputState(driver);
+
     }
 
     @Override
     public void afterClick(WebElement element) {
-        this.print(Status.INFO, "click on " + element.toString());
+        this.print(Status.INFO, "click on " + element.getText());
     }
     @Override
     public void afterSendKeys(WebElement element, CharSequence... keysToSend) {
@@ -146,7 +151,6 @@ public class DriverEventListener implements WebDriverListener {
     public void afterDeleteCookie(WebDriver.Options options, Cookie cookie) {
 
     }
-
     @Override
     public void afterDeleteAllCookies(WebDriver.Options options) {
 
@@ -164,7 +168,7 @@ public class DriverEventListener implements WebDriverListener {
     private void print(Status status, String message) {
         try {
             log.info(status + " | " + message);
-            if (extentTest != null) extentTest.log(status, message);
+            ExtentTestManager.log(status, message);
         } catch (Exception exception) {
             //
         }

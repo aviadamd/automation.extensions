@@ -1,4 +1,4 @@
-package org.automation.data;
+package org.automation.base.mobile.data;
 
 
 public class ElementsAttributes {

@@ -1,4 +1,4 @@
-package org.automation.enums;
+package org.automation.base.mobile.enums;
 
 public enum DividedList {
     FROM_UPPER_TO_MIDDLE,

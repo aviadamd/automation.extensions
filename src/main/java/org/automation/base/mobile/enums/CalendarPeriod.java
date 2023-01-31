@@ -1,4 +1,4 @@
-package org.automation.enums;
+package org.automation.base.mobile.enums;
 
 import java.util.Calendar;
 

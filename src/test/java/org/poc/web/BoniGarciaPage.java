@@ -1,6 +1,6 @@
 package org.poc.web;
 
-import org.automation.elements.PageFactoryGenerator;
+import org.automation.base.elements.PageFactoryGenerator;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;

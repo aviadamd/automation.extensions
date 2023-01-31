@@ -1,7 +1,7 @@
 package org.staticData;
 
 import lombok.extern.slf4j.Slf4j;
-import org.automation.enums.DividedList;
+import org.automation.base.mobile.enums.DividedList;
 
 import java.util.*;
 import java.util.function.Predicate;

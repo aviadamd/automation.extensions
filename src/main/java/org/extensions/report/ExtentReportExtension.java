@@ -1,13 +1,10 @@
 package org.extensions.report;
 
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentSparkReporter;
-import com.aventstack.extentreports.reporter.configuration.ViewName;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.extensions.JunitAnnotationHandler;
 import org.extensions.anontations.Repeat;
 import org.extensions.dto.*;
 import org.extensions.mongo.FailTestAdapter;
@@ -22,76 +19,54 @@ import org.extensions.anontations.report.TestReportInfo;
 import org.mongo.legacy.MongoRepoImplementation;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import static com.aventstack.extentreports.reporter.configuration.ViewName.*;
 
 @Slf4j
 @Component
 @Configuration
-public class ExtentReportExtension implements
-        TestWatcher, BeforeAllCallback,
-        BeforeEachCallback, AfterEachCallback,
-        AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
-
-    public static ExtentTest extentTest;
-    private static ExtentSparkReporter sparkReporter;
-    private static ExtentReports extentReports = new ExtentReports();
+public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private static final List<FailTestInfo> failTests = new ArrayList<>();
     private static final List<PassTestInfo> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
     private static final List<PassTestInfoMongo> passTestsMongo = new ArrayList<>();
     @Override
-    public void beforeAll(ExtensionContext context) {
+    public synchronized void beforeAll(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
-            Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
-            if (reportConfiguration.isPresent()) {
-                try {
-                    extentReports = new ExtentReports();
-                    sparkReporter = new ExtentSparkReporter(System.getProperty(reportConfiguration.get().reportPath()) + "/Spark.html");
-                    sparkReporter.viewConfigurer()
-                            .viewOrder()
-                            .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
-                            .apply();
-                    extentReports.attachReporter(sparkReporter);
-                    sparkReporter.loadJSONConfig(new File(System.getProperty(reportConfiguration.get().reportSettingsPath()) + "/reportConfig.json"));
-                } catch (Exception exception) {
-                    Assertions.fail("Extent report initiation error ", exception);
+            Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
+            configuration.ifPresent(reportConfiguration -> {
+                if (ExtentManager.getReportsInstance() == null) {
+                    String spark = System.getProperty(reportConfiguration.reportPath()).concat("/Spark.html");
+                    String reportSettings = System.getProperty(reportConfiguration.reportSettingsPath()).concat("/reportConfig.json");
+                    ExtentManager.createInstance(spark, reportSettings);
                 }
-            }
+            });
         }
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public synchronized void beforeEach(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
-            if (reportTest.isPresent()) {
-                String testClass = context.getRequiredTestClass().getSimpleName();
+            reportTest.ifPresent(test -> {
                 String testMethod = context.getRequiredTestMethod().getName();
-                extentTest = extentReports
-                        .createTest(testMethod)
-                        .createNode(testMethod)
-                        .assignCategory(reportTest.get().assignCategory())
-                        .assignAuthor(reportTest.get().assignAuthor())
-                        .assignDevice(reportTest.get().assignDevice());
-                extentTest.info("class " + testClass + " started with test " + testMethod);
-            }
+                ExtentTestManager.createTest(testMethod, test.assignCategory(), test.assignAuthor(), test.assignDevice());
+                ExtentTestManager.log(Status.INFO, testMethod + " started");
+            });
         }
     }
 
     @Override
-    public void afterEach(ExtensionContext context) {
+    public synchronized void afterEach(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent()) {
             String testMethod = context.getRequiredTestMethod().getName();
             String testStatus = context.getExecutionException().isPresent() ? "fail" : "pass";
-            extentTest.info("test " + testMethod + " finished with " + testStatus + " status");
+            ExtentTestManager.log(Status.INFO,testMethod + " finish with status " + testStatus);
         }
     }
 
     @Override
-    public void testSuccessful(ExtensionContext context) {
+    public synchronized void testSuccessful(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             reportTest.ifPresent(testInfo -> {
@@ -104,12 +79,12 @@ public class ExtentReportExtension implements
             });
 
             String testMethod = context.getRequiredTestMethod().getName();
-            extentTest.pass("test " + testMethod + " pass");
+            ExtentTestManager.log(Status.INFO,"test method " + testMethod + " pass");
         }
     }
 
     @Override
-    public void testAborted(ExtensionContext context, Throwable cause) {
+    public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getExecutionException().isPresent()) {
 
             String error = context.getExecutionException().get().getMessage();
@@ -127,12 +102,13 @@ public class ExtentReportExtension implements
                     failTestsMongo.add(failTestInfoMongo);
                 });
             });
-            extentTest.skip("fail from class " + testClass + ", from method " + testMethod + ", error " + cause.getMessage());
+
+            ExtentTestManager.log(Status.SKIP,testClass + " class error " + error + " from method " + testMethod);
         }
     }
 
     @Override
-    public void testFailed(ExtensionContext context, Throwable throwable) {
+    public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getExecutionException().isPresent()) {
 
             String error = throwable.getMessage();
@@ -151,24 +127,20 @@ public class ExtentReportExtension implements
                 });
             });
 
-            extentTest.fail("fail from class " + testClass + ", from method " + testMethod + ", error " + error);
+            ExtentTestManager.log(Status.FAIL,testClass + " class error " + error + " from method " + testMethod);
         }
     }
 
     @Override
-    public void afterAll(ExtensionContext context) {
+    public synchronized void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
 
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
-                for (Status status : reportConfiguration.get().extraReportsBy()) {
-                    String reportPath = System.getProperty(reportConfiguration.get().reportPath()) + "/" + status.toString() + ".html";
-                    sparkReporter = new ExtentSparkReporter(reportPath);
-                    extentReports.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
-                }
+                ExtentTestManager.attachExtraReports(reportConfiguration.get().extraReportsBy(), System.getProperty(reportConfiguration.get().reportPath()));
             }
 
-            extentReports.flush();
+            ExtentManager.getReportsInstance().flush();
             String className = context.getRequiredTestClass().getSimpleName();
 
             if (passTests.size() > 0) {
@@ -181,18 +153,15 @@ public class ExtentReportExtension implements
                 write.readAndWrite(failTests, FailTestInfo.class);
             }
 
-            final String mongoDbName = "mobileTests";
-            final String mongoStringConnection = "mongodb://localhost:27017";
-
             if (passTestsMongo.size() > 0) {
-                MongoRepoImplementation mongo = new MongoRepoImplementation(mongoStringConnection, mongoDbName,"PassTestResults");
+                MongoRepoImplementation mongo = new MongoRepoImplementation("mongodb://localhost:27017", "mobileTests","PassTestResults");
                 List<Document> passMongoReport = PassTestAdapter.toDocuments(passTestsMongo);
                 mongo.insertElements(passMongoReport);
                 mongo.close();
             }
 
             if (failTestsMongo.size() > 0) {
-                MongoRepoImplementation mongo = new MongoRepoImplementation(mongoStringConnection, mongoDbName,"FailTestResults");
+                MongoRepoImplementation mongo = new MongoRepoImplementation("mongodb://localhost:27017", "mobileTests","FailTestResults");
                 List<Document> failMongoReport = FailTestAdapter.toDocuments(failTestsMongo);
                 mongo.insertElements(failMongoReport);
                 mongo.close();

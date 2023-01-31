@@ -1,4 +1,4 @@
-package org.automation.enums;
+package org.automation.base.mobile.enums;
 
 public enum DateBy {
     TODAY_DATE,

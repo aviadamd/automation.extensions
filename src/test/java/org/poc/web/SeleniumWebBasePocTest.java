@@ -12,17 +12,15 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.extensions.DriverEventListener;
-import org.automation.elements.PageFactoryGenerator;
+import org.extensions.automation.DriverEventListener;
+import org.automation.base.elements.PageFactoryGenerator;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import static java.time.Duration.ofSeconds;
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class })
-@ReportConfiguration(reportPath = "project.report.path",
-        extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "project.report.config")
+@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { Status.FAIL, Status.SKIP }, reportSettingsPath = "project.report.config")
 public class SeleniumWebBasePocTest {
 
     @ParameterizedTest
@@ -37,4 +35,5 @@ public class SeleniumWebBasePocTest {
         BoniGarciaPage boniGarciaPage = PageFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
         webDriverExtension.oveRideTimeOut(ofSeconds(5), ofSeconds(2)).click(ExpectedConditions.elementToBeClickable(boniGarciaPage.link));
     }
+
 }

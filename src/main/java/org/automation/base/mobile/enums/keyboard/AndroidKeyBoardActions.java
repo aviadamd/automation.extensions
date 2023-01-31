@@ -1,4 +1,4 @@
-package org.automation.enums.keyboard;
+package org.automation.base.mobile.enums.keyboard;
 
 import io.appium.java_client.android.nativekey.AndroidKey;
 

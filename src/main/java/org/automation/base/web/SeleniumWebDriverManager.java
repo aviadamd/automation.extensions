@@ -1,9 +1,14 @@
 package org.automation.base.web;
 
+import io.appium.java_client.ios.IOSDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.automation.base.WebElementGestures;
+import org.extensions.automation.DriverEventListener;
+import org.extensions.web.DriverType;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.events.EventFiringDecorator;
@@ -12,7 +17,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,6 +30,12 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
     public WebDriverWait getWebDriverWait() { return this.webDriverWait.get(); }
     private Duration generalTimeOut = Duration.ofSeconds(5);
     private Duration pollingEvery = Duration.ofSeconds(1);
+
+    private final HashMap<Long, EventFiringDecorator<WebDriver>> webDriverDecorator = new HashMap<>();
+
+    public EventFiringDecorator<WebDriver> getDriverDecorator() {
+        return this.webDriverDecorator.get(Thread.currentThread().getId());
+    }
 
     public SeleniumWebDriverManager oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
         this.generalTimeOut = generalTimeOut;
@@ -48,29 +59,34 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
         }
     }
 
-    private WebDriverManager manager(Class<? extends WebDriver> driverInstance) {
+    public SeleniumWebDriverManager(Long threadId, Class<? extends WebDriver> driverInstance, Duration duration) {
+        if (this.isDriverMatchTo(driverInstance, ChromeDriver.class)) {
+            this.driver.set(WebDriverManager.chromedriver().create());
+            this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
+            this.webDriverDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
+            this.getDriverDecorator().decorate(this.driver.get());
+        } else if (this.isDriverMatchTo(driverInstance, FirefoxDriver.class)) {
+            this.driver.set(WebDriverManager.firefoxdriver().create());
+            this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
+            this.webDriverDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
+            this.getDriverDecorator().decorate(this.driver.get());
+        } else Assertions.fail("init driver fails supply driver instance");
+    }
+
+    private synchronized WebDriverManager manager(Class<? extends WebDriver> driverInstance) {
         WebDriverManager instance = WebDriverManager.getInstance(driverInstance);
         instance.setup();
         return instance;
     }
-    private DesiredCapabilities firefoxOptions() {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
-        firefoxOptions.addArguments("disable-restore-session-state");
-        firefoxOptions.addArguments("start-maximized");
-        firefoxOptions.addArguments("--disable-gpu");
-        firefoxOptions.addArguments("--start-fullscreen");
-        firefoxOptions.addArguments("--disable-extensions");
-        firefoxOptions.addArguments("--disable-popup-blocking");
-        firefoxOptions.addArguments("--disable-notifications");
-        firefoxOptions.addArguments("--window-size=1920,1080");
-        firefoxOptions.addArguments("--no-sandbox");
-        firefoxOptions.addArguments("--dns-prefetch-disable");
-        firefoxOptions.addArguments("enable-automation");
-        firefoxOptions.addArguments("disable-features=NetworkService");
-        capabilities.merge(firefoxOptions);
-        return capabilities;
+
+    private synchronized <T> boolean isDriverMatchTo(Class<? extends WebDriver> driverInstance, Class<T> tClass) {
+        try {
+            return driverInstance.getName().equalsIgnoreCase(tClass.getName());
+        } catch (Exception exception) {
+            return false;
+        }
     }
+
     @Override
     public void get(String url) {
         this.getDriver().get(url);
@@ -123,7 +139,19 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {
-        this.click(Collections.singletonList(expectedCondition));
+        this.getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedCondition)
+                .click();
+    }
+    @Override
+    public void click(ExpectedCondition<WebElement> expectedCondition, Duration generalTimeOut, Duration pollingEvery) {
+        this.getWebDriverWait()
+                .withTimeout(generalTimeOut)
+                .pollingEvery(pollingEvery)
+                .until(expectedCondition)
+                .click();
     }
     @Override
     public void click(List<ExpectedCondition<WebElement>> expectedConditions) {
@@ -153,6 +181,14 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
         element.sendKeys(keysToSend);
     }
 
+    @Override
+    public void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend) {
+        this.getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedCondition)
+                .sendKeys(keysToSend);
+    }
     @Override
     public String getAttribute(WebElement element, String name) {
         return this.getWebDriverWait()

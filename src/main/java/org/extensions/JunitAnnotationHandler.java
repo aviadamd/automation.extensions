@@ -1,4 +1,4 @@
-package org.extensions.report;
+package org.extensions;
 
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtensionContext;
