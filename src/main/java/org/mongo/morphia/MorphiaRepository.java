@@ -6,22 +6,20 @@ import dev.morphia.query.Query;
 import dev.morphia.query.experimental.filters.Filter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class MorphiaRepository {
     private MorphiaMongoConnection repository;
-    public MorphiaMongoConnection getRepository() { return repository; }
+    public synchronized MorphiaMongoConnection getRepository() { return repository; }
     public MorphiaRepository() {}
     public MorphiaRepository(String uri, String dbName) {
         this.repository = new MorphiaMongoConnection(uri, dbName);
-    }
-    public MorphiaRepository setMorphiaRepository(String uri, String dbName) {
-        this.repository = new MorphiaMongoConnection(uri, dbName);
-        return this;
     }
 
     @SuppressWarnings("removal")

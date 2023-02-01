@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface WebDriverType {
-    int durationTimeOuts();
+    String baseUrl() default "";
+    boolean isWithProxy();
+    int generalTo();
     Class<? extends WebDriver> [] driversInstance();
+
 }

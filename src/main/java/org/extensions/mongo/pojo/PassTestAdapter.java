@@ -1,8 +1,8 @@
-package org.extensions.mongo;
+package org.extensions.mongo.pojo;
 
 import com.mongodb.BasicDBObject;
 import org.bson.Document;
-import org.extensions.mongo.pojo.PassTestInfoMongo;
+
 import java.util.ArrayList;
 import java.util.List;
 

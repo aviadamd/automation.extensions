@@ -1,8 +1,8 @@
 package org.poc.pdf;
 
+import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.ObjectsBeans;
 import org.extensions.pdf.PdfReaderExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.anontations.Repeat;
@@ -14,23 +14,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 
+import static com.aventstack.extentreports.Status.FAIL;
+import static com.aventstack.extentreports.Status.SKIP;
+
 @Slf4j
 @ExtendWith(value = { ExtentReportExtension.class, PdfReaderExtension.class })
 @ReportConfiguration(
-        reportPath = "target/reports",
-        extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "project.report.config")
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.TEST
+)
 @PdfConnector(pdfFileConfig = {
         @PdfFileConfig(fileId = 1, path = "src/test/resources/sample.pdf"),
         @PdfFileConfig(fileId = 2, path = "src/test/resources/sample.pdf")
 })
-public class PdfReaderTest extends ObjectsBeans {
+public class PdfReaderTest {
 
     @Test
-    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void testPdfReader1() {
-        PdfReader.Actions action = this.pdfReaderExtension()
+        PdfReader.Actions action = new PdfReaderExtension()
                 .getPdfReader()
                 .get(1)
                 .step(actions -> {
@@ -42,10 +47,10 @@ public class PdfReaderTest extends ObjectsBeans {
     }
 
     @Test
-    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void testPdfReader2() {
-        PdfReader.Actions action = this.pdfReaderExtension()
+        PdfReader.Actions action = new PdfReaderExtension()
                 .getPdfReader()
                 .get(2)
                 .step(actions -> {

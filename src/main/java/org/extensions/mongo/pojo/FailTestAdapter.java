@@ -1,10 +1,8 @@
-package org.extensions.mongo;
+package org.extensions.mongo.pojo;
 
 import com.mongodb.BasicDBObject;
 import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.extensions.dto.TestMetaData;
-import org.extensions.mongo.pojo.FailTestInfoMongo;
+
 import java.util.ArrayList;
 import java.util.List;
 

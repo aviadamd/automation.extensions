@@ -29,9 +29,7 @@ public class JsonWriterExtensions {
     }
 
     public ObjectWriter objectWriter() {
-        return this.objectMapper
-                .enable(SerializationFeature.INDENT_OUTPUT)
-                .writerWithDefaultPrettyPrinter();
+        return this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT).writerWithDefaultPrettyPrinter();
     }
 
     /**
@@ -42,9 +40,7 @@ public class JsonWriterExtensions {
      */
     public <T> JsonWriterExtensions readAndWrite(T dtoObject, Class<T> dtoObjectClass) {
         try {
-            return this.readAndWrite(
-                    Collections.singletonList(dtoObject),
-                    dtoObjectClass);
+            return this.readAndWrite(Collections.singletonList(dtoObject), dtoObjectClass);
         } catch (Exception exception) {
             log.error("readAndWrite ex : " + exception.getMessage());
         }

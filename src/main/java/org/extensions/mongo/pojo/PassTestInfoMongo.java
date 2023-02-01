@@ -4,7 +4,7 @@ import com.mongodb.BasicDBObject;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import org.bson.types.ObjectId;
-import org.extensions.dto.TestMetaData;
+import org.extensions.report.dto.TestMetaData;
 
 @Entity("passTestInfo")
 public class PassTestInfoMongo extends BasicDBObject {

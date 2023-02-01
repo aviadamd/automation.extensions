@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface MySqlConnector {
     String connection();
-    int dbId();
     String userName();
     String userPassword();
 }

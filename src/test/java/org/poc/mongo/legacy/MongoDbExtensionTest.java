@@ -1,38 +1,61 @@
 package org.poc.mongo.legacy;
 
+import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.mongodb.client.MongoCollection;
-import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
-import org.extensions.mongo.MongoDbExtension;
-import org.extensions.report.ExtentReportExtension;
+import org.extensions.anontations.mongo.MongoLegacyConnector;
+import org.extensions.mongo.legacy.MongoDbLegacyExtension;
 import org.extensions.anontations.Repeat;
-import org.extensions.anontations.mongo.MongoConnector;
-import org.extensions.anontations.mongo.MongoManager;
+import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.mongo.legacy.MongoRepoImplementation;
 import org.poc.mongo.pojos.Countries;
-import static org.extensions.mongo.MongoDbExtension.mongoRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import static com.aventstack.extentreports.Status.FAIL;
+import static com.aventstack.extentreports.Status.SKIP;
 
-@Slf4j
-@ExtendWith(value = { ExtentReportExtension.class, MongoDbExtension.class })
+@Execution(ExecutionMode.CONCURRENT)
+@ExtendWith(value = { ExtentReportExtension.class, MongoDbLegacyExtension.class })
 @ReportConfiguration(
-        reportPath = "target/reports",
-        extraReportsBy = { Status.FAIL, Status.SKIP },
-        reportSettingsPath = "project.report.config")
-@MongoManager(host = "mongodb://localhost:27017", mongoConnectors = {
-        @MongoConnector(dbId = 1, dbName = "mobileDb", collectionName = "mobileCollection1"),
-        @MongoConnector(dbId = 2, dbName = "mobileDb", collectionName = "mobileCollection2")
-})
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.CLASS
+)
 public class MongoDbExtensionTest {
     @Test
-    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    void testMongoConnection() {
-        MongoCollection<Countries> collection = mongoRepo.get(1).createObject(Countries.class);
-        mongoRepo.get(1).insertElement(collection, new Countries(new ObjectId(),"isreal","2","here","100"));
-        mongoRepo.get(2).insertElement(collection, new Countries(new ObjectId(),"isreal","3","here","100"));
+    @MongoLegacyConnector(host = "mongodb://localhost:27017", dbName = "newCollection", collectionName = "mobile")
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MongoDbExtensionTest")
+    void a_testMongoConnection(@Autowired MongoRepoImplementation mongoRepo) {
+        MongoCollection<Countries> collection = mongoRepo.createObject(Countries.class);
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","2","here","100"));
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","3","here","100"));
+    }
+
+    @Test
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @MongoLegacyConnector(host = "mongodb://localhost:27017", dbName = "newCollection", collectionName = "mobile")
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "MongoDbExtensionTest")
+    void b_testMongoConnection(@Autowired MongoRepoImplementation mongoRepo) {
+        MongoCollection<Countries> collection = mongoRepo.createObject(Countries.class);
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","2","here","100"));
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","3","here","100"));
+    }
+
+    @Test
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @MongoLegacyConnector(host = "mongodb://localhost:27017", dbName = "newCollection", collectionName = "mobile")
+    @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "MongoDbExtensionTest")
+    void c_testMongoConnection(@Autowired MongoRepoImplementation mongoRepo) {
+        MongoCollection<Countries> collection = mongoRepo.createObject(Countries.class);
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","2","here","100"));
+        mongoRepo.insertElement(collection, new Countries(new ObjectId(),"isreal","3","here","100"));
     }
 }

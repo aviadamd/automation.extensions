@@ -1,5 +1,6 @@
 package org.poc.web;
 
+import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import org.automation.base.web.SeleniumWebDriverManager;
 import org.extensions.anontations.Repeat;
@@ -12,28 +13,78 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.extensions.automation.DriverEventListener;
-import org.automation.base.elements.PageFactoryGenerator;
+import org.automation.base.elements.ObjectFactoryGenerator;
+
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
+import static com.aventstack.extentreports.Status.FAIL;
+import static com.aventstack.extentreports.Status.SKIP;
 import static java.time.Duration.ofSeconds;
+
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class })
-@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { Status.FAIL, Status.SKIP }, reportSettingsPath = "project.report.config")
+@ReportConfiguration(
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.TEST
+)
 public class SeleniumWebBasePocTest {
 
     @ParameterizedTest
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @ValueSource(classes = { ChromeDriver.class, FirefoxDriver.class })
-    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
-    void openPageFirstTest(Class<? extends SeleniumWebDriverManager> webDriverClass) {
-        SeleniumWebDriverManager webDriverExtension = new SeleniumWebDriverManager(webDriverClass, new DriverEventListener(), ofSeconds(10));
-        webDriverExtension.get("https://bonigarcia.dev/selenium-webdriver-java");
+    @ValueSource(classes = { ChromeDriver.class, ChromeDriver.class })
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
+    void a_openPageFirstTest(Class<? extends SeleniumWebDriverManager> webDriverClass) {
+        SeleniumWebDriverManager webDriverExtension = new SeleniumWebDriverManager(webDriverClass, ofSeconds(10));
+        webDriverExtension.get(System.getProperty("project.url"));
         String title = webDriverExtension.oveRideTimeOut(ofSeconds(10), ofSeconds(2)).getTitle();
         Assertions.assertTrue(title.contains("Selenium WebDriver"));
-        BoniGarciaPage boniGarciaPage = PageFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
+        BoniGarciaPage boniGarciaPage = ObjectFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
         webDriverExtension.oveRideTimeOut(ofSeconds(5), ofSeconds(2)).click(ExpectedConditions.elementToBeClickable(boniGarciaPage.link));
+        webDriverExtension.get(System.getProperty("project.url"));
     }
 
+    @ParameterizedTest
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @ValueSource(classes = { ChromeDriver.class })
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
+    void b_openPageFirstTest(Class<? extends SeleniumWebDriverManager> webDriverClass) {
+        SeleniumWebDriverManager webDriverExtension = new SeleniumWebDriverManager(webDriverClass, ofSeconds(10));
+        webDriverExtension.get(System.getProperty("project.url"));
+        String title = webDriverExtension.oveRideTimeOut(ofSeconds(10), ofSeconds(2)).getTitle();
+        Assertions.assertTrue(title.contains("Selenium WebDriver"));
+        BoniGarciaPage boniGarciaPage = ObjectFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
+        webDriverExtension.oveRideTimeOut(ofSeconds(5), ofSeconds(2)).click(ExpectedConditions.elementToBeClickable(boniGarciaPage.link));
+        webDriverExtension.get(System.getProperty("project.url"));
+    }
+
+    @ParameterizedTest
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @ValueSource(classes = { ChromeDriver.class })
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
+    void c_openPageFirstTest(Class<? extends SeleniumWebDriverManager> webDriverClass) {
+        SeleniumWebDriverManager webDriverExtension = new SeleniumWebDriverManager(webDriverClass, ofSeconds(10));
+        webDriverExtension.get(System.getProperty("project.url"));
+        String title = webDriverExtension.oveRideTimeOut(ofSeconds(10), ofSeconds(2)).getTitle();
+        Assertions.assertTrue(title.contains("Selenium WebDriver"));
+        BoniGarciaPage boniGarciaPage = ObjectFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
+        webDriverExtension.oveRideTimeOut(ofSeconds(5), ofSeconds(2)).click(ExpectedConditions.elementToBeClickable(boniGarciaPage.link));
+        webDriverExtension.get(System.getProperty("project.url"));
+    }
+
+    @ParameterizedTest
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @ValueSource(classes = { ChromeDriver.class })
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
+    void d_openPageFirstTest(Class<? extends SeleniumWebDriverManager> webDriverClass) {
+        SeleniumWebDriverManager webDriverExtension = new SeleniumWebDriverManager(webDriverClass, ofSeconds(10));
+        webDriverExtension.get(System.getProperty("project.url"));
+        String title = webDriverExtension.oveRideTimeOut(ofSeconds(10), ofSeconds(2)).getTitle();
+        Assertions.assertTrue(title.contains("Selenium WebDriver"));
+        BoniGarciaPage boniGarciaPage = ObjectFactoryGenerator.instantiateWebPage(webDriverExtension.getDriver(), BoniGarciaPage.class);
+        webDriverExtension.oveRideTimeOut(ofSeconds(5), ofSeconds(2)).click(ExpectedConditions.elementToBeClickable(boniGarciaPage.link));
+        webDriverExtension.get(System.getProperty("project.url"));
+    }
 }

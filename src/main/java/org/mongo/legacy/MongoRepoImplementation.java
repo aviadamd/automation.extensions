@@ -9,68 +9,61 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Assertions;
-
 import java.util.*;
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Slf4j
-public class MongoRepoImplementation implements MongoRepo {
+public class MongoRepoImplementation {
 
     private String dbName;
     private String collectionName;
-    private MongoClient mongoClient;
-    private MongoDatabase mongoDatabase;
+    private final ThreadLocal<MongoClient> mongoClient = new ThreadLocal<>();
+    private final ThreadLocal<MongoDatabase> mongoDatabase = new ThreadLocal<>();
 
     public MongoRepoImplementation(String stringConnection, String dbName, String collectionName) {
         try {
             CodecProvider provider = PojoCodecProvider.builder().automatic(true).build();
             CodecRegistry registry = fromRegistries(getDefaultCodecRegistry(), fromProviders(provider));
             this.dbName = dbName;
-            this.mongoClient = MongoClients.create(stringConnection);
-            this.mongoDatabase = this.mongoClient.getDatabase(dbName).withCodecRegistry(registry);
+            this.mongoClient.set(MongoClients.create(stringConnection));
+            this.mongoDatabase.set(this.mongoClient.get().getDatabase(dbName).withCodecRegistry(registry));
             this.collectionName = collectionName;
         } catch (Exception exception) {
             Assertions.fail("MongoRepoImplementation connection error", exception);
         }
     }
-    public MongoDatabase getMongoDatabase() { return mongoDatabase; }
 
     public <T> MongoCollection<T> createObject(Class<T> objectClass) {
-        return this.mongoDatabase.getCollection(this.collectionName, objectClass);
+        return this.mongoDatabase.get().getCollection(this.collectionName, objectClass);
     }
 
-    @Override
     public Document findElementBy(BasicDBObject searchQuery) {
         try {
-            return this.mongoDatabase.getCollection(this.collectionName).find(searchQuery).first();
+            return this.mongoDatabase.get().getCollection(this.collectionName).find(searchQuery).first();
         } catch (Exception e) {
             log.info("findElementBy error: " + e.getMessage());
             return new Document();
         }
     }
 
-    @Override
     public FindIterable<Document> findElementsBy(BasicDBObject searchQuery) {
         try {
-            return this.mongoDatabase.getCollection(this.collectionName).find(searchQuery);
+            return this.mongoDatabase.get().getCollection(this.collectionName).find(searchQuery);
         } catch (Exception e) {
             log.info("findElementsBy error: " + e.getMessage());
-            return this.mongoDatabase.getCollection(this.collectionName).find();
+            return this.mongoDatabase.get().getCollection(this.collectionName).find();
         }
     }
-
-    @Override
     public Document findElementBy(Bson query) {
         try {
-            return this.mongoDatabase.getCollection(this.collectionName).find(query).first();
+            return this.mongoDatabase.get().getCollection(this.collectionName).find(query).first();
         } catch (Exception e) {
             log.info("findElementBy error: " + e.getMessage());
             return new Document();
         }
     }
-    @Override
     public List<Document> documentsGetAllElements() {
         List<Document> documentList = new ArrayList<>();
         try {
@@ -84,39 +77,34 @@ public class MongoRepoImplementation implements MongoRepo {
         return documentList;
     }
 
-    @Override
     public FindIterable<Document> iterableGetAllElements() {
-        return this.mongoDatabase.getCollection(this.collectionName).find();
+        return this.mongoDatabase.get().getCollection(this.collectionName).find();
     }
 
-    @Override
     public void deleteElement(Bson bson) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).deleteOne(bson);
+            this.mongoDatabase.get().getCollection(this.collectionName).deleteOne(bson);
         } catch (Exception e) {
             log.error("deleteElement error: " + e.getMessage());
         }
     }
 
-    @Override
     public void updateElement(Bson from, Bson to) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).updateOne(from, to);
+            this.mongoDatabase.get().getCollection(this.collectionName).updateOne(from, to);
         } catch (Exception e) {
             log.error("updateElement error: " + e.getMessage());
         }
     }
 
-    @Override
     public void insertElement(Document document) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).insertOne(document);
+            this.mongoDatabase.get().getCollection(this.collectionName).insertOne(document);
         } catch (Exception e) {
             log.error("insertElement error: " + e.getMessage());
         }
     }
 
-    @Override
     public <T> void insertElement(MongoCollection<T> collection, T document) {
         try {
             collection.insertOne(document);
@@ -125,16 +113,14 @@ public class MongoRepoImplementation implements MongoRepo {
         }
     }
 
-    @Override
     public void insertElements(List<Document> documentList) {
         try {
-            this.mongoDatabase.getCollection(this.collectionName).insertMany(documentList);
+            this.mongoDatabase.get().getCollection(this.collectionName).insertMany(documentList);
         } catch (Exception e) {
             log.error("insertElements error: " + e.getMessage());
         }
     }
 
-    @Override
     public <T> void insertElements(MongoCollection<T> collection, List<T> document) {
         try {
             collection.insertMany(document);
@@ -143,29 +129,26 @@ public class MongoRepoImplementation implements MongoRepo {
         }
     }
 
-    @Override
     public void replaceElement(String key, Object oldObject, Document document) {
         try {
             Document find = new Document(key, oldObject);
-            this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
+            this.mongoDatabase.get().getCollection(this.collectionName).replaceOne(find, document);
         } catch (Exception e) {
             log.error("replaceElement error: " + e.getMessage());
         }
     }
 
-    @Override
     public void replaceElements(HashMap<String,Object> documents, Document document) {
         try {
             for (Map.Entry<String, Object> entry : documents.entrySet()) {
                 Document find = new Document(entry.getKey(), entry.getValue());
-                this.mongoDatabase.getCollection(this.collectionName).replaceOne(find, document);
+                this.mongoDatabase.get().getCollection(this.collectionName).replaceOne(find, document);
             }
         } catch (Exception e) {
             log.error("replaceElements error: " + e.getMessage());
         }
     }
 
-    @Override
     public String getText(Document document, String name) {
         try {
             return document.getString(name);
@@ -174,13 +157,11 @@ public class MongoRepoImplementation implements MongoRepo {
         }
     }
 
-    @Override
     public void dropDataBase() {
-        this.mongoClient.getDatabase(this.dbName).drop();
+        this.mongoClient.get().getDatabase(this.dbName).drop();
     }
 
-    @Override
     public void close() {
-        this.mongoClient.close();
+        this.mongoClient.get().close();
     }
 }

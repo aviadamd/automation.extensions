@@ -81,9 +81,6 @@ public class JsonReaderExtensions {
 
             if (this.file.exists()) {
                 ObjectReader objectReader = this.objectMapper.readerFor(dtoTypeClass);
-                objectReader.createParser(this.file)
-                        .enable(JsonParser.Feature.ALLOW_COMMENTS)
-                        .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
                 objectReader.readValues(this.file);
                 return objectReader.readValues(this.file);
             }
@@ -93,7 +90,7 @@ public class JsonReaderExtensions {
         } catch (Exception ex) {
             log.info("readAll Exception error " + ex.getMessage());
         }
-        return MappingIterator.emptyIterator();
+        return null;
     }
 
     public <T> Optional<T> readValue(Class<T> valueType) {

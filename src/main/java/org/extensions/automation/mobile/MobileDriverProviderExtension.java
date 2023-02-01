@@ -2,14 +2,14 @@ package org.extensions.automation.mobile;
 
 import org.automation.base.mobile.MobileDriverManager;
 import org.extensions.anontations.mobile.DriverJsonProvider;
-import org.extensions.report.ExtentReportExtension;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import org.extensions.factory.JunitAnnotationHandler;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.extension.*;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Optional;
 
-public class MobileDriverProviderExtension extends ExtentReportExtension implements ParameterResolver {
+public class MobileDriverProviderExtension implements ParameterResolver, JunitAnnotationHandler.ExtensionContextHandler {
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
@@ -19,18 +19,26 @@ public class MobileDriverProviderExtension extends ExtentReportExtension impleme
     @Override
     public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
         HashMap<Long, MobileDriverManager> manager = new HashMap<>();
-        try {
-            if (context.getElement().isPresent() && parameterContext.getParameter().getType() == MobileDriverManager.class) {
-                Optional<DriverJsonProvider> provider = this.readAnnotation(context, DriverJsonProvider.class);
-                if (provider.isPresent()) {
-                    manager.put(Thread.currentThread().getId(), new MobileDriverManager(Thread.currentThread().getId(), new CapsReaderAdapter(System.getProperty(provider.get().jsonCapsPath()))));
-                    return manager.get(Thread.currentThread().getId());
-                }
-            } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
+        if (context.getElement().isPresent() && parameterContext.getParameter().getType() == MobileDriverManager.class) {
+            Optional<DriverJsonProvider> provider = this.readAnnotation(context, DriverJsonProvider.class);
+            if (provider.isPresent()) {
+                manager.put(Thread.currentThread().getId(), new MobileDriverManager(Thread.currentThread().getId(), new CapsReaderAdapter(System.getProperty(provider.get().jsonCapsPath()))));
+                return manager.get(Thread.currentThread().getId());
+            }
         }
+        throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
+    }
 
-        return new HashMap<>();
+    @Override
+    public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+        if (context.getElement().isPresent()) {
+            try {
+                return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
+            } catch (Exception exception) {
+                Assertions.fail("Fail read annotation from ExtentReportExtension", exception);
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
     }
 }

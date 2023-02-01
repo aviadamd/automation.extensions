@@ -1,6 +1,4 @@
-package org.poc.mySql;
-
-import org.bson.types.ObjectId;
+package org.poc.sql;
 
 public class Country {
 

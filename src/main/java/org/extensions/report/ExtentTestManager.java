@@ -6,19 +6,28 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.markuputils.Markup;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+@Slf4j
 public class ExtentTestManager {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
     protected static ExtentReports getReportsInstance = ExtentManager.getReportsInstance();
     protected synchronized static ExtentTest getExtentTest() {
         return extentTest.get();
     }
-    protected synchronized static ExtentTest createTest(String testMethod, String category, String author, String device) {
+    protected synchronized static ExtentTest createTest(String testMethod, String category, String author) {
         ExtentTest test = getReportsInstance.createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
-                .assignAuthor(author)
-                .assignDevice(device);
+                .assignAuthor(author);
         extentTest.set(test);
         return getExtentTest();
     }
@@ -30,11 +39,26 @@ public class ExtentTestManager {
         }
     }
 
+    public synchronized static String getScreenShot(WebDriver driver, String screenshotName) {
+        String destination = "";
+        try {
+            String dateName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+            TakesScreenshot ts = (TakesScreenshot) driver;
+            File source = ts.getScreenshotAs(OutputType.FILE);
+            destination = System.getProperty("user.dir") + "/FailedTestsScreenshots/"+screenshotName+dateName+".png";
+            File finalDestination = new File(destination);
+            FileUtils.copyFile(source, finalDestination);
+        } catch (Exception ignore) {}
+
+        return destination;
+    }
     public synchronized static void log(Status status, Media media) {
+
         getExtentTest().log(status, media);
     }
     public synchronized static void log(Status status, String details) {
         getExtentTest().log(status, details);
+        log.info(status + " " + details);
     }
     public synchronized static void log(Status status, Markup markup) {
         getExtentTest().log(status, markup);

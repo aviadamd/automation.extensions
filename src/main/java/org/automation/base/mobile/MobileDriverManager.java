@@ -11,6 +11,7 @@ import io.appium.java_client.serverevents.ServerEvents;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 import org.automation.base.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
@@ -21,16 +22,13 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.support.events.EventFiringDecorator;
-import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.staticData.StringsUtilities;
-
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import static java.lang.System.getProperty;
 
@@ -68,14 +66,21 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     public MobileDriverManager(Long threadId, String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
             switch (type) {
-                case "ios":
+                case "IOS":
                     this.iosDriver.put(threadId, new IOSDriver(new URL(appiumBasePath), caps));
                     this.iosDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
                     this.iosDecorator.get(threadId).decorate(this.iosDriver.get(threadId));
                     this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
                     break;
-                case "android":
+                case "ANDROID":
                     this.androidDriver.put(threadId, new AndroidDriver(new URL(appiumBasePath), caps));
+                    this.androidDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
+                    this.androidDecorator.get(threadId).decorate(this.androidDriver.get(threadId));
+                    this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
+                    break;
+                case "ANDROID_CHROME":
+                    DesiredCapabilities capabilities = this.capsForChromeAndroid(caps,"todo","todo");
+                    this.androidDriver.put(threadId, new AndroidDriver(new URL(appiumBasePath), capabilities));
                     this.androidDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
                     this.androidDecorator.get(threadId).decorate(this.androidDriver.get(threadId));
                     this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
@@ -87,6 +92,15 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
         }
     }
 
+    private DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
+        WebDriverManager webDriverManager = WebDriverManager.chromedriver().browserVersion(browserVersion);
+        webDriverManager.setup();
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("browserName", "chrome");
+        capabilities.setCapability("chromedriverExecutable", chromedriverPath);
+        capabilities.merge(caps);
+        return capabilities;
+    }
     /**
      * MobileDriverManager
      * @param threadId
@@ -226,24 +240,6 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
                 .click();
     }
 
-    @Override
-    public void click(List<ExpectedCondition<WebElement>> expectedConditions) {
-        AtomicBoolean find = new AtomicBoolean(false);
-        AtomicReference<Exception> errors = new AtomicReference<>();
-        expectedConditions.stream().parallel().forEach(condition -> {
-            try {
-                this.getWebDriverWait()
-                        .withTimeout(this.generalTimeOut)
-                        .pollingEvery(this.pollingEvery)
-                        .until(condition)
-                        .click();
-                find.set(true);
-            } catch (Exception exception) {
-                errors.set(exception);
-            }
-        });
-        if (!find.get()) Assertions.fail("Error click on element", errors.get());
-    }
     @Override
     public void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend) {
         this.getWebDriverWait()

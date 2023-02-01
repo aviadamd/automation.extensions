@@ -1,8 +1,6 @@
 package org.extensions.report;
 
-
 import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.ViewName;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +13,7 @@ public class ExtentManager {
     protected synchronized static ExtentReports getReportsInstance() {
         return extentInstance;
     }
-    protected static synchronized ExtentReports createInstance(String fileName, String jsonSettingsPath) {
+    protected static synchronized ExtentReports createInstance(String fileName, String jsonSettingsPath, String reportName) {
         try {
             extentInstance = new ExtentReports();
             ExtentSparkReporter sparkReporterInstance = new ExtentSparkReporter(fileName);
@@ -25,8 +23,9 @@ public class ExtentManager {
                     .apply();
             extentInstance.attachReporter(sparkReporterInstance);
             sparkReporterInstance.loadJSONConfig(new File(jsonSettingsPath));
+            sparkReporterInstance.config().setReportName(reportName);
         } catch (Exception exception) {
-            Assertions.fail(exception);
+            Assertions.fail("ExtentManager createInstance error ",exception);
         }
         return extentInstance;
     }

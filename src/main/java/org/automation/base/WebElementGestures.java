@@ -12,7 +12,6 @@ public interface WebElementGestures {
     void click(WebElement element);
     void click(ExpectedCondition<WebElement> expectedCondition);
     void click(ExpectedCondition<WebElement> expectedCondition, Duration generalTimeOut, Duration pollingEvery);
-    void click(List<ExpectedCondition<WebElement>> expectedConditions);
     void sendKeys(WebElement element, CharSequence... keysToSend);
     void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend);
     String getAttribute(WebElement element, String name);

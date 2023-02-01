@@ -1,4 +1,4 @@
-package org.extensions.mongo;
+package org.extensions.mongo.pojo;
 
 import com.mongodb.BasicDBObject;
 import org.bson.Document;

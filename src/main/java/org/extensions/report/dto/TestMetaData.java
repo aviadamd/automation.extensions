@@ -1,4 +1,4 @@
-package org.extensions.dto;
+package org.extensions.report.dto;
 
 import org.extensions.anontations.report.TestReportInfo;
 
@@ -10,7 +10,7 @@ public class TestMetaData {
     public TestMetaData(TestReportInfo testInfo) {
         this.assignCategory = testInfo.assignCategory();
         this.assignAuthor = testInfo.assignAuthor();
-        this.assignDevice = testInfo.assignDevice();
+        this.assignDevice = testInfo.info();
     }
 
     public String getAssignAuthor() { return assignAuthor; }

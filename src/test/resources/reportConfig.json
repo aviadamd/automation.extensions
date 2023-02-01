@@ -4,8 +4,6 @@
   "protocol": "HTTPS",
   "timelineEnabled": true,
   "offlineMode": true,
-  "documentTitle": "Test Report",
-  "reportName": "Test Report",
   "timeStampFormat": "MMM dd, yyyy HH:mm:ss a",
   "js": "",
   "css": ""

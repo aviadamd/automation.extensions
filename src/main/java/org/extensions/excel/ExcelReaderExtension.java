@@ -1,14 +1,10 @@
 package org.extensions.excel;
 
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
+import org.extensions.report.ExtentReportExtension;
+import org.junit.jupiter.api.extension.*;
 
-public class ExcelReaderExtension implements
-        BeforeAllCallback,
-        BeforeEachCallback,
-        AfterAllCallback {
+@Extensions(value = @ExtendWith(value = ExtentReportExtension.class))
+public class ExcelReaderExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
