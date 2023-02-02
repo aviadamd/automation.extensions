@@ -1,6 +1,5 @@
-package org.automation.base.mobile;
+package org.automation.mobile;
 
-import com.aventstack.extentreports.Status;
 import io.appium.java_client.*;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.driverscripts.ScriptOptions;
@@ -13,7 +12,7 @@ import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
-import org.automation.base.WebElementGestures;
+import org.automation.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
 import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +23,7 @@ import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.staticData.StringsUtilities;
+import org.data.StringsUtilities;
 import java.io.File;
 import java.net.URL;
 import java.time.Duration;
@@ -92,15 +91,6 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
         }
     }
 
-    private DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
-        WebDriverManager webDriverManager = WebDriverManager.chromedriver().browserVersion(browserVersion);
-        webDriverManager.setup();
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("browserName", "chrome");
-        capabilities.setCapability("chromedriverExecutable", chromedriverPath);
-        capabilities.merge(caps);
-        return capabilities;
-    }
     /**
      * MobileDriverManager
      * @param threadId
@@ -109,6 +99,7 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     public MobileDriverManager(Long threadId, CapsReaderAdapter capsReader) {
         this(threadId, capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
     }
+
     private synchronized void appiumLocal(String appiumBasePath) {
         String ip = StringsUtilities.splitString(appiumBasePath,"//",1);
         ip = StringsUtilities.splitString(ip,":",0);
@@ -124,6 +115,17 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
                 .build());
         appiumLocalService.get().start();
     }
+
+    private synchronized DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
+        WebDriverManager webDriverManager = WebDriverManager.chromedriver().browserVersion(browserVersion);
+        webDriverManager.setup();
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("browserName", "chrome");
+        capabilities.setCapability("chromedriverExecutable", chromedriverPath);
+        capabilities.merge(caps);
+        return capabilities;
+    }
+
     public void activate(String appBundle) {
         if (this.isAndroid()) {
             this.getAndroidDriver().activateApp(appBundle);

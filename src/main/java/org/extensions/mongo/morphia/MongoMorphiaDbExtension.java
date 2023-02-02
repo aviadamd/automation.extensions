@@ -36,7 +36,7 @@ public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResol
         }
     }
     @Override
-    public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));

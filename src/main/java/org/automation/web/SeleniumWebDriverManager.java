@@ -1,4 +1,4 @@
-package org.automation.base.web;
+package org.automation.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
@@ -6,7 +6,7 @@ import net.lightbody.bmp.BrowserMobProxy;
 import net.lightbody.bmp.BrowserMobProxyServer;
 import net.lightbody.bmp.client.ClientUtil;
 import net.lightbody.bmp.proxy.CaptureType;
-import org.automation.base.WebElementGestures;
+import org.automation.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
 import org.extensions.report.AspectExtension;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +24,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 

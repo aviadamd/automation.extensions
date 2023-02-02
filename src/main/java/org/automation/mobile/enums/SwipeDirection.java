@@ -1,4 +1,4 @@
-package org.automation.base.mobile.enums;
+package org.automation.mobile.enums;
 
 public enum SwipeDirection {
     LEFT("LEFT"),

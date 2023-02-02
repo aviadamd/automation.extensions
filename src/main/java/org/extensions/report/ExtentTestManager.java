@@ -20,11 +20,11 @@ import java.util.Date;
 public class ExtentTestManager {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
     protected static ExtentReports getReportsInstance = ExtentManager.getReportsInstance();
-    protected synchronized static ExtentTest getExtentTest() {
-        return extentTest.get();
-    }
+    protected static ExtentSparkReporter getSparkReporterInstance() { return ExtentManager.getExtentSparkInstance(); }
+    protected synchronized static ExtentTest getExtentTest() { return extentTest.get(); }
     protected synchronized static ExtentTest createTest(String testMethod, String category, String author) {
-        ExtentTest test = getReportsInstance.createTest(testMethod)
+        ExtentTest test = getReportsInstance
+                .createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
                 .assignAuthor(author);
@@ -53,8 +53,8 @@ public class ExtentTestManager {
         return destination;
     }
     public synchronized static void log(Status status, Media media) {
-
         getExtentTest().log(status, media);
+        log.info(status + " " + media.getTitle());
     }
     public synchronized static void log(Status status, String details) {
         getExtentTest().log(status, details);
@@ -62,12 +62,23 @@ public class ExtentTestManager {
     }
     public synchronized static void log(Status status, Markup markup) {
         getExtentTest().log(status, markup);
+        log.info(status + " " + markup.getMarkup());
     }
     public synchronized static void log(Status status, Throwable throwable) {
         getExtentTest().log(status, throwable);
+        log.info(status + " " + throwable.getMessage());
     }
-    public synchronized static void log(Status status, String details, Media media) { getExtentTest().log(status, details, media); }
-    public synchronized static void log(Status status, Throwable throwable, Media media) { getExtentTest().log(status, throwable, media); }
-    public synchronized static void log(Status status, String details, Throwable throwable, Media media) { getExtentTest().log(status, details, throwable, media); }
+    public synchronized static void log(Status status, String details, Media media) {
+        getExtentTest().log(status, details, media);
+        log.info(status + " " + details);
+    }
+    public synchronized static void log(Status status, Throwable throwable, Media media) {
+        getExtentTest().log(status, throwable, media);
+        log.info(status + " " + throwable.getMessage());
+    }
+    public synchronized static void log(Status status, String details, Throwable throwable, Media media) {
+        getExtentTest().log(status, details, throwable, media);
+        log.info(status + " " +  details + " " + throwable.getMessage());
+    }
 
 }

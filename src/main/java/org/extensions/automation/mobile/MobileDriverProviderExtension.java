@@ -1,6 +1,6 @@
 package org.extensions.automation.mobile;
 
-import org.automation.base.mobile.MobileDriverManager;
+import org.automation.mobile.MobileDriverManager;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +30,7 @@ public class MobileDriverProviderExtension implements ParameterResolver, JunitAn
     }
 
     @Override
-    public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));

@@ -3,7 +3,7 @@
   "appiumBasePath" : "http://127.0.0.1:4723/wd/hub",
   "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
   "platformVersion" : "11",
-  "avd" : "Pixel_5_API_30",
+  "avd" : "Pixel_5_API_30_2",
   "udid" : "emulator-5556",
   "appBundleId": "com.ideomobile.hapoalim"
 }

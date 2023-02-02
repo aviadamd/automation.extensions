@@ -1,4 +1,4 @@
-package org.automation.base.mobile.enums;
+package org.automation.mobile.enums;
 
 public enum AppState {
     NOT_INSTALLED("NOT_INSTALLED"),

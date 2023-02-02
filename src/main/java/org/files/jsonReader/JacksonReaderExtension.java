@@ -1,11 +1,9 @@
 package org.files.jsonReader;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-public class JsonReaderExtensions {
+public class JacksonReaderExtension {
 
     private final File file;
     private final ObjectMapper objectMapper;
@@ -22,7 +20,7 @@ public class JsonReaderExtensions {
      *
      * @param file
      */
-    public JsonReaderExtensions(File file) {
+    public JacksonReaderExtension(File file) {
         this.file = file;
         this.objectMapper = new ObjectMapper();
     }

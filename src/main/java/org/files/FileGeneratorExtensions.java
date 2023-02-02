@@ -9,9 +9,7 @@ public class FileGeneratorExtensions {
     private int fileNumber;
     private boolean isHaveOldFile;
 
-    public FileGeneratorExtensions() {
-
-    }
+    public FileGeneratorExtensions() {}
 
     public FileGeneratorExtensions(String path, int fileNumber, boolean isHaveOldFile) {
         this.fileNumber = fileNumber;
@@ -24,7 +22,6 @@ public class FileGeneratorExtensions {
     public File getFile() { return file; }
     public String getPath() { return path; }
     public boolean getIsHaveOldFile() { return isHaveOldFile; }
-
     private static final HashMap<Integer,String> lastRegistrationEntry = new HashMap<>();
     protected static HashMap<Integer,String> getRegistrationsEntries() {
         return lastRegistrationEntry;

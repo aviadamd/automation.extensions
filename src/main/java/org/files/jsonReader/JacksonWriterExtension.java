@@ -4,19 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 @Slf4j
-public class JsonWriterExtensions {
+public class JacksonWriterExtension {
     private final File file;
     private final ObjectMapper objectMapper;
 
     /**
      * @param file
      */
-    public JsonWriterExtensions(File file) {
+    public JacksonWriterExtension(File file) {
         this.file = file;
         this.objectMapper = new ObjectMapper();
     }
@@ -29,7 +31,11 @@ public class JsonWriterExtensions {
     }
 
     public ObjectWriter objectWriter() {
-        return this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT).writerWithDefaultPrettyPrinter();
+        try {
+            return this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT).writerWithDefaultPrettyPrinter();
+        } catch (Exception exception) {
+            throw new RuntimeException("object writer error " + exception);
+        }
     }
 
     /**
@@ -38,11 +44,11 @@ public class JsonWriterExtensions {
      * @param <T>
      * @return
      */
-    public <T> JsonWriterExtensions readAndWrite(T dtoObject, Class<T> dtoObjectClass) {
+    public <T> JacksonWriterExtension readAndWrite(T dtoObject, Class<T> dtoObjectClass) {
         try {
             return this.readAndWrite(Collections.singletonList(dtoObject), dtoObjectClass);
         } catch (Exception exception) {
-            log.error("readAndWrite ex : " + exception.getMessage());
+            Assertions.fail("jackson and write write error ", exception);
         }
 
         return this;
@@ -54,10 +60,10 @@ public class JsonWriterExtensions {
      * @param <T>
      * @return
      */
-    public <T> JsonWriterExtensions readAndWrite(List<T> dtoObjectList, Class<T> dtoObjectClass) {
+    public <T> JacksonWriterExtension readAndWrite(List<T> dtoObjectList, Class<T> dtoObjectClass) {
         try {
 
-            JsonReaderExtensions jsonReaderExtensions = new JsonReaderExtensions(this.file);
+            JacksonReaderExtension jsonReaderExtensions = new JacksonReaderExtension(this.file);
             List<T> dataList = new ArrayList<>(jsonReaderExtensions.readAndReturnJsonListOf(dtoObjectClass));
             int jsonUpdateList1 = dataList.size();
             dataList.addAll(dtoObjectList);
@@ -68,7 +74,7 @@ public class JsonWriterExtensions {
             return this;
 
         } catch (Exception exception) {
-            log.error("readAndWrite ex : " + exception.getMessage());
+            Assertions.fail("jackson read and write error ", exception);
         }
 
         return this;
@@ -81,8 +87,8 @@ public class JsonWriterExtensions {
     public <T> void writeToJson(T newDataList) {
         try {
             this.objectWriter().writeValue(this.file, newDataList);
-        } catch (Exception e) {
-            log.error("writeToJson error: " +e.getMessage());
+        } catch (Exception exception) {
+            Assertions.fail("jackson write error ", exception);
         }
     }
 
@@ -93,8 +99,8 @@ public class JsonWriterExtensions {
     public <T> void writeToJson(List<T> newDataList) {
         try {
             this.objectWriter().writeValue(this.file, newDataList);
-        } catch (Exception e) {
-            log.error("writeToJson error: " +e.getMessage());
+        } catch (Exception exception) {
+            Assertions.fail("jackson write error ", exception);
         }
     }
 
@@ -111,8 +117,8 @@ public class JsonWriterExtensions {
             }
             this.objectWriter().writeValue(this.file, collector);
 
-        } catch (Exception e) {
-            log.error("writeToJson error: " +e.getMessage());
+        } catch (Exception exception) {
+            Assertions.fail("jackson write error ", exception);
         }
     }
 }

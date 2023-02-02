@@ -2,7 +2,7 @@ package org.poc.web;
 
 import org.automation.DurationOf;
 import org.extensions.anontations.TimeOut;
-import org.automation.base.elements.ObjectFactoryGenerator;
+import org.automation.elements.ObjectFactoryGenerator;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;

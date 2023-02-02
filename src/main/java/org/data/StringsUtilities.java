@@ -1,4 +1,4 @@
-package org.staticData;
+package org.data;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -6,7 +6,7 @@ import org.apache.commons.validator.GenericValidator;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import static org.staticData.StringsRegexsConstants.*;
+import static org.data.StringsRegexsConstants.*;
 
 @Slf4j
 public class StringsUtilities extends NumberUtils {

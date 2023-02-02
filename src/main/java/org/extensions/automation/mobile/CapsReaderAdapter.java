@@ -2,13 +2,13 @@ package org.extensions.automation.mobile;
 
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
-import org.files.jsonReader.JsonReaderExtensions;
+import org.files.jsonReader.JacksonReaderExtension;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.time.Duration;
 import java.util.Optional;
-import static org.automation.base.mobile.MobileDriverManager.isAndroidClient;
+import static org.automation.mobile.MobileDriverManager.isAndroidClient;
 public class CapsReaderAdapter {
     private CapabilitiesObject jsonObject;
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -17,7 +17,7 @@ public class CapsReaderAdapter {
 
     public CapsReaderAdapter(String jsonPath) {
         try {
-            Optional<CapabilitiesObject> capsObject = new JsonReaderExtensions(new File(jsonPath)).readValue(CapabilitiesObject.class);
+            Optional<CapabilitiesObject> capsObject = new JacksonReaderExtension(new File(jsonPath)).readValue(CapabilitiesObject.class);
             if (capsObject.isPresent()) {
                 if (isAndroidClient())
                     this.capabilities.merge(this.androidCapabilities(capsObject.get()));

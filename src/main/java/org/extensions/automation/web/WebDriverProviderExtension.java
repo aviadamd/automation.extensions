@@ -1,12 +1,13 @@
 package org.extensions.automation.web;
 
-import org.automation.base.web.SeleniumWebDriverManager;
+import org.automation.web.SeleniumWebDriverManager;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.factory.JunitAnnotationHandler;
-import org.files.jsonReader.JsonWriterExtensions;
+import org.files.jsonReader.JacksonWriterExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.WebDriver;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.time.Duration;
@@ -44,7 +45,7 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
                 Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
                 if (driverType.isPresent()) {
                     if (getManagerInstance().getBrowserMobProxy() != null && getManagerInstance().getBrowserMobProxy().getHar() != null) {
-                        JsonWriterExtensions write = new JsonWriterExtensions(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
+                        JacksonWriterExtension write = new JacksonWriterExtension(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
                         write.writeToJson(getManagerInstance().getBrowserMobProxy().getHar());
                     }
                 }
@@ -67,7 +68,7 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
     }
 
     @Override
-    public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));

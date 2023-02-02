@@ -2,8 +2,8 @@ package org.poc.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
-import org.automation.base.elements.ObjectFactoryGenerator;
-import org.automation.base.web.SeleniumWebDriverManager;
+import org.automation.elements.ObjectFactoryGenerator;
+import org.automation.web.SeleniumWebDriverManager;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;

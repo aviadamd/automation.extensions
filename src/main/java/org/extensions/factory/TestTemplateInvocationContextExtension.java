@@ -1,12 +1,11 @@
 package org.extensions.factory;
 
-import org.automation.base.web.SeleniumWebDriverManager;
+import org.automation.web.SeleniumWebDriverManager;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.report.ExtentReportExtension;
-import org.files.jsonReader.JsonWriterExtensions;
+import org.files.jsonReader.JacksonWriterExtension;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.WebDriver;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.time.Duration;
@@ -63,7 +62,7 @@ public class TestTemplateInvocationContextExtension implements TestTemplateInvoc
                                     Optional<WebDriverType> driverType = Optional.ofNullable(context.getElement().get().getAnnotation(WebDriverType.class));
                                     if (driverType.isPresent()) {
                                         if (webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy() != null && webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy().getHar() != null) {
-                                            JsonWriterExtensions write = new JsonWriterExtensions(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
+                                            JacksonWriterExtension write = new JacksonWriterExtension(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
                                             write.writeToJson(webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy().getHar());
                                         }
                                     }

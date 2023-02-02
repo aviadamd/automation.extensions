@@ -2,7 +2,7 @@ package org.poc.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
-import org.automation.base.web.SeleniumWebDriverManager;
+import org.automation.web.SeleniumWebDriverManager;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.automation.base.elements.ObjectFactoryGenerator;
+import org.automation.elements.ObjectFactoryGenerator;
 
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;

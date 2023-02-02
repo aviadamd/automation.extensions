@@ -9,11 +9,11 @@
 
     <aop:aspectj-autoproxy />
 
-    <bean id="MobileDriverManager" class="java.org.automation.base.mobile.MobileDriverManager"/>
-    <bean id="SeleniumWebDriverManager" class="java.org.automation.base.web.SeleniumWebDriverManager"/>
+    <bean id="MobileDriverManager" class="java.org.automation.mobile.MobileDriverManager"/>
+    <bean id="SeleniumWebDriverManager" class="java.org.automation.web.SeleniumWebDriverManager"/>
     <bean id="trackAspect" class="java.org.extensions.report.AspectExtension"/>
-    <bean name="MobileDriverManager" class="java.org.automation.base.mobile.MobileDriverManager" />
-    <bean name="SeleniumWebDriverManager" class="java.org.automation.base.web.SeleniumWebDriverManager" />
+    <bean name="MobileDriverManager" class="java.org.automation.mobile.MobileDriverManager" />
+    <bean name="SeleniumWebDriverManager" class="java.org.automation.web.SeleniumWebDriverManager" />
 
     <aop:config>
         <aop:aspect id="aspect" ref="trackAspect" >

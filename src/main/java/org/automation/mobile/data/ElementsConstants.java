@@ -1,4 +1,4 @@
-package org.automation.base.mobile.data;
+package org.automation.mobile.data;
 
 import lombok.Data;
 

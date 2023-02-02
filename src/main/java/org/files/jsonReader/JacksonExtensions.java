@@ -10,28 +10,28 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class JsonReadAndWriteExtensions {
-    private final JsonReaderExtensions jsonReaderExtensions;
-    private final JsonWriterExtensions jsonWriterExtensions;
+public class JacksonExtensions {
+    private final JacksonReaderExtension jsonReaderExtensions;
+    private final JacksonWriterExtension jsonWriterExtensions;
 
     private String targetPath = "/target/jsonFiles";
 
-    public JsonReadAndWriteExtensions setTargetPath(String targetPath) {
+    public JacksonExtensions setTargetPath(String targetPath) {
         this.targetPath = targetPath;
         return this;
     }
 
-    public JsonReadAndWriteExtensions(String filePath) {
+    public JacksonExtensions(String filePath) {
         File file = new File(filePath);
-        this.jsonWriterExtensions = new JsonWriterExtensions(file);
-        this.jsonReaderExtensions = new JsonReaderExtensions(file);
+        this.jsonWriterExtensions = new JacksonWriterExtension(file);
+        this.jsonReaderExtensions = new JacksonReaderExtension(file);
     }
     /**
      *
      * @param fileName
      * @param fileId
      */
-    public JsonReadAndWriteExtensions(String fileName, int fileId) {
+    public JacksonExtensions(String fileName, int fileId) {
         this(fileName, fileId, 6000);
     }
 
@@ -41,7 +41,7 @@ public class JsonReadAndWriteExtensions {
      * @param fileId
      * @param jsonFileSizeLimit
      */
-    public JsonReadAndWriteExtensions(String fileName, int fileId, long jsonFileSizeLimit) {
+    public JacksonExtensions(String fileName, int fileId, long jsonFileSizeLimit) {
         JsonFileExtensions jsonFileExtensions = new JsonFileExtensions();
 
         FileGeneratorExtensions createNewFile = jsonFileExtensions
@@ -49,8 +49,8 @@ public class JsonReadAndWriteExtensions {
                 .register(fileName, fileId, jsonFileSizeLimit);
         jsonFileExtensions.verifyInitiation(fileName, createNewFile, Status.INFO);
 
-        this.jsonReaderExtensions = new JsonReaderExtensions(createNewFile.getFile());
-        this.jsonWriterExtensions = new JsonWriterExtensions(createNewFile.getFile());
+        this.jsonReaderExtensions = new JacksonReaderExtension(createNewFile.getFile());
+        this.jsonWriterExtensions = new JacksonWriterExtension(createNewFile.getFile());
     }
 
     /**
@@ -59,7 +59,7 @@ public class JsonReadAndWriteExtensions {
      * @param <V>
      * @return
      */
-    public <V> JsonReadAndWriteExtensions write(V dtoObjectList) {
+    public <V> JacksonExtensions write(V dtoObjectList) {
         this.jsonWriterExtensions.writeToJson(dtoObjectList);
         return this;
     }
@@ -70,7 +70,7 @@ public class JsonReadAndWriteExtensions {
      * @param <V>
      * @return
      */
-    public <V> JsonReadAndWriteExtensions write(List<V> dtoObjectList) {
+    public <V> JacksonExtensions write(List<V> dtoObjectList) {
         this.jsonWriterExtensions.writeToJson(dtoObjectList);
         return this;
     }
@@ -82,7 +82,7 @@ public class JsonReadAndWriteExtensions {
      * @param <V>
      * @return
      */
-    public <V> JsonReadAndWriteExtensions readAndWrite(V dtoObjectList, Class<V> dtoTypeClass) {
+    public <V> JacksonExtensions readAndWrite(V dtoObjectList, Class<V> dtoTypeClass) {
         this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass);
         return this;
     }
@@ -94,7 +94,7 @@ public class JsonReadAndWriteExtensions {
      * @param <V>
      * @return
      */
-    public <V> JsonReadAndWriteExtensions readAndWrite(List<V> dtoObjectList, Class<V> dtoTypeClass) {
+    public <V> JacksonExtensions readAndWrite(List<V> dtoObjectList, Class<V> dtoTypeClass) {
         this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass);
         return this;
     }

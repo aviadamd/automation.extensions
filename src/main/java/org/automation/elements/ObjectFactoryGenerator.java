@@ -1,4 +1,4 @@
-package org.automation.base.elements;
+package org.automation.elements;
 
 import io.appium.java_client.pagefactory.AppiumFieldDecorator;
 import org.openqa.selenium.WebDriver;

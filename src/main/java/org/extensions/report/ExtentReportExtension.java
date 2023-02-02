@@ -1,6 +1,5 @@
 package org.extensions.report;
 
-import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -14,7 +13,7 @@ import org.extensions.mongo.pojo.PassTestInfoMongo;
 import org.extensions.report.dto.FailTestInfo;
 import org.extensions.report.dto.TestInformation;
 import org.extensions.report.dto.TestMetaData;
-import org.files.jsonReader.JsonReadAndWriteExtensions;
+import org.files.jsonReader.JacksonExtensions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -25,6 +24,8 @@ import java.util.*;
 
 @Slf4j
 public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+
+    private static List<StackTraceElement> errorCollector = new ArrayList<>();
     private static final List<FailTestInfo> failTests = new ArrayList<>();
     private static final List<TestInformation> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
@@ -74,12 +75,6 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             reportTest.ifPresent(testInfo -> {
-
-                ExtentTestManager.getExtentTest().fail("details", MediaEntityBuilder.createScreenCaptureFromPath("1.png").build());
-                ExtentTestManager.getExtentTest().fail("details", MediaEntityBuilder.createScreenCaptureFromPath("2.png").build());
-
-
-
                 String testClass = context.getRequiredTestClass().getSimpleName();
                 String testMethod = context.getRequiredTestMethod().getName();
                 TestInformation passTestInfo = new TestInformation(new Date(), testClass, testMethod, new TestMetaData(testInfo));
@@ -93,7 +88,7 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
     }
 
     @Override
-    public void testDisabled(ExtensionContext context, Optional<String> reason) {
+    public synchronized void testDisabled(ExtensionContext context, Optional<String> reason) {
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
             if (reason.isPresent()) {
                 ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " disabled, reason " + reason.get());
@@ -143,10 +138,16 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                     failTestsMongo.add(failTestInfoMongo);
                 });
             });
+            //this.errorsManager(context);
             ExtentTestManager.log(Status.FAIL, testClass + " class error " + error + " from test " + testMethod);
         }
     }
 
+    private synchronized void errorsManager(ExtensionContext extensionContext) {
+        if (extensionContext.getExecutionException().isPresent()) {
+            errorCollector.addAll(List.of(extensionContext.getExecutionException().get().getStackTrace()));
+        }
+    }
     @Override
     public synchronized void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -160,12 +161,12 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             String className = context.getRequiredTestClass().getSimpleName();
 
             if (passTests.size() > 0) {
-                JsonReadAndWriteExtensions write = new JsonReadAndWriteExtensions(className.concat("Pass.json"),1);
+                JacksonExtensions write = new JacksonExtensions(className.concat("Pass.json"),1);
                 write.readAndWrite(passTests, TestInformation.class);
             }
 
             if (failTests.size() > 0) {
-                JsonReadAndWriteExtensions write = new JsonReadAndWriteExtensions(className.concat("Fail.json"),2);
+                JacksonExtensions write = new JacksonExtensions(className.concat("Fail.json"),2);
                 write.readAndWrite(failTests, FailTestInfo.class);
             }
 
@@ -186,7 +187,7 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
     }
 
     @Override
-    public <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));

@@ -102,7 +102,7 @@ public class DriverEventListener implements WebDriverListener {
         } catch (Exception ignore) {}
     }
 
-    private void print(Status status, WebDriver driver, String message) {
+    private void screenShot(Status status, WebDriver driver, String message) {
         try {
             log.info(Status.INFO + " | " + message);
             ExtentTestManager.log(status, ExtentTestManager.getScreenShot(driver, message));

@@ -10,20 +10,25 @@ import static com.aventstack.extentreports.reporter.configuration.ViewName.LOG;
 
 public class ExtentManager {
     private static ExtentReports extentInstance;
+
+    private static ExtentSparkReporter extentSparkReporter;
     protected synchronized static ExtentReports getReportsInstance() {
         return extentInstance;
+    }
+    protected synchronized static ExtentSparkReporter getExtentSparkInstance() {
+        return extentSparkReporter;
     }
     protected static synchronized ExtentReports createInstance(String fileName, String jsonSettingsPath, String reportName) {
         try {
             extentInstance = new ExtentReports();
-            ExtentSparkReporter sparkReporterInstance = new ExtentSparkReporter(fileName);
-            sparkReporterInstance.viewConfigurer()
+            extentSparkReporter = new ExtentSparkReporter(fileName);
+            extentSparkReporter.viewConfigurer()
                     .viewOrder()
                     .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
                     .apply();
-            extentInstance.attachReporter(sparkReporterInstance);
-            sparkReporterInstance.loadJSONConfig(new File(jsonSettingsPath));
-            sparkReporterInstance.config().setReportName(reportName);
+            extentInstance.attachReporter(extentSparkReporter);
+            extentSparkReporter.loadJSONConfig(new File(jsonSettingsPath));
+            extentSparkReporter.config().setReportName(reportName);
         } catch (Exception exception) {
             Assertions.fail("ExtentManager createInstance error ",exception);
         }
