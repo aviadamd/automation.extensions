@@ -14,4 +14,5 @@ public @interface ReportConfiguration {
     String reportSettingsPath();
     Status[] extraReportsBy() default Status.PASS;
     AnalysisStrategy analysisStrategy();
+    String mongoConnection() default "";
 }

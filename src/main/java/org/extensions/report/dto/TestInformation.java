@@ -1,42 +1,42 @@
 package org.extensions.report.dto;
 
+import com.aventstack.extentreports.Status;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.Date;
 
-@JsonPropertyOrder({"id","className", "testName", "testInfo"})
+@JsonPropertyOrder({"time", "status", "className", "testName", "testInfo"})
 public class TestInformation {
-    private Date id;
+    private String time;
     private String className;
-    private String testName;
+    private Status[] status;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private TestMetaData testInfo;
+
     public TestInformation() {}
-    public TestInformation(Date id, String className, String testName, TestMetaData testInfo) {
-        this.id = id;
+
+    public TestInformation(String time, String className, TestMetaData testInfo) {
+        this.time = time;
         this.className = className;
-        this.testName = testName;
         this.testInfo = testInfo;
     }
 
-    public Date getId() { return id; }
+    public String getTime() { return time; }
     public String getClassName() {
         return className;
-    }
-    public String getTestName() {
-        return testName;
     }
     public TestMetaData getTestInfo() {
         return testInfo;
     }
-    public void setId(Date id) {
-        this.id = id;
+    public Status[] getStatus() { return status; }
+
+    public void setTime(String id) {
+        this.time = time;
     }
     public void setClassName(String className) {
         this.className = className;
     }
-    public void setTestName(String testName) {
-        this.testName = testName;
-    }
     public void setTestInfo(TestMetaData testInfo) {
         this.testInfo = testInfo;
     }
+    public void setStatus(Status[] status) { this.status = status; }
 }

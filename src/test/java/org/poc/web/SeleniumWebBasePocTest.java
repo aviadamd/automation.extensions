@@ -28,7 +28,8 @@ import static java.time.Duration.ofSeconds;
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST
+        analysisStrategy = AnalysisStrategy.TEST,
+        mongoConnection = "mongodb://localhost:27017"
 )
 public class SeleniumWebBasePocTest {
 

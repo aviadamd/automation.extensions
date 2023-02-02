@@ -23,7 +23,8 @@ import static com.aventstack.extentreports.Status.SKIP;
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST
+        analysisStrategy = AnalysisStrategy.CLASS,
+        mongoConnection = "mongodb://localhost:27017"
 )
 public class MongoMorphiaDbTest {
 

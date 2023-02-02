@@ -14,16 +14,14 @@ public class FailTestInfoMongo extends BasicDBObject {
     @Id
     private ObjectId id;
     private String className;
-    private String testName;
     private Status[] status;
     private String error;
     private TestMetaData testInfo;
 
     public FailTestInfoMongo() {}
-    public FailTestInfoMongo(ObjectId id, String className, String testName, TestMetaData testInfo, String error) {
+    public FailTestInfoMongo(ObjectId id, String className, TestMetaData testInfo, String error) {
         this.id = id;
         this.className = className;
-        this.testName = testName;
         this.error = error;
         this.testInfo = testInfo;
     }
@@ -35,9 +33,6 @@ public class FailTestInfoMongo extends BasicDBObject {
     public String getClassName() {
         return className;
     }
-    public String getTestName() {
-        return testName;
-    }
     public String getError() { return error; }
     public TestMetaData getTestInfo() {
         return testInfo;
@@ -48,9 +43,6 @@ public class FailTestInfoMongo extends BasicDBObject {
     }
     public void setClassName(String className) {
         this.className = className;
-    }
-    public void setTestName(String testName) {
-        this.testName = testName;
     }
     public void setError(String error) {
         this.error = error;
@@ -64,7 +56,6 @@ public class FailTestInfoMongo extends BasicDBObject {
         return "FailTestInfoMongo{" +
                 "id=" + id +
                 ", className='" + className + '\'' +
-                ", testName='" + testName + '\'' +
                 ", status=" + Arrays.toString(status) +
                 ", error='" + error + '\'' +
                 ", testInfo=" + testInfo +

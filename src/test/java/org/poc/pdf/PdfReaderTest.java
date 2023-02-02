@@ -23,7 +23,8 @@ import static com.aventstack.extentreports.Status.SKIP;
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST
+        analysisStrategy = AnalysisStrategy.TEST,
+        mongoConnection = "mongodb://localhost:27017"
 )
 @PdfConnector(pdfFileConfig = {
         @PdfFileConfig(fileId = 1, path = "src/test/resources/sample.pdf"),

@@ -12,7 +12,6 @@ public class FailTestAdapter {
         BasicDBObject append = failTest
                 .append("_id", failTest.getId())
                 .append("className", failTest.getClassName())
-                .append("testName", failTest.getTestName())
                 .append("error", failTest.getError())
                 .append("testInfo", failTest.getTestInfo());
         return DocumentAdapter.toDocument(append);
@@ -24,7 +23,6 @@ public class FailTestAdapter {
             BasicDBObject append = failTestInfoMongo
                     .append("_id", failTestInfoMongo.getId())
                     .append("className", failTestInfoMongo.getClassName())
-                    .append("testName", failTestInfoMongo.getTestName())
                     .append("error", failTestInfoMongo.getError())
                     .append("testInfo", failTestInfoMongo.getTestInfo());
             documents.add(DocumentAdapter.toDocument(append));

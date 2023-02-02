@@ -12,7 +12,6 @@ public class PassTestAdapter {
         BasicDBObject append = passTest
                 .append("_id", passTest.getId())
                 .append("className", passTest.getClassName())
-                .append("testName", passTest.getTestName())
                 .append("testInfo", passTest.getTestInfo());
         return DocumentAdapter.toDocument(append);
     }
@@ -23,7 +22,6 @@ public class PassTestAdapter {
             BasicDBObject append = passTestInfoMongo
                     .append("_id", passTestInfoMongo.getId())
                     .append("className", passTestInfoMongo.getClassName())
-                    .append("testName", passTestInfoMongo.getTestName())
                     .append("testInfo", passTestInfoMongo.getTestInfo());
             documents.add(DocumentAdapter.toDocument(append));
         }
