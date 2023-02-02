@@ -59,8 +59,8 @@ public class JacksonExtensions {
      * @param <V>
      * @return
      */
-    public <V> JacksonExtensions write(V dtoObjectList) {
-        this.jsonWriterExtensions.writeToJson(dtoObjectList);
+    public <V> JacksonExtensions write(V dtoObjectList, boolean ignoreNullValues) {
+        this.jsonWriterExtensions.writeToJson(dtoObjectList, ignoreNullValues);
         return this;
     }
 
@@ -70,20 +70,8 @@ public class JacksonExtensions {
      * @param <V>
      * @return
      */
-    public <V> JacksonExtensions write(List<V> dtoObjectList) {
-        this.jsonWriterExtensions.writeToJson(dtoObjectList);
-        return this;
-    }
-
-    /**
-     *
-     * @param dtoObjectList
-     * @param dtoTypeClass
-     * @param <V>
-     * @return
-     */
-    public <V> JacksonExtensions readAndWrite(V dtoObjectList, Class<V> dtoTypeClass) {
-        this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass);
+    public <V> JacksonExtensions write(List<V> dtoObjectList, boolean ignoreNullValues) {
+        this.jsonWriterExtensions.writeToJson(dtoObjectList, ignoreNullValues);
         return this;
     }
 
@@ -94,8 +82,20 @@ public class JacksonExtensions {
      * @param <V>
      * @return
      */
-    public <V> JacksonExtensions readAndWrite(List<V> dtoObjectList, Class<V> dtoTypeClass) {
-        this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass);
+    public <V> JacksonExtensions readAndWrite(V dtoObjectList, Class<V> dtoTypeClass, boolean ignoreNullValues) {
+        this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass, ignoreNullValues);
+        return this;
+    }
+
+    /**
+     *
+     * @param dtoObjectList
+     * @param dtoTypeClass
+     * @param <V>
+     * @return
+     */
+    public <V> JacksonExtensions readAndWrite(List<V> dtoObjectList, Class<V> dtoTypeClass, boolean ignoreNullValues) {
+        this.jsonWriterExtensions.readAndWrite(dtoObjectList, dtoTypeClass, ignoreNullValues);
         return this;
     }
 

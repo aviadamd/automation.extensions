@@ -46,7 +46,7 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
                 if (driverType.isPresent()) {
                     if (getManagerInstance().getBrowserMobProxy() != null && getManagerInstance().getBrowserMobProxy().getHar() != null) {
                         JacksonWriterExtension write = new JacksonWriterExtension(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
-                        write.writeToJson(getManagerInstance().getBrowserMobProxy().getHar());
+                        write.writeToJson(getManagerInstance().getBrowserMobProxy().getHar(), false);
                     }
                 }
             } catch (Exception ignore) {}

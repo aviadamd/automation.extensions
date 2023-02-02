@@ -63,7 +63,7 @@ public class TestTemplateInvocationContextExtension implements TestTemplateInvoc
                                     if (driverType.isPresent()) {
                                         if (webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy() != null && webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy().getHar() != null) {
                                             JacksonWriterExtension write = new JacksonWriterExtension(new File(System.getProperty("user.dir") + "/target/" + context.getRequiredTestMethod().getName() + ".json"));
-                                            write.writeToJson(webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy().getHar());
+                                            write.writeToJson(webDriverManager.get(Thread.currentThread().getId()).getBrowserMobProxy().getHar(), false);
                                         }
                                     }
                                 } catch (Exception ignore) {}
