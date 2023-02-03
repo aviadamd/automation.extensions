@@ -4,7 +4,7 @@ import org.extensions.anontations.mySql.MySqlConnector;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.mySql.MySqlSharedConnector;
+import org.sql.MySqlSharedConnector;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Optional;

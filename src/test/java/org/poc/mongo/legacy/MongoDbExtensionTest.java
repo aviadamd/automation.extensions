@@ -27,7 +27,7 @@ import static com.aventstack.extentreports.Status.SKIP;
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",
         analysisStrategy = AnalysisStrategy.CLASS,
-        mongoConnection = "mongodb://localhost:27017"
+        mongoConnection = "project.mongo.connection"
 )
 public class MongoDbExtensionTest {
     @Test

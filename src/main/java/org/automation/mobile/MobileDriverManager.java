@@ -10,7 +10,6 @@ import io.appium.java_client.serverevents.ServerEvents;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 import org.automation.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
@@ -117,8 +116,6 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     }
 
     private synchronized DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
-        WebDriverManager webDriverManager = WebDriverManager.chromedriver().browserVersion(browserVersion);
-        webDriverManager.setup();
         DesiredCapabilities capabilities = new DesiredCapabilities();
         capabilities.setCapability("browserName", "chrome");
         capabilities.setCapability("chromedriverExecutable", chromedriverPath);

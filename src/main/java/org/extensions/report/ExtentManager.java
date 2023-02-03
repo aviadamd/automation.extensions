@@ -18,10 +18,10 @@ public class ExtentManager {
     protected synchronized static ExtentSparkReporter getExtentSparkInstance() {
         return extentSparkReporter;
     }
-    protected static synchronized ExtentReports createInstance(String fileName, String jsonSettingsPath, String reportName) {
+    protected static synchronized ExtentReports createInstance(String file, String jsonSettingsPath, String reportName) {
         try {
             extentInstance = new ExtentReports();
-            extentSparkReporter = new ExtentSparkReporter(fileName);
+            extentSparkReporter = new ExtentSparkReporter(file);
             extentSparkReporter.viewConfigurer()
                     .viewOrder()
                     .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
@@ -30,7 +30,7 @@ public class ExtentManager {
             extentSparkReporter.loadJSONConfig(new File(jsonSettingsPath));
             extentSparkReporter.config().setReportName(reportName);
         } catch (Exception exception) {
-            Assertions.fail("ExtentManager createInstance error ",exception);
+            Assertions.fail("ExtentManager createInstance error " + exception.getMessage(), exception);
         }
         return extentInstance;
     }

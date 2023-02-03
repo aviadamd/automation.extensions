@@ -3,6 +3,7 @@ package org.extensions.report;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
 import lombok.extern.slf4j.Slf4j;
+import org.automation.AutomationProperties;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.extensions.factory.JunitAnnotationHandler;
@@ -29,15 +30,16 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
     private static final List<TestInformation> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
     private static final List<PassTestInfoMongo> passTestsMongo = new ArrayList<>();
+
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
         if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
             try {
                 Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
                 if (configuration.isPresent()) {
-                    String spark = System.getProperty(configuration.get().reportPath()).concat("/Spark.html");
-                    String reportSettings = System.getProperty(configuration.get().reportSettingsPath()).concat("/reportConfig.json");
-                    ExtentManager.createInstance(spark, reportSettings, context.getRequiredTestClass().getSimpleName());
+                    String spark = AutomationProperties.getInstance().getProperty(configuration.get().reportPath());
+                    String reportSettings = AutomationProperties.getInstance().getProperty(configuration.get().reportSettingsPath());
+                    ExtentManager.createInstance(spark + "/Spark.html", reportSettings, context.getRequiredTestClass().getSimpleName());
                     ExtentManager.getReportsInstance().setAnalysisStrategy(configuration.get().analysisStrategy());
                     ExtentManager.getReportsInstance().setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
                 }
@@ -111,7 +113,8 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                 });
             });
 
-            ExtentTestManager.log(Status.SKIP,"test " + context.getRequiredTestMethod().getName() + " fails");
+            ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " fails");
+            ExtentTestManager.log(Status.SKIP,"error description  " + throwable.getMessage());
         }
     }
 
@@ -134,7 +137,8 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                 });
             });
 
-            ExtentTestManager.log(Status.FAIL,"test " + context.getRequiredTestMethod().getName() + " fails");
+            ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " fails");
+            ExtentTestManager.log(Status.FAIL,"error description  " + throwable.getMessage());
         }
     }
 
@@ -144,7 +148,9 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
 
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
-                ExtentTestManager.attachExtraReports(reportConfiguration.get().extraReportsBy(), System.getProperty(reportConfiguration.get().reportPath()));
+                ExtentTestManager.attachExtraReports(
+                        reportConfiguration.get().extraReportsBy(),
+                        AutomationProperties.getInstance().getProperty(reportConfiguration.get().reportPath()));
             }
 
             String className = context.getRequiredTestClass().getSimpleName();
@@ -163,14 +169,14 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             if (reportConfiguration.isPresent() && !reportConfiguration.get().mongoConnection().isEmpty()) {
                 String dbName = "mobileTests";
                 if (passTestsMongo.size() > 0) {
-                    MongoRepoImplementation mongo = new MongoRepoImplementation(reportConfiguration.get().mongoConnection(), dbName, "PassTestResults");
+                    MongoRepoImplementation mongo = new MongoRepoImplementation(AutomationProperties.getInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "PassTestResults");
                     List<Document> passMongoReport = PassTestAdapter.toDocuments(passTestsMongo);
                     mongo.insertElements(passMongoReport);
                     mongo.close();
                 }
 
                 if (failTestsMongo.size() > 0) {
-                    MongoRepoImplementation mongo = new MongoRepoImplementation(reportConfiguration.get().mongoConnection(), dbName, "FailTestResults");
+                    MongoRepoImplementation mongo = new MongoRepoImplementation(AutomationProperties.getInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "FailTestResults");
                     List<Document> failMongoReport = FailTestAdapter.toDocuments(failTestsMongo);
                     mongo.insertElements(failMongoReport);
                     mongo.close();

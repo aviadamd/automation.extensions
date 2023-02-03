@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface WebDriverType {
     String baseUrl() default "";
-    boolean isWithProxy();
+    int proxyPort();
     int generalTo();
     Class<? extends WebDriver> [] driversInstance();
 
