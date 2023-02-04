@@ -2,7 +2,6 @@ package org.automation.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.automation.WebElementGestures;
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,8 +13,8 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
     private Duration pollingEvery = Duration.ofSeconds(1);
     private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private final ThreadLocal<WebDriverWait> webDriverWait = new ThreadLocal<>();
-    public SeleniumWebDriverManager(String baseUrl, Duration duration, WebDriverManager webDriverManager) {
-        this.driver.set(webDriverManager.create());
+    public SeleniumWebDriverManager(String baseUrl, Duration duration, WebDriver webDriver) {
+        this.driver.set(webDriver);
         this.webDriverWait.set(new WebDriverWait(this.getDriver(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
     }

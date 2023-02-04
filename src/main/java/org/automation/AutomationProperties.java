@@ -9,15 +9,13 @@ import java.util.Set;
 @Slf4j
 public class AutomationProperties {
     private final Properties configProp = new Properties();
-    public static AutomationProperties getInstance() {
+    public static AutomationProperties getPropertiesInstance() {
         return LazyHolder.INSTANCE;
     }
 
     private AutomationProperties() {
         try {
-            InputStream inputStream = this.getClass()
-                    .getClassLoader()
-                    .getResourceAsStream("platform.properties");
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("platform.properties");
             log.debug("load application.application file");
             configProp.load(inputStream);
         } catch (Exception exception) {

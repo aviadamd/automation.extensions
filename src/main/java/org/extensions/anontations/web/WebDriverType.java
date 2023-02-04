@@ -1,6 +1,5 @@
 package org.extensions.anontations.web;
 
-import org.openqa.selenium.WebDriver;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,6 +11,6 @@ public @interface WebDriverType {
     String baseUrl() default "";
     int proxyPort();
     int generalTo();
-    Class<? extends WebDriver> [] driversInstance();
+    String driversInstance();
 
 }

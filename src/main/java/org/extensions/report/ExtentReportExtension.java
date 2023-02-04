@@ -3,7 +3,6 @@ package org.extensions.report;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
 import lombok.extern.slf4j.Slf4j;
-import org.automation.AutomationProperties;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.extensions.factory.JunitAnnotationHandler;
@@ -24,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.automation.AutomationProperties.getPropertiesInstance;
+
 @Slf4j
 public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private static final List<TestInformation> failTests = new ArrayList<>();
@@ -37,8 +38,8 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             try {
                 Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
                 if (configuration.isPresent()) {
-                    String spark = AutomationProperties.getInstance().getProperty(configuration.get().reportPath());
-                    String reportSettings = AutomationProperties.getInstance().getProperty(configuration.get().reportSettingsPath());
+                    String spark = getPropertiesInstance().getProperty(configuration.get().reportPath());
+                    String reportSettings = getPropertiesInstance().getProperty(configuration.get().reportSettingsPath());
                     ExtentManager.createInstance(spark + "/Spark.html", reportSettings, context.getRequiredTestClass().getSimpleName());
                     ExtentManager.getReportsInstance().setAnalysisStrategy(configuration.get().analysisStrategy());
                     ExtentManager.getReportsInstance().setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
@@ -150,7 +151,7 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
                 ExtentTestManager.attachExtraReports(
                         reportConfiguration.get().extraReportsBy(),
-                        AutomationProperties.getInstance().getProperty(reportConfiguration.get().reportPath()));
+                        getPropertiesInstance().getProperty(reportConfiguration.get().reportPath()));
             }
 
             String className = context.getRequiredTestClass().getSimpleName();
@@ -169,14 +170,14 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             if (reportConfiguration.isPresent() && !reportConfiguration.get().mongoConnection().isEmpty()) {
                 String dbName = "mobileTests";
                 if (passTestsMongo.size() > 0) {
-                    MongoRepoImplementation mongo = new MongoRepoImplementation(AutomationProperties.getInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "PassTestResults");
+                    MongoRepoImplementation mongo = new MongoRepoImplementation(getPropertiesInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "PassTestResults");
                     List<Document> passMongoReport = PassTestAdapter.toDocuments(passTestsMongo);
                     mongo.insertElements(passMongoReport);
                     mongo.close();
                 }
 
                 if (failTestsMongo.size() > 0) {
-                    MongoRepoImplementation mongo = new MongoRepoImplementation(AutomationProperties.getInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "FailTestResults");
+                    MongoRepoImplementation mongo = new MongoRepoImplementation(getPropertiesInstance().getProperty(reportConfiguration.get().mongoConnection()), dbName, "FailTestResults");
                     List<Document> failMongoReport = FailTestAdapter.toDocuments(failTestsMongo);
                     mongo.insertElements(failMongoReport);
                     mongo.close();

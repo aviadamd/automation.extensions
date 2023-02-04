@@ -40,10 +40,10 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     public IOSDriver getIosDriver() { return this.iosDriver.get(Thread.currentThread().getId()); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(Thread.currentThread().getId()); }
     public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(Thread.currentThread().getId()); }
-    private HashMap<Long, EventFiringDecorator<IOSDriver>> iosDecorator = new HashMap<>();
+    private final HashMap<Long, EventFiringDecorator<IOSDriver>> iosDecorator = new HashMap<>();
     private HashMap<Long, EventFiringDecorator<AndroidDriver>> androidDecorator = new HashMap<>();
-    private boolean isAndroid() { return Objects.equals(getProperty("client"), "android"); }
-    public static boolean isAndroidClient() { return Objects.equals(getProperty("client"), "android"); }
+    private boolean isAndroid() { return Objects.equals(getProperty("project.client"), "android"); }
+    public static boolean isAndroidClient() { return Objects.equals(getProperty("project.client"), "android"); }
 
     public WebDriver getMobileDriver() {
         return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();

@@ -1,77 +1,78 @@
 package org.extensions.automation.web;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 import net.lightbody.bmp.BrowserMobProxy;
 import net.lightbody.bmp.BrowserMobProxyServer;
 import net.lightbody.bmp.client.ClientUtil;
+import net.lightbody.bmp.core.har.HarEntry;
+import net.lightbody.bmp.core.har.HarLog;
+import net.lightbody.bmp.core.har.HarPage;
 import net.lightbody.bmp.proxy.CaptureType;
 import org.automation.AutomationProperties;
-import org.automation.web.HarObject;
 import org.automation.web.SeleniumWebDriverManager;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.Proxy;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverLogLevel;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
+import static org.automation.AutomationProperties.getPropertiesInstance;
 
 @Slf4j
 public class WebDriverProviderExtension implements ParameterResolver, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<Proxy> seleniumProxy = new ThreadLocal<>();
     private final ThreadLocal<BrowserMobProxy> mobProxy = new ThreadLocal<>();
+    private final ThreadLocal<DesiredCapabilities> capabilities = new ThreadLocal<>();
     private final ThreadLocal<SeleniumWebDriverManager> driverManager = new ThreadLocal<>();
-    private final ThreadLocal<WebDriverManager> webDriverManager = new ThreadLocal<>();
+
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
         return parameter.getParameter().getType() == SeleniumWebDriverManager.class;
     }
-
     @Override
     public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
             if (driverType.isPresent()) {
 
-                this.mobProxy.set(this.setMobProxyServer(driverType.get().proxyPort()));
+                this.mobProxy.set(this.setMobProxyServer(driverType.get().proxyPort(), context.getRequiredTestMethod().getName() + ".har"));
                 this.seleniumProxy.set(this.setSeleniumProxy(this.mobProxy.get()));
+                this.capabilities.set(new DesiredCapabilities());
+                this.capabilities.get().setCapability(CapabilityType.PROXY, this.seleniumProxy.get());
+                this.capabilities.get().acceptInsecureCerts();
 
-                for (Class<? extends WebDriver> instance : driverType.get().driversInstance()) {
-                    if (instance.getName().equalsIgnoreCase(ChromeDriver.class.getName())) {
-                        this.driverManager.set(new SeleniumWebDriverManager(
-                                AutomationProperties.getInstance().getProperty(driverType.get().baseUrl()),
-                                Duration.ofSeconds(driverType.get().generalTo()),
-                                WebDriverManager.getInstance(instance).capabilities(this.chromeOptions(this.seleniumProxy.get())))
-                        );
-                    } else if (instance.getName().equalsIgnoreCase(FirefoxDriver.class.getName())) {
-                        this.driverManager.set(new SeleniumWebDriverManager(
-                                AutomationProperties.getInstance().getProperty(driverType.get().baseUrl()),
-                                Duration.ofSeconds(driverType.get().generalTo()),
-                                WebDriverManager.getInstance(instance).capabilities(this.firefoxOptions(this.seleniumProxy.get())))
-                        );
-                    } else throw new RuntimeException(instance.getName() + " is not supported valid instance");
+                if (getPropertiesInstance().getProperty("project.client").equalsIgnoreCase("chrome")) {
+                    this.driverManager.set(new SeleniumWebDriverManager(AutomationProperties.getPropertiesInstance().getProperty(driverType.get().baseUrl()), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.chromedriver().capabilities(this.chromeOptions().merge(capabilities.get())).create()));
+                    return this.driverManager.get();
+                } else if (getPropertiesInstance().getProperty("project.client").equalsIgnoreCase("firefox")) {
+                    this.driverManager.set(new SeleniumWebDriverManager(AutomationProperties.getPropertiesInstance().getProperty(driverType.get().baseUrl()), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.firefoxdriver().capabilities(this.firefoxOptions().merge(capabilities.get())).create()));
+                    return this.driverManager.get();
                 }
             }
-            return this.driverManager.get();
-        } else throw new RuntimeException("WebDriverProviderExtension error");
+        }
+        throw new RuntimeException("WebDriverProviderExtension error");
     }
-
     @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -79,18 +80,15 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
                 Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
                 if (driverType.isPresent()) {
                     if (this.mobProxy.get() != null && this.mobProxy.get().getHar() != null) {
+                        String testPath = System.getProperty("user.dir") + "/target/harFiles";
+                        Path path = Paths.get(testPath);
+                        if (!Files.exists(path)) Files.createDirectory(path);
                         String testName = context.getRequiredTestMethod().getName();
-                        ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
-                        writer.writeValue(new File(System.getProperty("user.dir") + "/target/jsonFiles/" + testName + ".json"), new HarObject(testName, this.mobProxy.get().getHar().getLog().getEntries()));
+                        this.writeHarFile(new File(testPath + "/" + testName + ".json"), this.mobProxy.get().getHar().getLog());
                     }
-
-//                    List<Map<String, Object>> logMessages = this.webDriverManager.get().getLogs();
-//                    for (Map<String, Object> map : logMessages) {
-//                        log.debug("[{}] [{}.{}] {}", map.get("datetime"), map.get("source").toString().toUpperCase(), String.format("%1$-7s", map.get("type").toString().toUpperCase()), map.get("message"));
-//                    }
                 }
             } catch (Exception exception) {
-                Assertions.fail("generate har file error ",exception);
+                Assertions.fail("generate har file error ", exception);
             }
         }
     }
@@ -100,27 +98,39 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
         if (context.getElement().isPresent()) {
             try {
                 Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
-                if (driverType.isPresent()) {
-                   this.mobProxy.get().stop();
+                if (driverType.isPresent() && this.mobProxy.get() != null) {
+                    this.mobProxy.get().stop();
                 }
             } catch (Exception exception) {
-                Assertions.fail(exception);
+                Assertions.fail("close proxy error ", exception);
             }
         }
     }
 
+    @Override
+    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+        if (context.getElement().isPresent()) {
+            try {
+                return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
+            } catch (Exception exception) {
+                Assertions.fail("read annotation error ", exception);
+            }
+        }
+        return Optional.empty();
+    }
+
     public synchronized Proxy setSeleniumProxy(BrowserMobProxy browserMobProxy) {
         try {
-            Proxy seleniumProxy = ClientUtil.createSeleniumProxy(browserMobProxy);
             String hostIp = Inet4Address.getLocalHost().getHostAddress();
+            Proxy seleniumProxy = ClientUtil.createSeleniumProxy(browserMobProxy);
             seleniumProxy.setHttpProxy(hostIp + ":" + browserMobProxy.getPort());
             seleniumProxy.setSslProxy(hostIp + ":" + browserMobProxy.getPort());
             return seleniumProxy;
         } catch (Exception exception) {
-            throw  new RuntimeException("init selenium proxy fails ", exception);
+            throw new RuntimeException("init selenium proxy fails ", exception);
         }
     }
-    public synchronized BrowserMobProxy setMobProxyServer(int port) {
+    public synchronized BrowserMobProxy setMobProxyServer(int port, String fileName) {
         try {
             BrowserMobProxyServer mobProxyServer = new BrowserMobProxyServer();
             mobProxyServer.setTrustAllServers(true);
@@ -131,7 +141,7 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
             captureTypes.addAll(CaptureType.getRequestCaptureTypes());
             captureTypes.addAll(CaptureType.getResponseCaptureTypes());
             mobProxyServer.enableHarCaptureTypes(captureTypes);
-            mobProxyServer.newHar();
+            mobProxyServer.newHar(fileName);
             mobProxyServer.start(port);
             return mobProxyServer;
         } catch (Exception exception) {
@@ -139,7 +149,7 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
         }
     }
 
-    private synchronized ChromeOptions chromeOptions(Proxy proxy) {
+    private synchronized ChromeOptions chromeOptions() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--disable-popup-blocking");
@@ -150,13 +160,10 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
         chromeOptions.addArguments("start-maximized");
         chromeOptions.addArguments("--disable-web-security");
         chromeOptions.addArguments("--allow-running-insecure-content");
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.PROXY, proxy);
-        capabilities.acceptInsecureCerts();
         return chromeOptions;
     }
 
-    private FirefoxOptions firefoxOptions(Proxy proxy) {
+    private FirefoxOptions firefoxOptions() {
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.addPreference("network.automatic-ntlm-auth.trusted-uris", "http://,https://");
         firefoxOptions.addPreference("network.automatic-ntlm-auth.allow-non-fqdn", true);
@@ -166,23 +173,67 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
         firefoxOptions.addPreference("security.csp.enable", false);
         FirefoxProfile firefoxProfile = new FirefoxProfile();
         firefoxProfile.setAcceptUntrustedCertificates(true);
-        firefoxOptions.merge(firefoxOptions);
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.PROXY, proxy);
-        capabilities.acceptInsecureCerts();
         return firefoxOptions;
     }
+    private synchronized void writeHarFile(File harFile, HarLog log) throws IOException {
+        String version = log.getVersion();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
+        JsonGenerator jsonGenerator = new JsonFactory().createGenerator(harFile, JsonEncoding.UTF8);
 
-    @Override
-    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
-        if (context.getElement().isPresent()) {
-            try {
-                return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
-            } catch (Exception exception) {
-                Assertions.fail("Fail read annotation from ExtentReportExtension", exception);
-            }
+        ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        jsonGenerator.setCodec(objectMapper);
+        jsonGenerator.useDefaultPrettyPrinter();
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeFieldName("log");
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeFieldName("version");
+        jsonGenerator.writeObject(version);
+        jsonGenerator.writeFieldName("creator");
+        jsonGenerator.writeObject(log.getCreator());
+        jsonGenerator.writeFieldName("pages");
+        jsonGenerator.writeStartArray();
+
+        for (HarPage page : log.getPages()) {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeFieldName("startedDateTime");
+            jsonGenerator.writeObject(dateFormat.format(page.getStartedDateTime()));
+            jsonGenerator.writeFieldName("id");
+            jsonGenerator.writeObject(page.getId());
+            jsonGenerator.writeFieldName("title");
+            jsonGenerator.writeObject(page.getTitle());
+            jsonGenerator.writeFieldName("pageTimings");
+            jsonGenerator.writeObject(page.getPageTimings());
+            jsonGenerator.writeEndObject();
         }
-        return Optional.empty();
+
+        jsonGenerator.writeEndArray();
+        jsonGenerator.writeFieldName("entries");
+        jsonGenerator.writeStartArray();
+
+        for (HarEntry entry : log.getEntries()) {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeFieldName("startedDateTime");
+            jsonGenerator.writeObject(dateFormat.format(entry.getStartedDateTime()));
+            jsonGenerator.writeFieldName("time");
+            jsonGenerator.writeObject(entry.getTime());
+            jsonGenerator.writeFieldName("request");
+            jsonGenerator.writeObject(entry.getRequest());
+            jsonGenerator.writeFieldName("response");
+            jsonGenerator.writeObject(entry.getResponse());
+            jsonGenerator.writeFieldName("timings");
+            jsonGenerator.writeObject(entry.getTimings());
+            jsonGenerator.writeFieldName("serverIPAddress");
+            jsonGenerator.writeObject(entry.getServerIPAddress());
+            jsonGenerator.writeFieldName("connection");
+            jsonGenerator.writeObject(entry.getConnection());
+            jsonGenerator.writeFieldName("pageref");
+            jsonGenerator.writeObject(entry.getPageref());
+            jsonGenerator.writeEndObject();
+        }
+
+        jsonGenerator.writeEndArray();
+        jsonGenerator.writeEndObject();
+        jsonGenerator.close();
     }
 }
 
