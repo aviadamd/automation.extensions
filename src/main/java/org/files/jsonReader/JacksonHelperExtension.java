@@ -15,23 +15,49 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-public class JacksonHelper<T> {
+public class JacksonHelperExtension<T> {
     private final File file;
     private final Class<T> object;
     private final ObjectMapper objectMapper;
     private final ObjectWriter objectWriter;
 
     /**
-     * JacksonExtensions single constructor
+     * JacksonExtensions
+     * @param filePath the file path
+     * @param object your class object
+     */
+    public JacksonHelperExtension(String filePath, Class<T> object) {
+        this.object = object;
+        this.file = new File(filePath);
+        this.objectMapper = new ObjectMapper();
+        this.objectWriter = this.objectMapper.writerWithDefaultPrettyPrinter();
+    }
+
+
+    /**
+     * JacksonExtensions
      * @param dir path to your dir
      * @param fileName the file name
      * @param object your class object
      */
-    public JacksonHelper(String dir, String fileName, Class<T> object) {
+    public JacksonHelperExtension(String dir, String fileName, Class<T> object) {
         this.object = object;
         this.file = this.initFile(dir, fileName);
         this.objectMapper = new ObjectMapper();
         this.objectWriter = this.objectMapper.writerWithDefaultPrettyPrinter();
+    }
+
+    /**
+     * readAllFromJson
+     * @return List<T> all yours class objects
+     */
+    public T readJson() {
+        try {
+            return this.objectMapper.readerFor(this.object).readValue(this.file);
+        } catch (Exception exception) {
+            Assertions.fail("read from json exception " + exception.getMessage());
+            return null;
+        }
     }
 
     /**

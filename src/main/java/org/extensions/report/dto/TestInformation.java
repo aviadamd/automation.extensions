@@ -4,10 +4,15 @@ import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.util.Arrays;
+
 @JsonPropertyOrder({"time", "status", "className", "testName", "testInfo"})
 public class TestInformation {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String time;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String className;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Status[] status;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private TestMetaData testInfo;
@@ -39,4 +44,14 @@ public class TestInformation {
         this.testInfo = testInfo;
     }
     public void setStatus(Status[] status) { this.status = status; }
+
+    @Override
+    public String toString() {
+        return "TestInformation{" +
+                "time='" + time + '\'' +
+                ", className='" + className + '\'' +
+                ", status=" + Arrays.toString(status) +
+                ", testInfo=" + testInfo +
+                '}';
+    }
 }

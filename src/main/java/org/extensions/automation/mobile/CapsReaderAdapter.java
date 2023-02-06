@@ -2,13 +2,10 @@ package org.extensions.automation.mobile;
 
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
-import org.files.jsonReader.JacksonReaderExtension;
+import org.files.jsonReader.JacksonHelperExtension;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import java.io.File;
 import java.time.Duration;
-import java.util.Optional;
-import static org.automation.mobile.MobileDriverManager.isAndroidClient;
 public class CapsReaderAdapter {
     private CapabilitiesObject jsonObject;
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -17,13 +14,12 @@ public class CapsReaderAdapter {
 
     public CapsReaderAdapter(String jsonPath) {
         try {
-            Optional<CapabilitiesObject> capsObject = new JacksonReaderExtension(new File(jsonPath)).readValue(CapabilitiesObject.class);
-            if (capsObject.isPresent()) {
-                if (capsObject.get().getClient().equals("ANDROID"))
-                    this.capabilities.merge(this.androidCapabilities(capsObject.get()));
-                else this.capabilities.merge(this.iosCapabilities(capsObject.get()));
-                this.jsonObject = capsObject.get();
-            } else Assertions.fail("fail load capabilities from json " + jsonPath);
+            JacksonHelperExtension<CapabilitiesObject> jacksonHelper = new JacksonHelperExtension<>(jsonPath, CapabilitiesObject.class);
+            CapabilitiesObject capsObject = jacksonHelper.readJson();
+            if (capsObject.getClient().equals("ANDROID"))
+                this.capabilities.merge(this.androidCapabilities(capsObject));
+            else this.capabilities.merge(this.iosCapabilities(capsObject));
+            this.jsonObject = capsObject;
         } catch (Exception exception) {
             Assertions.fail("fail load capabilities from json " + jsonPath ,exception);
         }

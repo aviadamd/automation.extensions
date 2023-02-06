@@ -1,4 +1,4 @@
-package org.poc.misc;
+package org.poc.jackson;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

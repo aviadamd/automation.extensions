@@ -10,7 +10,6 @@ public class CapabilitiesObject {
     private String avd;
     private String udid;
     private String appBundleId;
-
     public CapabilitiesObject() {}
     public CapabilitiesObject(String client, String appiumBasePath, String appPath, String platformVersion, String avd, String udid, String appBundleId) {
         this.client = client;

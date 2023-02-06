@@ -6,14 +6,18 @@ import org.extensions.anontations.report.TestReportInfo;
 import java.util.List;
 
 public class TestMetaData {
-    private final String assignCategory;
-    private final String assignAuthor;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String assignCategory;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String assignAuthor;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Log> testLogs;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Throwable throwable;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String error;
+
+    public TestMetaData() {}
 
     public TestMetaData(TestReportInfo testInfo, String error) {
         this.assignCategory = testInfo.assignCategory();
@@ -37,10 +41,15 @@ public class TestMetaData {
         this.testLogs = testLogs;
         this.error = error;
     }
-
     public String getAssignAuthor() { return this.assignAuthor; }
     public String getAssignCategory() { return assignCategory; }
     public List<Log> getTestLogs() { return testLogs; }
     public Throwable getThrowable() { return throwable; }
     public String getError() { return error; }
+    public void setAssignAuthor(String assignAuthor) { this.assignAuthor = assignAuthor; }
+    public void setAssignCategory(String assignCategory) { this.assignCategory = assignCategory; }
+    public void setError(String error) {this.error = error;}
+    public void setTestLogs(List<Log> testLogs) { this.testLogs = testLogs; }
+    public void setThrowable(Throwable throwable) { this.throwable = throwable; }
+
 }

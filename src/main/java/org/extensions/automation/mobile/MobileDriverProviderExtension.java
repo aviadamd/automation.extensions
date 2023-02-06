@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import lombok.extern.slf4j.Slf4j;
 import net.lightbody.bmp.BrowserMobProxy;
 import net.lightbody.bmp.BrowserMobProxyServer;
@@ -16,12 +15,10 @@ import net.lightbody.bmp.proxy.CaptureType;
 import org.automation.mobile.MobileDriverManager;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.factory.JunitAnnotationHandler;
-import org.files.jsonReader.JacksonExtensions;
+import org.files.jsonReader.JacksonHelperExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.logging.LogEntry;
-import org.springframework.context.annotation.Bean;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -30,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -76,10 +72,8 @@ public class MobileDriverProviderExtension implements
                     if (!Files.exists(testPathDir)) Files.createDirectory(testPathDir);
                     String testName = context.getRequiredTestMethod().getName();
                     this.writeHarFile(new File(testPath + "/" + testName + ".json"), this.mobProxy.get().getHar().getLog());
-                    String entriesPath = System.getProperty("user.dir") + "/target/logEntries";
-                    Path entriesPathDir = Paths.get(entriesPath);
-                    if (!Files.exists(entriesPathDir)) Files.createDirectory(entriesPathDir);
-                    new JacksonExtensions(entriesPath + "/"+testName+"" + ".json").readAndWrite(this.logEntries.get(), LogEntry.class, true);
+                    JacksonHelperExtension<LogEntry> jacksonHelper = new JacksonHelperExtension<>("entriesPath", testName + ".json", LogEntry.class);
+                    jacksonHelper.writeToJson(this.logEntries.get());
                 }
             } catch (Exception exception) {
                 Assertions.fail("generate har file error ", exception);
