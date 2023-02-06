@@ -11,6 +11,7 @@ import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import lombok.extern.slf4j.Slf4j;
+import org.automation.AutomationProperties;
 import org.automation.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
 import org.extensions.automation.mobile.CapsReaderAdapter;
@@ -28,22 +29,34 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import static java.lang.System.getProperty;
 
 @Slf4j
 public class MobileDriverManager implements WebElementGestures, ExecutesMethod, ExecutesDriverScript, LogsEvents, HasBrowserCheck, HasSettings  {
     private Duration generalTimeOut = Duration.ofSeconds(15);
     private Duration pollingEvery = Duration.ofSeconds(5);
-    private final HashMap<Long, IOSDriver> iosDriver = new HashMap<>();
-    private final HashMap<Long, AndroidDriver> androidDriver = new HashMap<>();
-    private final HashMap<Long, AppiumFluentWait<WebDriver>> webDriverWait = new HashMap<>();
-    public IOSDriver getIosDriver() { return this.iosDriver.get(Thread.currentThread().getId()); }
-    public AndroidDriver getAndroidDriver() { return this.androidDriver.get(Thread.currentThread().getId()); }
-    public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(Thread.currentThread().getId()); }
-    private final HashMap<Long, EventFiringDecorator<IOSDriver>> iosDecorator = new HashMap<>();
-    private HashMap<Long, EventFiringDecorator<AndroidDriver>> androidDecorator = new HashMap<>();
-    private boolean isAndroid() { return Objects.equals(getProperty("project.client"), "android"); }
-    public static boolean isAndroidClient() { return Objects.equals(getProperty("project.client"), "android"); }
+    private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
+    private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
+
+    private final ThreadLocal<AppiumDriver> appiumDriver = new ThreadLocal<>();
+    private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
+    public IOSDriver getIosDriver() { return this.iosDriver.get(); }
+    public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
+    public AppiumDriver getAppiumDriver() { return this.appiumDriver.get(); }
+    public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
+    private final ThreadLocal<EventFiringDecorator<IOSDriver>> iosDecorator = new ThreadLocal<>();
+    private final ThreadLocal<EventFiringDecorator<AndroidDriver>> androidDecorator = new ThreadLocal<>();
+    private boolean isAndroid() {
+        return AutomationProperties
+                .getPropertiesInstance()
+                .getProperty("project.mobile.client")
+                .equalsIgnoreCase("android");
+    }
+    public static boolean isAndroidClient() {
+        return AutomationProperties
+                .getPropertiesInstance()
+                .getProperty("project.mobile.client")
+                .equalsIgnoreCase("android");
+    }
 
     public WebDriver getMobileDriver() {
         return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();
@@ -55,33 +68,23 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     }
 
     /**
-     *
-     * @param threadId
      * @param type
      * @param caps
      * @param appiumBasePath appium url connection
      */
-    public MobileDriverManager(Long threadId, String type, DesiredCapabilities caps, String appiumBasePath) {
+    public MobileDriverManager(String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
             switch (type) {
                 case "IOS":
-                    this.iosDriver.put(threadId, new IOSDriver(new URL(appiumBasePath), caps));
-                    this.iosDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
-                    this.iosDecorator.get(threadId).decorate(this.iosDriver.get(threadId));
-                    this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
+                    this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
+                    this.iosDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
+                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
                     break;
                 case "ANDROID":
-                    this.androidDriver.put(threadId, new AndroidDriver(new URL(appiumBasePath), caps));
-                    this.androidDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
-                    this.androidDecorator.get(threadId).decorate(this.androidDriver.get(threadId));
-                    this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
-                    break;
-                case "ANDROID_CHROME":
-                    DesiredCapabilities capabilities = this.capsForChromeAndroid(caps,"todo","todo");
-                    this.androidDriver.put(threadId, new AndroidDriver(new URL(appiumBasePath), capabilities));
-                    this.androidDecorator.put(threadId, new EventFiringDecorator<>(new DriverEventListener()));
-                    this.androidDecorator.get(threadId).decorate(this.androidDriver.get(threadId));
-                    this.webDriverWait.put(threadId, new AppiumFluentWait<>(this.getMobileDriver()));
+                    this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
+                    this.androidDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
+                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
+                    this.appiumDriver.set(new AppiumDriver(new URL(appiumBasePath), caps));
                     break;
             }
 
@@ -92,11 +95,10 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
 
     /**
      * MobileDriverManager
-     * @param threadId
      * @param capsReader
      */
-    public MobileDriverManager(Long threadId, CapsReaderAdapter capsReader) {
-        this(threadId, capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
+    public MobileDriverManager(CapsReaderAdapter capsReader) {
+        this(capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
     }
 
     private synchronized void appiumLocal(String appiumBasePath) {

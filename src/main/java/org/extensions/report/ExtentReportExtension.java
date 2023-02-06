@@ -22,11 +22,9 @@ import org.mongo.legacy.MongoRepoImplementation;
 import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static org.automation.AutomationProperties.getPropertiesInstance;
-
 @Slf4j
-public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+public class ExtentReportExtension implements TestWatcher ,BeforeAllCallback, BeforeEachCallback, AfterEachCallback, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private static final List<TestInformation> failTests = new ArrayList<>();
     private static final List<TestInformation> passTests = new ArrayList<>();
     private static final List<FailTestInfoMongo> failTestsMongo = new ArrayList<>();
@@ -90,9 +88,10 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
     @Override
     public synchronized void testDisabled(ExtensionContext context, Optional<String> reason) {
         if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
+            String testName = context.getRequiredTestMethod().getName();
             if (reason.isPresent()) {
-                ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " disabled, reason " + reason.get());
-            } else ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " disabled");
+                ExtentTestManager.log(Status.INFO,"test " + testName + " disabled, reason " + reason.get());
+            } else ExtentTestManager.log(Status.INFO,"test " + testName + " disabled");
         }
     }
     @Override
@@ -149,9 +148,7 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
             Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
 
             if (reportConfiguration.isPresent() && reportConfiguration.get().extraReportsBy().length > 0) {
-                ExtentTestManager.attachExtraReports(
-                        reportConfiguration.get().extraReportsBy(),
-                        getPropertiesInstance().getProperty(reportConfiguration.get().reportPath()));
+                ExtentTestManager.attachExtraReports(reportConfiguration.get().extraReportsBy(), getPropertiesInstance().getProperty(reportConfiguration.get().reportPath()));
             }
 
             String className = context.getRequiredTestClass().getSimpleName();

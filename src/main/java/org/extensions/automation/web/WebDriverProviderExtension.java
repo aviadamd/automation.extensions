@@ -13,6 +13,9 @@ import net.lightbody.bmp.client.ClientUtil;
 import net.lightbody.bmp.core.har.HarEntry;
 import net.lightbody.bmp.core.har.HarLog;
 import net.lightbody.bmp.core.har.HarPage;
+import net.lightbody.bmp.mitm.TrustSource;
+import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
+import net.lightbody.bmp.mitm.util.TrustUtil;
 import net.lightbody.bmp.proxy.CaptureType;
 import org.automation.AutomationProperties;
 import org.automation.web.SeleniumWebDriverManager;
@@ -63,7 +66,10 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
                 this.capabilities.get().acceptInsecureCerts();
 
                 if (getPropertiesInstance().getProperty("project.client").equalsIgnoreCase("chrome")) {
-                    this.driverManager.set(new SeleniumWebDriverManager(AutomationProperties.getPropertiesInstance().getProperty(driverType.get().baseUrl()), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.chromedriver().capabilities(this.chromeOptions().merge(capabilities.get())).create()));
+                    this.driverManager.set(new SeleniumWebDriverManager(
+                            getPropertiesInstance().getProperty(driverType.get().baseUrl()),
+                            Duration.ofSeconds(driverType.get().generalTo()),
+                            WebDriverManager.chromedriver().capabilities(this.chromeOptions().merge(capabilities.get())).create()));
                     return this.driverManager.get();
                 } else if (getPropertiesInstance().getProperty("project.client").equalsIgnoreCase("firefox")) {
                     this.driverManager.set(new SeleniumWebDriverManager(AutomationProperties.getPropertiesInstance().getProperty(driverType.get().baseUrl()), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.firefoxdriver().capabilities(this.firefoxOptions().merge(capabilities.get())).create()));
@@ -132,17 +138,28 @@ public class WebDriverProviderExtension implements ParameterResolver, AfterEachC
     }
     public synchronized BrowserMobProxy setMobProxyServer(int port, String fileName) {
         try {
+
             BrowserMobProxyServer mobProxyServer = new BrowserMobProxyServer();
             mobProxyServer.setTrustAllServers(true);
             mobProxyServer.setMitmDisabled(true);
+
             EnumSet<CaptureType> captureTypes = CaptureType.getAllContentCaptureTypes();
             captureTypes.addAll(CaptureType.getCookieCaptureTypes());
             captureTypes.addAll(CaptureType.getHeaderCaptureTypes());
             captureTypes.addAll(CaptureType.getRequestCaptureTypes());
             captureTypes.addAll(CaptureType.getResponseCaptureTypes());
             mobProxyServer.enableHarCaptureTypes(captureTypes);
+
+            TrustSource trustSource = TrustSource.defaultTrustSource();
+            trustSource.add(TrustUtil.getBuiltinTrustedCAs());
+            trustSource.add(TrustUtil.getJavaTrustedCAs());
+            trustSource.add(TrustUtil.getDefaultJavaTrustManager().getAcceptedIssuers());
+            trustSource.add(TrustUtil.readX509CertificatesFromPem("C:\\Users\\Lenovo\\OneDrive\\Desktop\\ca-certificate-rsa.cer"));
+            mobProxyServer.setTrustSource(trustSource);
+
             mobProxyServer.newHar(fileName);
             mobProxyServer.start(port);
+
             return mobProxyServer;
         } catch (Exception exception) {
             throw new RuntimeException("init mob proxy fails ", exception);

@@ -12,14 +12,14 @@ import static org.automation.mobile.MobileDriverManager.isAndroidClient;
 public class CapsReaderAdapter {
     private CapabilitiesObject jsonObject;
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
-    public CapabilitiesObject getJsonObject() { return this.jsonObject; }
-    public DesiredCapabilities getCapabilities() { return this.capabilities; }
+    public synchronized CapabilitiesObject getJsonObject() { return this.jsonObject; }
+    public synchronized DesiredCapabilities getCapabilities() { return this.capabilities; }
 
     public CapsReaderAdapter(String jsonPath) {
         try {
             Optional<CapabilitiesObject> capsObject = new JacksonReaderExtension(new File(jsonPath)).readValue(CapabilitiesObject.class);
             if (capsObject.isPresent()) {
-                if (isAndroidClient())
+                if (capsObject.get().getClient().equals("ANDROID"))
                     this.capabilities.merge(this.androidCapabilities(capsObject.get()));
                 else this.capabilities.merge(this.iosCapabilities(capsObject.get()));
                 this.jsonObject = capsObject.get();
@@ -29,39 +29,29 @@ public class CapsReaderAdapter {
         }
     }
 
-    private UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
+    private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
         return new UiAutomator2Options()
                 .setNoReset(true)
                 .setAutoGrantPermissions(true)
                 .setClearSystemFiles(true)
                 .setClearDeviceLogsOnStart(true)
                 .setAppWaitForLaunch(true)
-                .setAvd(jsonObject.getAvd())
                 .setUdid(jsonObject.getUdid())
-                .setApp(jsonObject.getAppPath())
                 .setAppPackage(jsonObject.getAppBundleId())
-                .setPlatformVersion(jsonObject.getPlatformVersion())
+                .setApp(jsonObject.getAppPath())
                 .setDeviceName(jsonObject.getAvd())
-                .setAppActivity(jsonObject.getAppBundleId().concat(".features.auth.splash.SplashActivity"))
-                .setAndroidInstallTimeout(Duration.ofSeconds(30))
-                .setAdbExecTimeout(Duration.ofSeconds(100))
+                .setPlatformVersion(jsonObject.getPlatformVersion())
                 .setAppWaitDuration(Duration.ofMinutes(1))
-                .setNewCommandTimeout(Duration.ofMinutes(1))
-                .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(1))
-                .setUiautomator2ServerLaunchTimeout(Duration.ofMinutes(1))
-                .setUiautomator2ServerReadTimeout(Duration.ofMinutes(1))
-                .clearDeviceLogsOnStart()
-                .clearSystemFiles();
+                .setNewCommandTimeout(Duration.ofMinutes(1));
     }
-    private XCUITestOptions iosCapabilities(CapabilitiesObject jsonObject) {
+
+    private synchronized XCUITestOptions iosCapabilities(CapabilitiesObject jsonObject) {
         return new XCUITestOptions()
                 .setNoReset(true)
                 .setNoReset(true)
                 .setClearSystemFiles(true)
-                .setUdid(jsonObject.getUdid())
                 .setApp(jsonObject.getAppPath())
                 .setBundleId(jsonObject.getAppBundleId())
-                .setDeviceName(jsonObject.getAvd())
                 .setCommandTimeouts(Duration.ofMinutes(1))
                 .setPlatformVersion(jsonObject.getPlatformVersion())
                 .clearSystemFiles();
@@ -74,4 +64,14 @@ public class CapsReaderAdapter {
                 ", capabilitiesObject=" + jsonObject +
                 '}';
     }
+
+    //    // .setAppActivity(jsonObject.getAppBundleId().concat(".features.auth.splash.SplashActivity"))
+    //               // .setAndroidInstallTimeout(Duration.ofSeconds(30))
+    //               // .setAdbExecTimeout(Duration.ofSeconds(100))
+    //  .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(1))
+    //  .setUiautomator2ServerLaunchTimeout(Duration.ofMinutes(1))
+    //  .setUiautomator2ServerReadTimeout(Duration.ofMinutes(1))
+    //  .clearDeviceLogsOnStart()
+    //  .clearSystemFiles();
+    // .setApp(jsonObject.getUdid())
 }
