@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mongo.morphia.MorphiaRepository;
 import org.poc.mongo.pojos.Ingredient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +30,13 @@ import static com.aventstack.extentreports.Status.SKIP;
 )
 public class MongoMorphiaDbTest {
 
-    @Test
+    @ValueSource(strings = {"value"})
+    @ParameterizedTest(name = "TestName - {0}")
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void a_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
-        Ingredient bread = new Ingredient(new ObjectId(),"Aviad", true);
+    public void a_mobileTest(@Autowired MorphiaRepository morphiaRepository, String value) {
+        Ingredient bread = new Ingredient(new ObjectId(), value, true);
         morphiaRepository.getRepository().getDatastore().insert(bread);
     }
 

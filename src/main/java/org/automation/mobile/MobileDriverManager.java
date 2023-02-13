@@ -11,13 +11,13 @@ import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import lombok.extern.slf4j.Slf4j;
-import org.automation.AutomationProperties;
 import org.automation.WebElementGestures;
 import org.extensions.automation.DriverEventListener;
 import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
+import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.support.events.EventFiringDecorator;
@@ -31,31 +31,28 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-public class MobileDriverManager implements WebElementGestures, ExecutesMethod, ExecutesDriverScript, LogsEvents, HasBrowserCheck, HasSettings  {
+@Augmentable
+public class MobileDriverManager implements
+        WebElementGestures, ExecutesMethod,
+        ExecutesDriverScript, LogsEvents,
+        HasBrowserCheck, HasSettings  {
     private Duration generalTimeOut = Duration.ofSeconds(15);
     private Duration pollingEvery = Duration.ofSeconds(5);
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
-
-    private final ThreadLocal<AppiumDriver> appiumDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
-    public IOSDriver getIosDriver() { return this.iosDriver.get(); }
-    public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
-    public AppiumDriver getAppiumDriver() { return this.appiumDriver.get(); }
-    public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
     private final ThreadLocal<EventFiringDecorator<IOSDriver>> iosDecorator = new ThreadLocal<>();
     private final ThreadLocal<EventFiringDecorator<AndroidDriver>> androidDecorator = new ThreadLocal<>();
+    public IOSDriver getIosDriver() { return this.iosDriver.get(); }
+    public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
+    public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
+
     private boolean isAndroid() {
-        return AutomationProperties
-                .getPropertiesInstance()
-                .getProperty("project.mobile.client")
-                .equalsIgnoreCase("android");
+        return System.getProperty("project.mobile.client").equalsIgnoreCase("android");
     }
+
     public static boolean isAndroidClient() {
-        return AutomationProperties
-                .getPropertiesInstance()
-                .getProperty("project.mobile.client")
-                .equalsIgnoreCase("android");
+        return System.getProperty("project.mobile.client").equalsIgnoreCase("android");
     }
 
     public WebDriver getMobileDriver() {
@@ -75,19 +72,15 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
     public MobileDriverManager(String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
             switch (type) {
-                case "IOS":
+                case "IOS" -> {
                     this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
-                    this.iosDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
                     this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
-                    break;
-                case "ANDROID":
+                }
+                case "ANDROID" -> {
                     this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
-                    this.androidDecorator.set(new EventFiringDecorator<>(new DriverEventListener()));
                     this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
-                    this.appiumDriver.set(new AppiumDriver(new URL(appiumBasePath), caps));
-                    break;
+                }
             }
-
         } catch (Exception exception) {
             Assertions.fail("init driver fail ", exception);
         }
@@ -113,6 +106,8 @@ public class MobileDriverManager implements WebElementGestures, ExecutesMethod, 
                 .withIPAddress(ip)
                 .usingPort(Integer.parseInt(port))
                 .withArgument(GeneralServerFlag.BASEPATH, "/wd/hub")
+                .withArgument(GeneralServerFlag.ALLOW_INSECURE)
+                .withArgument(GeneralServerFlag.ASYNC_TRACE)
                 .build());
         appiumLocalService.get().start();
     }

@@ -6,15 +6,15 @@ import org.apache.commons.collections4.MultiValuedMap;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static org.files.excelReader.ExcelDbReaderExtensions.queryResultMap;
+import static org.files.excelReader.ExcelDbReader.queryResultMap;
 
 @Slf4j
-public class ExcelDbRepository extends ExcelDbReaderExtensions.QueryBuilder {
+public class ExcelDbRepository extends ExcelDbReader.QueryBuilder {
     private String query = "";
-    private final ExcelDbReaderExtensions.QueryBuilder queryBuilder;
+    private final ExcelDbReader.QueryBuilder queryBuilder;
     private static List<ClassPogo> setAllClassPojo = new ArrayList<>();
     public ExcelDbRepository(String path) {
-        this.queryBuilder = new ExcelDbReaderExtensions.QueryBuilder().setConnection(path);
+        this.queryBuilder = new ExcelDbReader.QueryBuilder().setConnection(path);
     }
     public void setQuery(String query) {
         this.query = query;

@@ -1,4 +1,4 @@
-package org.rest.assured;
+ package org.rest.assured;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -10,56 +10,67 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RestAssuredBuilder {
-    public static class RequestBuilder {
-        private String baseUri = "";
-        private String setPath = "";
-        private Map<String,String> setBody = new HashMap<>();
-        private ContentType setContentType = null;
-        private Map<String,String> setQueryParams = new HashMap<>();
-        private Map<String,String> setHeaders = new HashMap<>();
 
-        public RequestBuilder setBaseUri(String baseUri) {
-            this.baseUri = baseUri;
-            return this;
-        }
-        public RequestBuilder setPath(String setPath) {
-            this.setPath = setPath;
-            return this;
-        }
-        public RequestBuilder setContentType(ContentType setContentType) {
-            this.setContentType = setContentType;
-            return this;
-        }
+    private String baseUri = "";
+    private String setPath = "";
+    private Map<String,String> setBody = new HashMap<>();
+    private ContentType setContentType = null;
+    private Map<String,String> setQueryParams = new HashMap<>();
+    private Map<String,String> setHeaders = new HashMap<>();
 
-        public RequestBuilder setHeaders(Map<String,String> setHeaders) {
-            this.setHeaders = setHeaders;
-            return this;
-        }
-
-        public RequestBuilder setBody(Map<String,String> setBody) {
-            this.setBody = setBody;
-            return this;
-        }
-
-        public RequestBuilder setQueryParams(Map<String,String> setQueryParams) {
-            this.setQueryParams = setQueryParams;
-            return this;
-        }
-
-        public Response getResponse(Method method) {
-            RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
-            requestSpecBuilder.setBaseUri(this.baseUri);
-
-            if (!this.setPath.isEmpty()) requestSpecBuilder.setBasePath(this.setPath);
-            if (this.setContentType != null && !this.setContentType.toString().isEmpty()) requestSpecBuilder.setContentType(this.setContentType);
-            if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
-            if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
-            if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
-
-            return RestAssured.given().spec(requestSpecBuilder.build()).request(method);
-        }
+    public RestAssuredBuilder setBaseUri(String baseUri) {
+        this.baseUri = baseUri;
+        return this;
     }
-    public JsonPath getJsonPath(Response response) {
-        return response.then().extract().jsonPath();
+    public RestAssuredBuilder setPath(String setPath) {
+        this.setPath = setPath;
+        return this;
+    }
+    public RestAssuredBuilder setContentType(ContentType setContentType) {
+        this.setContentType = setContentType;
+        return this;
+    }
+
+    public RestAssuredBuilder setHeaders(Map<String,String> setHeaders) {
+        this.setHeaders = setHeaders;
+        return this;
+    }
+    public RestAssuredBuilder setBody(Map<String,String> setBody) {
+        this.setBody = setBody;
+        return this;
+    }
+    public RestAssuredBuilder setQueryParams(Map<String,String> setQueryParams) {
+        this.setQueryParams = setQueryParams;
+        return this;
+    }
+    public <T> ResponseObject<T> build(Method method, Class<T> tClass) {
+        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder().setBasePath(this.baseUri);
+
+        if (!this.setPath.isEmpty()) requestSpecBuilder.setBasePath(this.setPath);
+        if (this.setContentType != null && !this.setContentType.toString().isEmpty()) requestSpecBuilder.setContentType(this.setContentType);
+        if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
+        if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
+        if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
+
+        Response response = RestAssured.given().spec(requestSpecBuilder.build()).request(method);
+        ResponseObject<T> responseObject = new ResponseObject<>(response, response.jsonPath());
+        if (tClass != null) responseObject.setResponseToObject(tClass);
+        return responseObject;
+    }
+
+    public static class ResponseObject<T> {
+        private T responseToObject;
+        private final JsonPath jsonPath;
+        private final Response response;
+
+        public ResponseObject(Response response, JsonPath jsonPath) {
+            this.jsonPath = jsonPath;
+            this.response = response;
+        }
+
+        public void setResponseToObject(Class<T> responseToObject) { this.responseToObject = this.response.as(responseToObject); }
+        public Response getResponse() { return this.response; }
+        public T getResponseToObject() { return this.responseToObject; }
+        public JsonPath getJsonPath() { return this.jsonPath; }
     }
 }

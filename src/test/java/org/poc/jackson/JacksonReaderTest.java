@@ -8,7 +8,7 @@ import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.automation.mobile.CapabilitiesObject;
 import org.extensions.report.ExtentReportExtension;
-import org.files.jsonReader.JacksonHelperExtension;
+import org.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ public class JacksonReaderTest {
     @DisplayName("readJsonTestA")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
     @JacksonProvider(dir = "src/test/resources/json/", fileName = "someJson.json", classObject = ObjectPojo.class)
-    public void readJsonTestA(JacksonHelperExtension<ObjectPojo> jacksonHelper) {
+    public void readJsonTestA(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
         jacksonHelper.writeToJson(new ArrayList<>(Arrays.asList(new ObjectPojo("2","ella"), new ObjectPojo("3", "adva"))));
@@ -46,7 +46,7 @@ public class JacksonReaderTest {
     @DisplayName("readJsonTestB")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
     @JacksonProvider(dir = "src/test/resources/json", fileName = "someJson.json", classObject = ObjectPojo.class)
-    public void readJsonTestB(JacksonHelperExtension<ObjectPojo> jacksonHelper) {
+    public void readJsonTestB(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
         jacksonHelper.writeToJson(new ArrayList<>(Arrays.asList(new ObjectPojo("2","ella"), new ObjectPojo("3", "adva"))));
@@ -61,7 +61,7 @@ public class JacksonReaderTest {
     @DisplayName("readJsonTestD")
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
     @JacksonProvider(dir = "src/test/resources/json", fileName = "someJson.json", classObject = ObjectPojo.class)
-    public void readJsonTestC(JacksonHelperExtension<ObjectPojo> jacksonHelper) {
+    public void readJsonTestC(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
         jacksonHelper.writeToJson(new ArrayList<>(Arrays.asList(new ObjectPojo("2","ella"), new ObjectPojo("3", "adva"))));
@@ -76,7 +76,7 @@ public class JacksonReaderTest {
     @DisplayName("readJsonTestD")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
     @JacksonProvider(dir = "/src/test/resources", fileName = "androidCaps1.json", classObject = CapabilitiesObject.class)
-    public void readJsonTestD(JacksonHelperExtension<CapabilitiesObject> jacksonHelper) {
+    public void readJsonTestD(JacksonExtension<CapabilitiesObject> jacksonHelper) {
         log.info(jacksonHelper.readJson().getAvd());
         log.info(jacksonHelper.readJson().getClient());
         log.info(jacksonHelper.readJson().getAppPath());

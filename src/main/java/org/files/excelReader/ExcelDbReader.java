@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-public class ExcelDbReaderExtensions {
-    private static final Logger logger = LoggerFactory.getLogger(ExcelDbReaderExtensions.class);
-
+public class ExcelDbReader {
     public static class UpdateQueryBuilder {
         private Connection connection;
         private Fillo reader;
@@ -143,7 +141,7 @@ public class ExcelDbReaderExtensions {
                 .collect(Collectors.toList());
     }
     protected static void printError(Exception exception, String from) {
-        logger.error("Error " + exception + ", from " + from);
+        log.error("Error " + exception + ", from " + from);
     }
 
 }

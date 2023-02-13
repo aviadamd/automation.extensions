@@ -1,11 +1,14 @@
 package org.extensions.automation.mobile;
 
+import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
-import org.files.jsonReader.JacksonHelperExtension;
+import org.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
 public class CapsReaderAdapter {
     private CapabilitiesObject jsonObject;
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -14,7 +17,7 @@ public class CapsReaderAdapter {
 
     public CapsReaderAdapter(String jsonPath) {
         try {
-            JacksonHelperExtension<CapabilitiesObject> jacksonHelper = new JacksonHelperExtension<>(jsonPath, CapabilitiesObject.class);
+            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(jsonPath, CapabilitiesObject.class);
             CapabilitiesObject capsObject = jacksonHelper.readJson();
             if (capsObject.getClient().equals("ANDROID"))
                 this.capabilities.merge(this.androidCapabilities(capsObject));
@@ -28,6 +31,9 @@ public class CapsReaderAdapter {
     private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
         return new UiAutomator2Options()
                 .setNoReset(true)
+                .ignoreHiddenApiPolicyError()
+                .merge(this.installAndroid())
+                .setAvdLaunchTimeout(Duration.ofMinutes(1))
                 .setAutoGrantPermissions(true)
                 .setClearSystemFiles(true)
                 .setClearDeviceLogsOnStart(true)
@@ -53,6 +59,18 @@ public class CapsReaderAdapter {
                 .clearSystemFiles();
     }
 
+    private synchronized DesiredCapabilities installAndroid() {
+        AndroidInstallApplicationOptions androidInstall = new AndroidInstallApplicationOptions()
+                .withUseSdcardEnabled()
+                .withReplaceEnabled()
+                .withAllowTestPackagesEnabled()
+                .withGrantPermissionsEnabled()
+                .withUseSdcardEnabled()
+                .withTimeout(Duration.of(100, ChronoUnit.SECONDS));
+        DesiredCapabilities caps = new DesiredCapabilities();
+        androidInstall.build().forEach(caps::setCapability);
+        return caps;
+    }
     @Override
     public String toString() {
         return "CapsReader{" +

@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Assertions;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-public class JacksonHelperExtension<T> {
+public class JacksonExtension<T> {
     private final File file;
     private final Class<T> object;
     private final ObjectMapper objectMapper;
@@ -26,7 +25,7 @@ public class JacksonHelperExtension<T> {
      * @param filePath the file path
      * @param object your class object
      */
-    public JacksonHelperExtension(String filePath, Class<T> object) {
+    public JacksonExtension(String filePath, Class<T> object) {
         this.object = object;
         this.file = new File(filePath);
         this.objectMapper = new ObjectMapper();
@@ -40,7 +39,7 @@ public class JacksonHelperExtension<T> {
      * @param fileName the file name
      * @param object your class object
      */
-    public JacksonHelperExtension(String dir, String fileName, Class<T> object) {
+    public JacksonExtension(String dir, String fileName, Class<T> object) {
         this.object = object;
         this.file = this.initFile(dir, fileName);
         this.objectMapper = new ObjectMapper();
@@ -180,12 +179,22 @@ public class JacksonHelperExtension<T> {
      */
     private File initFile(String dir, String fileName) {
         try {
-            Path dirPath = Paths.get(dir);
-            Path path = Path.of(Paths.get(dirPath + "/" + fileName).toString());
-            return Files.exists(path) ? path.toFile() : Files.createFile(path).toFile();
+            String fullPath = Files.createDirectories(Path.of(dir)) + "/" + fileName;
+            if (!this.isFileExists(fullPath)) {
+                return new File(fullPath);
+            } else return Files.createFile(Path.of(fullPath)).toFile();
         } catch (Exception exception) {
             Assertions.fail("init file is thrown exception", exception);
             return null;
+        }
+    }
+
+    private boolean isFileExists(String fullPath) {
+        try {
+            Path path = Path.of(fullPath);
+            return Files.exists(path);
+        } catch (Exception exception) {
+            return false;
         }
     }
 }

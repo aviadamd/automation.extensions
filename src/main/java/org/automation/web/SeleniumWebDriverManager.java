@@ -3,11 +3,14 @@ package org.automation.web;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.automation.WebElementGestures;
 import org.openqa.selenium.*;
+import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.*;
+
+@Augmentable
 public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
     private Duration generalTimeOut = Duration.ofSeconds(5);
     private Duration pollingEvery = Duration.ofSeconds(1);
