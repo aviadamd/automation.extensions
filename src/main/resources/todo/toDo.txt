@@ -1,3 +1,9 @@
+
+    @SetEnvironmentVariable(key = "project.json.demo", value = "src/test/resources/json/someJson.json")
+
+@DisableIfTestFails(with = IOException.class)
+
+
  public void demo() {
 
         MobileCommand.postC("wedwed").getMethod();

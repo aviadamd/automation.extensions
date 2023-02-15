@@ -1,19 +1,15 @@
 package org.files.jsonReader;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Assertions;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+
 public class JacksonExtension<T> {
     private final File file;
     private final Class<T> object;
@@ -22,26 +18,12 @@ public class JacksonExtension<T> {
 
     /**
      * JacksonExtensions
-     * @param filePath the file path
-     * @param object your class object
-     */
-    public JacksonExtension(String filePath, Class<T> object) {
-        this.object = object;
-        this.file = new File(filePath);
-        this.objectMapper = new ObjectMapper();
-        this.objectWriter = this.objectMapper.writerWithDefaultPrettyPrinter();
-    }
-
-
-    /**
-     * JacksonExtensions
-     * @param dir path to your dir
      * @param fileName the file name
      * @param object your class object
      */
-    public JacksonExtension(String dir, String fileName, Class<T> object) {
+    public JacksonExtension(String fileName, Class<T> object) {
         this.object = object;
-        this.file = this.initFile(dir, fileName);
+        this.file = new File(fileName);
         this.objectMapper = new ObjectMapper();
         this.objectWriter = this.objectMapper.writerWithDefaultPrettyPrinter();
     }
@@ -124,7 +106,7 @@ public class JacksonExtension<T> {
      */
     public List<T> findsBy(Predicate<T> tPredicate) {
         List<T> collector = new ArrayList<>();
-        for (T object: this.readAllFromJson()) {
+        for (T object : this.readAllFromJson()) {
             if (tPredicate.test(object)) {
                 collector.add(object);
             }
@@ -132,69 +114,4 @@ public class JacksonExtension<T> {
         return collector;
     }
 
-    /**
-     * removeFiled
-     * clean field from json
-     * @param filed String
-     */
-    public void removeFiled(String filed) {
-        try {
-            for (JsonNode jsonNode: this.objectMapper.readTree(this.file)) {
-                ((ObjectNode) jsonNode).remove(filed);
-            }
-        } catch (Exception exception) {
-            Assertions.fail("fail to remove filed from json ", exception);
-        }
-    }
-
-    /**
-     * removeFields
-     * clean collection of fields from json
-     * @param fields Collection<String>
-     */
-    public void removeFields(Collection<String> fields) {
-        try {
-            for (JsonNode jsonNode: this.objectMapper.readTree(this.file)) {
-                ((ObjectNode) jsonNode).remove(fields);
-            }
-        } catch (Exception exception) {
-            Assertions.fail("fail to remove filed from json ", exception);
-        }
-    }
-
-    /*** clean all fields from json */
-    public void removeAllFields() {
-        try {
-            this.objectMapper.readTree(this.file).fields().remove();
-        } catch (Exception exception) {
-            Assertions.fail("fail to remove filed from json ", exception);
-        }
-    }
-
-    /**
-     * initFile will create new file if not exists
-     * @param dir dir location
-     * @param fileName the file name
-     * @return new or exist file
-     */
-    private File initFile(String dir, String fileName) {
-        try {
-            String fullPath = Files.createDirectories(Path.of(dir)) + "/" + fileName;
-            if (!this.isFileExists(fullPath)) {
-                return new File(fullPath);
-            } else return Files.createFile(Path.of(fullPath)).toFile();
-        } catch (Exception exception) {
-            Assertions.fail("init file is thrown exception", exception);
-            return null;
-        }
-    }
-
-    private boolean isFileExists(String fullPath) {
-        try {
-            Path path = Path.of(fullPath);
-            return Files.exists(path);
-        } catch (Exception exception) {
-            return false;
-        }
-    }
 }

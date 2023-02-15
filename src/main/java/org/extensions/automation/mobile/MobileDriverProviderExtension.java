@@ -25,7 +25,6 @@ public class MobileDriverProviderExtension implements
         AfterEachCallback,
         AfterAllCallback,
         JunitAnnotationHandler.ExtensionContextHandler {
-
     private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverManager> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
@@ -75,7 +74,7 @@ public class MobileDriverProviderExtension implements
                     this.mobProxyExtension.get().writeHarFile(new File(testPath + "/" + testName + ".json"), this.mobProxyExtension.get().getServer().getHar().getLog());
                     List<LogEntryObject> logEntryObjects = new ArrayList<>();
                     logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
-                    JacksonExtension<LogEntryObject> jacksonHelper = new JacksonExtension<>(System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation(), testName + ".json", LogEntryObject.class);
+                    JacksonExtension<LogEntryObject> jacksonHelper = new JacksonExtension<>(System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json", LogEntryObject.class);
                     jacksonHelper.writeToJson(logEntryObjects);
                 }
             } catch (Exception exception) {

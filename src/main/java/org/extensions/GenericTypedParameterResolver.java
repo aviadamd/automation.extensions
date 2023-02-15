@@ -3,21 +3,19 @@ package org.extensions;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.platform.commons.util.ReflectionUtils;
 
-public class GenericTypedParameterResolver <T> implements ParameterResolver {
-    T data;
+public class GenericTypedParameterResolver implements ParameterResolver {
 
-    public GenericTypedParameterResolver(T data) {
-        this.data = data;
+    @Override
+    public Object resolveParameter(ParameterContext parameter, ExtensionContext extension) {
+        return ReflectionUtils.newInstance(parameter.getParameter().getType());
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        return parameterContext.getParameter().getType().isInstance(data);
+    public boolean supportsParameter(ParameterContext parameter, ExtensionContext extension) {
+        return parameter.getParameter().getType() != null;
     }
 
-    @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        return data;
-    }
 }
+

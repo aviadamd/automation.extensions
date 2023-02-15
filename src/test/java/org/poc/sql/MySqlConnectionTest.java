@@ -5,6 +5,7 @@ import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.extensions.anontations.mySql.MySqlConnector;
+import org.extensions.report.ExtentReportExtension;
 import org.extensions.sql.MySqlDbExtension;
 import org.extensions.anontations.Repeat;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static com.aventstack.extentreports.Status.SKIP;
 
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
-@ExtendWith(value = { MySqlDbExtension.class })
+@ExtendWith(value = { MySqlDbExtension.class, ExtentReportExtension.class })
 @ReportConfiguration(
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },

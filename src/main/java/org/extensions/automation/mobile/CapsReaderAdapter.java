@@ -17,7 +17,7 @@ public class CapsReaderAdapter {
 
     public CapsReaderAdapter(String jsonPath) {
         try {
-            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(jsonPath, CapabilitiesObject.class);
+            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(System.getProperty("user.dir") + "/" + jsonPath, CapabilitiesObject.class);
             CapabilitiesObject capsObject = jacksonHelper.readJson();
             if (capsObject.getClient().equals("ANDROID"))
                 this.capabilities.merge(this.androidCapabilities(capsObject));

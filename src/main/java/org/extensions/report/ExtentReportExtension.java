@@ -160,12 +160,12 @@ public class ExtentReportExtension implements
             String testPath = System.getProperty("user.dir") + "/target/testResults";
 
             if (passTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, className.concat("Pass.json"), TestInformation.class);
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath + "/" + className + "Pass.json", TestInformation.class);
                 testWriter.writeToJson(passTests);
             }
 
             if (failTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, className.concat("Fail.json"), TestInformation.class);
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath + "/" + className + "Fail.json", TestInformation.class);
                 testWriter.writeToJson(passTests);
             }
 

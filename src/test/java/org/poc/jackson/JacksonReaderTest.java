@@ -2,7 +2,7 @@ package org.poc.jackson;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.JacksonProviderExtension;
+import org.extensions.jackson.JacksonProviderExtension;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
@@ -20,17 +20,16 @@ import java.util.List;
 import java.util.Optional;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
-
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
-@ExtendWith(value = { ExtentReportExtension.class, JacksonProviderExtension.class })
+@ExtendWith(value = { ExtentReportExtension.class , JacksonProviderExtension.class })
 @ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
 public class JacksonReaderTest {
 
     @Test
     @DisplayName("readJsonTestA")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
-    @JacksonProvider(dir = "src/test/resources/json/", fileName = "someJson.json", classObject = ObjectPojo.class)
+    @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class)
     public void readJsonTestA(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
@@ -45,7 +44,7 @@ public class JacksonReaderTest {
     @Test
     @DisplayName("readJsonTestB")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
-    @JacksonProvider(dir = "src/test/resources/json", fileName = "someJson.json", classObject = ObjectPojo.class)
+    @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class)
     public void readJsonTestB(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
@@ -60,7 +59,7 @@ public class JacksonReaderTest {
     @Test
     @DisplayName("readJsonTestD")
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
-    @JacksonProvider(dir = "src/test/resources/json", fileName = "someJson.json", classObject = ObjectPojo.class)
+    @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class)
     public void readJsonTestC(JacksonExtension<ObjectPojo> jacksonHelper) {
         List<ObjectPojo> objectPojo = jacksonHelper.readAllFromJson();
         objectPojo.forEach(pojo -> log.info(pojo.toString()));
