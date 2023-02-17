@@ -6,7 +6,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.PageFactory;
 
 public class ObjectFactoryGenerator {
-
     public static <T> T instantiateObject(Class<T> pageClass) {
         try {
             return ReflectionUtils.newInstance(pageClass);
@@ -21,18 +20,16 @@ public class ObjectFactoryGenerator {
             throw new RuntimeException(exception);
         }
     }
-    public static <T extends ObjectFactoryGenerator> T instantiateWebPage(WebDriver driver, Class<T> pageClass) {
+    public <T extends ObjectFactoryGenerator> void instantiateWebPage(WebDriver driver, T pageClass) {
         try {
             PageFactory.initElements(driver, pageClass);
-            return ReflectionUtils.newInstance(pageClass);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
     }
-    public static <T extends ObjectFactoryGenerator> T instantiateMobilePage(WebDriver driver, Class<T> pageClass) {
+    public <T extends ObjectFactoryGenerator> void instantiateMobilePage(WebDriver driver, T pageClass) {
         try {
             PageFactory.initElements(new AppiumFieldDecorator(driver), pageClass);
-            return ReflectionUtils.newInstance(pageClass);
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }

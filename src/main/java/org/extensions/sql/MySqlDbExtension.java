@@ -6,35 +6,33 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.sql.MySqlSharedConnector;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
 import java.util.Optional;
 
 public class MySqlDbExtension implements ParameterResolver, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
-    private final HashMap<Long, MySqlSharedConnector> mySqlRepo = new HashMap<>();
-    public synchronized MySqlSharedConnector getMySqlRepo() { return mySqlRepo.get(Thread.currentThread().getId()); }
+    private final ThreadLocal<MySqlSharedConnector> mySqlRepo = new ThreadLocal<>();
 
     @Override
-    public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        return parameterContext.getParameter().getType() == MySqlSharedConnector.class;
+    public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
+        return parameter.getParameter().getType() == MySqlSharedConnector.class;
     }
     @Override
-    public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-        Optional<MySqlConnector> connector = this.readAnnotation(extensionContext, MySqlConnector.class);
+    public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
+        Optional<MySqlConnector> connector = this.readAnnotation(context, MySqlConnector.class);
         if (connector.isPresent()) {
-            this.mySqlRepo.put(Thread.currentThread().getId(), new MySqlSharedConnector(
+            this.mySqlRepo.set(new MySqlSharedConnector(
                     connector.get().connection(),
                     connector.get().userName(),
                     connector.get().userPassword()));
-            return this.getMySqlRepo();
+            return this.mySqlRepo.get();
         }
         return new RuntimeException("Fail init sql connection");
     }
 
     @Override
-    public synchronized void afterAll(ExtensionContext extensionContext) {
-        if (extensionContext.getElement().isPresent()) {
-            Optional<MySqlConnector> connector = this.readAnnotation(extensionContext, MySqlConnector.class);
-            connector.ifPresent(mySqlConnector -> this.getMySqlRepo().closeConnection());
+    public synchronized void afterAll(ExtensionContext context) {
+        if (context.getElement().isPresent()) {
+            Optional<MySqlConnector> connector = this.readAnnotation(context, MySqlConnector.class);
+            connector.ifPresent(mySqlConnector -> this.mySqlRepo.get().closeConnection());
         }
     }
 

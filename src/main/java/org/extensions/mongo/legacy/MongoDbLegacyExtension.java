@@ -10,8 +10,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
-    private final HashMap<Long, MongoRepoImplementation> mongoRepo = new HashMap<>();
-    private synchronized MongoRepoImplementation getMongoRepo() { return this.mongoRepo.get(Thread.currentThread().getId()); }
+    private final ThreadLocal<MongoRepoImplementation> mongoRepo = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)  {
@@ -22,8 +21,8 @@ public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallba
     public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext)  {
         if (extensionContext.getElement().isPresent()) {
             Optional<MongoLegacyConnector> connector = this.readAnnotation(extensionContext, MongoLegacyConnector.class);
-            connector.ifPresent(mongoConnector -> mongoRepo.put(Thread.currentThread().getId(), new MongoRepoImplementation(mongoConnector.host(), mongoConnector.dbName(), mongoConnector.collectionName())));
-            return mongoRepo.get(Thread.currentThread().getId());
+            connector.ifPresent(mongoConnector -> mongoRepo.set(new MongoRepoImplementation(mongoConnector.host(), mongoConnector.dbName(), mongoConnector.collectionName())));
+            return mongoRepo.get();
         }
         throw new RuntimeException("Fail init mongoConnector");
     }
@@ -32,7 +31,7 @@ public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallba
     public synchronized void afterAll(ExtensionContext extensionContext) {
         if (extensionContext.getElement().isPresent()) {
             Optional<MongoLegacyConnector> connector = this.readAnnotation(extensionContext, MongoLegacyConnector.class);
-            connector.ifPresent(mongoConnector -> this.getMongoRepo().close());
+            connector.ifPresent(mongoConnector -> this.mongoRepo.get().close());
         }
     }
 

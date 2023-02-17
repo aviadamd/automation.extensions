@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Assertions;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,16 +20,22 @@ public class JacksonExtension<T> {
 
     /**
      * JacksonExtensions
-     * @param fileName the file name
+     * @param file the file
      * @param object your class object
      */
-    public JacksonExtension(String fileName, Class<T> object) {
+    public JacksonExtension(String dir, File file, Class<T> object) {
+        this.createDir(dir);
         this.object = object;
-        this.file = new File(fileName);
+        this.file = file;
         this.objectMapper = new ObjectMapper();
         this.objectWriter = this.objectMapper.writerWithDefaultPrettyPrinter();
     }
 
+    private void createDir(String path) {
+        try {
+            Files.createDirectory(Path.of(path));
+        } catch (Exception ignore) {}
+    }
     /**
      * readAllFromJson
      * @return List<T> all yours class objects
@@ -73,9 +81,21 @@ public class JacksonExtension<T> {
 
     /**
      * writeToJson
-     * @param insertList your class objects
+     * @param insertList your class object
      */
     public void writeToJson(List<T> insertList) {
+        try {
+            this.objectWriter.writeValue(this.file, insertList);
+        } catch (Exception exception) {
+            Assertions.fail("write to json exception", exception);
+        }
+    }
+
+    /**
+     * writeToJson
+     * @param insertList your class objects
+     */
+    public void readAndWriteToJson(List<T> insertList) {
         try {
             List<T> jsonObjectList = this.readAllFromJson();
             jsonObjectList.addAll(insertList);

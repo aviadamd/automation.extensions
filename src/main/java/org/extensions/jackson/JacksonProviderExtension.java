@@ -5,6 +5,8 @@ import org.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
+
+import java.io.File;
 import java.util.Optional;
 public class JacksonProviderExtension implements ParameterResolver {
     private final ThreadLocal<JacksonExtension<?>> jacksonHelper = new ThreadLocal<>();
@@ -20,7 +22,8 @@ public class JacksonProviderExtension implements ParameterResolver {
             try {
                 Optional<JacksonProvider> provider = Optional.ofNullable(context.getElement().get().getAnnotation(JacksonProvider.class));
                 if (provider.isPresent()) {
-                    this.jacksonHelper.set(new JacksonExtension<>(System.getProperty("user.dir") + "/" + provider.get().dir() + "/" + provider.get().fileName(), provider.get().classObject()));
+                    String path = System.getProperty("user.dir") + "/" + provider.get().dir();
+                    this.jacksonHelper.set(new JacksonExtension<>(path, new File(path + "/" + provider.get().fileName()), provider.get().classObject()));
                     return this.jacksonHelper.get();
                 }
             } catch (Exception exception) {

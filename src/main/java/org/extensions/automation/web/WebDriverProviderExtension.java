@@ -61,9 +61,15 @@ public class WebDriverProviderExtension implements
                     this.mobProxyExtension.get().getServer().newHar();
 
                     if (this.webProperties.get().projectClient().equalsIgnoreCase("chrome")) {
-                        this.driverManager.set(new SeleniumWebDriverManager(this.webProperties.get().projectUrl(), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.chromedriver().capabilities(this.chromeOptions().merge(capabilities.get())).create()));
+                        this.driverManager.set(new SeleniumWebDriverManager(
+                                this.webProperties.get().projectUrl(),
+                                Duration.ofSeconds(driverType.get().generalTo()),
+                                WebDriverManager.chromedriver().capabilities(new WebDriverOptions().chromeOptions().merge(capabilities.get())).create()));
                     } else if (this.webProperties.get().projectClient().equalsIgnoreCase("firefox")) {
-                        this.driverManager.set(new SeleniumWebDriverManager(this.webProperties.get().projectUrl(), Duration.ofSeconds(driverType.get().generalTo()), WebDriverManager.firefoxdriver().capabilities(this.firefoxOptions().merge(capabilities.get())).create()));
+                        this.driverManager.set(new SeleniumWebDriverManager(
+                                this.webProperties.get().projectUrl(),
+                                Duration.ofSeconds(driverType.get().generalTo()),
+                                WebDriverManager.firefoxdriver().capabilities(new WebDriverOptions().firefoxOptions().merge(capabilities.get())).create()));
                     }
                 }
             } catch (Exception exception) {
@@ -84,6 +90,7 @@ public class WebDriverProviderExtension implements
                         File file = new File(testPath + "/" + testName + ".json");
                         this.mobProxyExtension.get().writeHarFile(file, this.mobProxyExtension.get().getServer().getHar().getLog());
                     }
+                    this.driverManager.get().getDriver().quit();
                 }
             } catch (Exception exception) {
                 Assertions.fail("generate har file error ", exception);
@@ -113,31 +120,6 @@ public class WebDriverProviderExtension implements
             }
         }
         return Optional.empty();
-    }
-    private synchronized ChromeOptions chromeOptions() {
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--disable-extensions");
-        chromeOptions.addArguments("--disable-popup-blocking");
-        chromeOptions.addArguments("--disable-notifications");
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--dns-prefetch-disable");
-        chromeOptions.addArguments("enable-automation");
-        chromeOptions.addArguments("start-maximized");
-        chromeOptions.addArguments("--disable-web-security");
-        chromeOptions.addArguments("--allow-running-insecure-content");
-        return chromeOptions;
-    }
-    private FirefoxOptions firefoxOptions() {
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
-        firefoxOptions.addPreference("network.automatic-ntlm-auth.trusted-uris", "http://,https://");
-        firefoxOptions.addPreference("network.automatic-ntlm-auth.allow-non-fqdn", true);
-        firefoxOptions.addPreference("network.negotiate-auth.delegation-uris", "http://,https://");
-        firefoxOptions.addPreference("network.negotiate-auth.trusted-uris", "http://,https://");
-        firefoxOptions.addPreference("network.http.phishy-userpass-length", 255);
-        firefoxOptions.addPreference("security.csp.enable", false);
-        FirefoxProfile firefoxProfile = new FirefoxProfile();
-        firefoxProfile.setAcceptUntrustedCertificates(true);
-        return firefoxOptions;
     }
 }
 

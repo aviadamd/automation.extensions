@@ -20,7 +20,12 @@ import org.junit.jupiter.api.extension.*;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.mongo.legacy.MongoRepoImplementation;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import static java.lang.System.getProperty;
@@ -160,13 +165,13 @@ public class ExtentReportExtension implements
             String testPath = System.getProperty("user.dir") + "/target/testResults";
 
             if (passTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath + "/" + className + "Pass.json", TestInformation.class);
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, new File(testPath + "/" + className + "Pass.json"), TestInformation.class);
                 testWriter.writeToJson(passTests);
             }
 
             if (failTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath + "/" + className + "Fail.json", TestInformation.class);
-                testWriter.writeToJson(passTests);
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, new File(testPath + "/" + className + "Fail.json"), TestInformation.class);
+                testWriter.writeToJson(failTests);
             }
 
             if (reportConfiguration.isPresent() && !reportConfiguration.get().mongoConnection().isEmpty()) {
@@ -199,5 +204,4 @@ public class ExtentReportExtension implements
         }
         return Optional.empty();
     }
-
 }

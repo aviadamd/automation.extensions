@@ -6,12 +6,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.mongo.morphia.MorphiaRepository;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+
 public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResolver, JunitAnnotationHandler.ExtensionContextHandler {
-    private final Map<Long, MorphiaRepository> repository = new HashMap<>();
-    public synchronized MorphiaRepository getRepository() { return this.repository.get(Thread.currentThread().getId()); }
+    private final ThreadLocal<MorphiaRepository> repository = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext extensionContext)  {
@@ -22,8 +20,8 @@ public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResol
     public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext extension)  {
         if (extension.getElement().isPresent()) {
             Optional<MongoMorphiaConnector> mongoConnector = this.readAnnotation(extension, MongoMorphiaConnector.class);
-            mongoConnector.ifPresent(connector -> repository.put(Thread.currentThread().getId(), new MorphiaRepository(connector.host(), connector.dbName())));
-            return this.getRepository();
+            mongoConnector.ifPresent(connector -> repository.set(new MorphiaRepository(connector.host(), connector.dbName())));
+            return this.repository.get();
         }
         return new RuntimeException("Fail init mongo db connection");
     }
@@ -32,7 +30,7 @@ public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResol
     public synchronized void afterAll(ExtensionContext extension) {
         if (extension.getElement().isPresent()) {
             Optional<MongoMorphiaConnector> mongoConnector = this.readAnnotation(extension, MongoMorphiaConnector.class);
-            mongoConnector.ifPresent(connector -> this.getRepository().close());
+            mongoConnector.ifPresent(connector -> this.repository.get().close());
         }
     }
     @Override

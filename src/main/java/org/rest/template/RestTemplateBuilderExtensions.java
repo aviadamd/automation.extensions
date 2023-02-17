@@ -15,7 +15,6 @@ public class RestTemplateBuilderExtensions {
     private Map<String, String> params;
     private final RestTemplate restTemplate;
     private UriComponentsBuilder uriComponentsBuilder;
-
     public RestTemplateBuilderExtensions() {
         this.restTemplate = new RestTemplate();
         this.headers = new HttpHeaders();

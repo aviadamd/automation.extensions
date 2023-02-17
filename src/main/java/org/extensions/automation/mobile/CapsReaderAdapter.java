@@ -6,6 +6,8 @@ import io.appium.java_client.ios.options.XCUITestOptions;
 import org.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
+import java.io.File;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
@@ -17,7 +19,8 @@ public class CapsReaderAdapter {
 
     public CapsReaderAdapter(String jsonPath) {
         try {
-            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(System.getProperty("user.dir") + "/" + jsonPath, CapabilitiesObject.class);
+            String path = System.getProperty("user.dir") + "/" + jsonPath;
+            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(path, new File(path), CapabilitiesObject.class);
             CapabilitiesObject capsObject = jacksonHelper.readJson();
             if (capsObject.getClient().equals("ANDROID"))
                 this.capabilities.merge(this.androidCapabilities(capsObject));
