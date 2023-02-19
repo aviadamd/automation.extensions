@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.lightbody.bmp.BrowserMobProxy;
 import net.lightbody.bmp.BrowserMobProxyServer;
 import net.lightbody.bmp.client.ClientUtil;
 import net.lightbody.bmp.core.har.HarEntry;
@@ -14,6 +13,7 @@ import net.lightbody.bmp.core.har.HarPage;
 import net.lightbody.bmp.mitm.TrustSource;
 import net.lightbody.bmp.mitm.util.TrustUtil;
 import net.lightbody.bmp.proxy.CaptureType;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.Proxy;
 
 import java.io.File;
@@ -80,65 +80,73 @@ public class MobProxyExtension {
         }
     }
 
-    public void writeHarFile(File harFile, HarLog log) throws IOException {
-        String version = log.getVersion();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'");
-        JsonGenerator jsonGenerator = new JsonFactory().createGenerator(harFile, JsonEncoding.UTF8);
-
+    public void writeHarFile(File harFile, HarLog log) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dddd:MM:ss");
         ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        jsonGenerator.setCodec(objectMapper);
-        jsonGenerator.useDefaultPrettyPrinter();
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeFieldName("log");
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeFieldName("version");
-        jsonGenerator.writeObject(version);
-        jsonGenerator.writeFieldName("creator");
-        jsonGenerator.writeObject(log.getCreator());
-        jsonGenerator.writeFieldName("pages");
-        jsonGenerator.writeStartArray();
-
-        for (HarPage page : log.getPages()) {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeFieldName("startedDateTime");
-            jsonGenerator.writeObject(dateFormat.format(page.getStartedDateTime()));
-            jsonGenerator.writeFieldName("id");
-            jsonGenerator.writeObject(page.getId());
-            jsonGenerator.writeFieldName("title");
-            jsonGenerator.writeObject(page.getTitle());
-            jsonGenerator.writeFieldName("pageTimings");
-            jsonGenerator.writeObject(page.getPageTimings());
-            jsonGenerator.writeEndObject();
-        }
-
-        jsonGenerator.writeEndArray();
-        jsonGenerator.writeFieldName("entries");
-        jsonGenerator.writeStartArray();
-
-        for (HarEntry entry : log.getEntries()) {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeFieldName("startedDateTime");
-            jsonGenerator.writeObject(dateFormat.format(entry.getStartedDateTime()));
-            jsonGenerator.writeFieldName("time");
-            jsonGenerator.writeObject(entry.getTime());
-            jsonGenerator.writeFieldName("request");
-            jsonGenerator.writeObject(entry.getRequest());
-            jsonGenerator.writeFieldName("response");
-            jsonGenerator.writeObject(entry.getResponse());
-            jsonGenerator.writeFieldName("timings");
-            jsonGenerator.writeObject(entry.getTimings());
-            jsonGenerator.writeFieldName("serverIPAddress");
-            jsonGenerator.writeObject(entry.getServerIPAddress());
-            jsonGenerator.writeFieldName("connection");
-            jsonGenerator.writeObject(entry.getConnection());
-            jsonGenerator.writeFieldName("pageref");
-            jsonGenerator.writeObject(entry.getPageref());
-            jsonGenerator.writeEndObject();
-        }
-
-        jsonGenerator.writeEndArray();
-        jsonGenerator.writeEndObject();
-        jsonGenerator.close();
+        this.generatePageFromHarLog(harFile, objectMapper, log, dateFormat);
     }
 
+    private void generatePageFromHarLog(File harFile, ObjectMapper objectMapper, HarLog log, DateFormat dateFormat) {
+        try {
+
+            JsonGenerator jsonGenerator = new JsonFactory().createGenerator(harFile, JsonEncoding.UTF8);
+            String version = log.getVersion();
+            jsonGenerator.setCodec(objectMapper);
+            jsonGenerator.useDefaultPrettyPrinter();
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeFieldName("log");
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeFieldName("version");
+            jsonGenerator.writeObject(version);
+            jsonGenerator.writeFieldName("creator");
+            jsonGenerator.writeObject(log.getCreator());
+            jsonGenerator.writeFieldName("pages");
+            jsonGenerator.writeStartArray();
+
+            for (HarPage page : log.getPages()) {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeFieldName("startedDateTime");
+                jsonGenerator.writeObject(dateFormat.format(page.getStartedDateTime()));
+                jsonGenerator.writeFieldName("id");
+                jsonGenerator.writeObject(page.getId());
+                jsonGenerator.writeFieldName("title");
+                jsonGenerator.writeObject(page.getTitle());
+                jsonGenerator.writeFieldName("pageTimings");
+                jsonGenerator.writeObject(page.getPageTimings());
+                jsonGenerator.writeEndObject();
+            }
+
+            jsonGenerator.writeEndArray();
+            jsonGenerator.writeFieldName("entries");
+            jsonGenerator.writeStartArray();
+
+            for (HarEntry entry : log.getEntries()) {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeFieldName("startedDateTime");
+                jsonGenerator.writeObject(dateFormat.format(entry.getStartedDateTime()));
+                jsonGenerator.writeFieldName("time");
+                jsonGenerator.writeObject(entry.getTime());
+                jsonGenerator.writeFieldName("request");
+                jsonGenerator.writeObject(entry.getRequest());
+                jsonGenerator.writeFieldName("response");
+                jsonGenerator.writeObject(entry.getResponse());
+                jsonGenerator.writeFieldName("timings");
+                jsonGenerator.writeObject(entry.getTimings());
+                jsonGenerator.writeFieldName("serverIPAddress");
+                jsonGenerator.writeObject(entry.getServerIPAddress());
+                jsonGenerator.writeFieldName("connection");
+                jsonGenerator.writeObject(entry.getConnection());
+                jsonGenerator.writeFieldName("pageref");
+                jsonGenerator.writeObject(entry.getPageref());
+                jsonGenerator.writeEndObject();
+            }
+
+            jsonGenerator.writeEndArray();
+            jsonGenerator.writeEndObject();
+            jsonGenerator.close();
+
+        } catch (Exception exception) {
+            Assertions.fail("har json generator error ", exception);
+        }
+    }
 }

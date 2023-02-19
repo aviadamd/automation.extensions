@@ -19,18 +19,13 @@ public class WebSharedObjects {
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
     protected void setMorphiaRepository(MorphiaRepository morphiaRepository) { this.morphiaRepository = morphiaRepository; }
-
     public SeleniumWebDriverManager getDriverManager() { return this.driverManager; }
-
     public JacksonExtension<?> getJacksonExtension() {
         return this.jacksonExtension;
     }
-
     public MorphiaRepository getMorphiaRepository() {
         return this.morphiaRepository;
     }
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
-    public MobProxyExtension getMobProxyExtension() {
-        return mobProxyExtension;
-    }
+    public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }
 }

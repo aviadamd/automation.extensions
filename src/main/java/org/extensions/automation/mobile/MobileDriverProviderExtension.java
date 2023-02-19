@@ -7,6 +7,7 @@ import org.automation.mobile.MobileDriverManager;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
+import org.files.jsonReader.FilesHelper;
 import org.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
@@ -70,8 +71,11 @@ public class MobileDriverProviderExtension implements
             try {
                 if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
                     String testName = context.getRequiredTestMethod().getName();
-                    String testPath = System.getProperty("user.dir") + "/target/harFiles/" + testName + ".json";
-                    this.mobProxyExtension.get().writeHarFile(new File(testPath + "/" + testName + ".json"), this.mobProxyExtension.get().getServer().getHar().getLog());
+                    String dir = System.getProperty("user.dir") + "/" + "target/harFiles";
+                    String testPath = dir + "/" + testName + ".json";
+                    FilesHelper filesHelper = new FilesHelper();
+                    filesHelper.createDirectory(dir);
+                    this.mobProxyExtension.get().writeHarFile(new File(testPath), this.mobProxyExtension.get().getServer().getHar().getLog());
                     List<LogEntryObject> logEntryObjects = new ArrayList<>();
                     logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
                     String path = System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation();

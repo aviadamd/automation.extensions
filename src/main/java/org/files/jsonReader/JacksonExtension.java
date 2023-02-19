@@ -24,7 +24,8 @@ public class JacksonExtension<T> {
      * @param object your class object
      */
     public JacksonExtension(String dir, File file, Class<T> object) {
-        this.createDir(dir);
+        FilesHelper filesHelper = new FilesHelper();
+        filesHelper.createDirectory(dir);
         this.object = object;
         this.file = file;
         this.objectMapper = new ObjectMapper();

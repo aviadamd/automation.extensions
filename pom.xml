@@ -9,9 +9,14 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
+
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <downloadSources>true</downloadSources>
+        <downloadJavadocs>true</downloadJavadocs>
+
         <appium.version>8.3.0</appium.version>
         <selenium.version>4.7.1</selenium.version>
         <bonigarcia.version>5.3.1</bonigarcia.version>
@@ -19,10 +24,9 @@
         <project.reactor>3.4.8</project.reactor>
         <logback.contrib.version>0.1.5</logback.contrib.version>
         <jackson.version>2.14.1</jackson.version>
-        <spring.version>5.3.23</spring.version>
         <owner.version>1.0.12</owner.version>
-        <downloadSources>true</downloadSources>
-        <downloadJavadocs>true</downloadJavadocs>
+        <spring.version>5.3.23</spring.version>
+
     </properties>
 
     <repositories>
@@ -34,6 +38,7 @@
 
 
     <dependencies>
+
 
         <dependency>
             <groupId>org.aeonbits.owner</groupId>
@@ -55,6 +60,13 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.3.25</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
         </dependency>
@@ -69,18 +81,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-            <version>3.4.24</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.projectreactor.addons</groupId>
-            <artifactId>reactor-extra</artifactId>
-            <version>${project.reactor}</version>
         </dependency>
 
         <dependency>

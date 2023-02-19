@@ -1,14 +1,11 @@
 package org.poc.web;
 
-import org.automation.DurationOf;
-import org.extensions.anontations.TimeOut;
 import org.automation.elements.ObjectFactoryGenerator;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 
-@TimeOut(durationOf = DurationOf.MINUTES, duration = 10)
 public class BoniGrciaWelcomePage extends ObjectFactoryGenerator {
 
     @FindBy(how = How.XPATH, using = "//*[@id=\"divMenuRight\"]/div/div/ul/li[1]/a")
