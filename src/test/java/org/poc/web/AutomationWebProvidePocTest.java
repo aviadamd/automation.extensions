@@ -38,6 +38,7 @@ public class  AutomationWebProvidePocTest {
             driverProvider = @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
             dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
     void openPageFirstTest(WebSharedObjects webSharedObjects) {
+        webSharedObjects.log(Status.INFO,"bla bla");
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);

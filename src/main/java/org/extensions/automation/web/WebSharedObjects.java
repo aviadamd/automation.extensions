@@ -1,8 +1,10 @@
 package org.extensions.automation.web;
 
+import com.aventstack.extentreports.Status;
 import org.automation.web.SeleniumWebDriverManager;
 import org.automation.web.WebConfiguration;
 import org.extensions.automation.proxy.MobProxyExtension;
+import org.extensions.report.ExtentTestManager;
 import org.files.jsonReader.JacksonExtension;
 import org.mongo.morphia.MorphiaRepository;
 
@@ -19,6 +21,8 @@ public class WebSharedObjects {
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
     protected void setMorphiaRepository(MorphiaRepository morphiaRepository) { this.morphiaRepository = morphiaRepository; }
+    public void log(Status status, String desc) { ExtentTestManager.log(status, desc); }
+
     public SeleniumWebDriverManager getDriverManager() { return this.driverManager; }
     public JacksonExtension<?> getJacksonExtension() {
         return this.jacksonExtension;

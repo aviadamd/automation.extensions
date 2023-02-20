@@ -2,8 +2,12 @@ package org.automation.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.automation.WebElementGestures;
+import org.extensions.automation.WebDriverEventHandler;
 import org.openqa.selenium.*;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
 import org.openqa.selenium.remote.Augmentable;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -16,9 +20,16 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
     private Duration pollingEvery = Duration.ofSeconds(1);
     private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private final ThreadLocal<WebDriverWait> webDriverWait = new ThreadLocal<>();
+    private final ThreadLocal<HasDevTools> hasDevTools = new ThreadLocal<>();
+
+    public WebDriver getDriver() { return driver.get(); }
+    public WebDriverWait getWebDriverWait() { return this.webDriverWait.get(); }
+    public DevTools getDevTools() { return this.hasDevTools.get().getDevTools(); }
+
     public SeleniumWebDriverManager(String baseUrl, Duration duration, WebDriver webDriver) {
-        this.driver.set(webDriver);
+        this.driver.set(new EventFiringDecorator<>(new WebDriverEventHandler()).decorate(webDriver));
         this.webDriverWait.set(new WebDriverWait(this.getDriver(), duration));
+        this.hasDevTools.set((HasDevTools) this.driver.get());
         if (!baseUrl.isEmpty()) this.get(baseUrl);
     }
     public SeleniumWebDriverManager(String baseUrl, Class<? extends WebDriver> driverInstance, Duration duration) {
@@ -26,9 +37,6 @@ public class SeleniumWebDriverManager implements WebDriver, WebElementGestures {
         this.webDriverWait.set(new WebDriverWait(this.getDriver(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
     }
-
-    public WebDriver getDriver() { return driver.get(); }
-    public WebDriverWait getWebDriverWait() { return this.webDriverWait.get(); }
 
     public SeleniumWebDriverManager oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
         this.generalTimeOut = generalTimeOut;

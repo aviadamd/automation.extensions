@@ -12,7 +12,6 @@ import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import lombok.extern.slf4j.Slf4j;
 import org.automation.WebElementGestures;
-import org.extensions.automation.DriverEventListener;
 import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;

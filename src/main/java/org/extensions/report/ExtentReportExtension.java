@@ -42,7 +42,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
-        if (Optional.ofNullable(context.getRequiredTestClass()).isPresent() && context.getElement().isPresent()) {
+        if (context.getElement().isPresent()) {
             try {
                 Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
                 if (configuration.isPresent()) {
@@ -61,7 +61,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void beforeEach(ExtensionContext context) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
+        if (context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             reportTest.ifPresent(test -> {
                 String testMethod = context.getRequiredTestMethod().getName();
@@ -73,7 +73,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void afterEach(ExtensionContext context) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent()) {
+        if (context.getElement().isPresent()) {
             String testMethod = context.getRequiredTestMethod().getName();
             String testStatus = context.getExecutionException().isPresent() ? "fail" : "pass";
             ExtentTestManager.log(Status.INFO,"test " + testMethod + " finish with status " + testStatus);
@@ -82,7 +82,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void testSuccessful(ExtensionContext context) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
+        if (context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             reportTest.ifPresent(testInfo -> {
                 String testClass = context.getRequiredTestClass().getSimpleName();
@@ -96,7 +96,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void testDisabled(ExtensionContext context, Optional<String> reason) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent()) {
+        if (context.getElement().isPresent()) {
             String testName = context.getRequiredTestMethod().getName();
             if (reason.isPresent()) {
                 ExtentTestManager.log(Status.INFO,"test " + testName + " disabled, reason " + reason.get());
@@ -105,7 +105,7 @@ public class ExtentReportExtension implements
     }
     @Override
     public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent() && context.getExecutionException().isPresent()) {
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
 
             String error = context.getExecutionException().get().getMessage();
             String testClass = context.getRequiredTestClass().getSimpleName();
@@ -128,7 +128,7 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
-        if (Optional.ofNullable(context.getRequiredTestMethod()).isPresent() && context.getElement().isPresent() && context.getExecutionException().isPresent()) {
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
 
             String error = throwable.getMessage();
             String testClass = context.getRequiredTestClass().getSimpleName();
@@ -198,8 +198,7 @@ public class ExtentReportExtension implements
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
             } catch (Exception exception) {
-                Assertions.fail("Fail read annotation from ExtentReportExtension", exception);
-                return Optional.empty();
+                throw new RuntimeException("Fail read annotation from ExtentReportExtension", exception);
             }
         }
         return Optional.empty();

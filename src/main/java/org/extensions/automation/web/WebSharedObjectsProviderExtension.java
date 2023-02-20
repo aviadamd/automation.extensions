@@ -25,7 +25,6 @@ import static io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver;
 public class WebSharedObjectsProviderExtension implements ParameterResolver,
         BeforeEachCallback, AfterEachCallback,
         AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
-
     private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
 
     @Override

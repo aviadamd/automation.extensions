@@ -9,16 +9,16 @@ import org.openqa.selenium.support.events.WebDriverListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
-public class DriverEventListener implements WebDriverListener {
+public class WebDriverEventHandler implements WebDriverListener {
 
     @Override
     public void onError(Object target, Method method, Object[] args, InvocationTargetException e) {
-        this.print(Status.INFO,"driver event listener on error trigger " + e.getMessage());
+        this.print(Status.FAIL,"driver event listener on error trigger " + e.getMessage());
     }
+
     @Override
     public void afterGet(WebDriver driver, String url) {
         this.print(Status.INFO,"navigate to get " + url);
@@ -28,11 +28,6 @@ public class DriverEventListener implements WebDriverListener {
         if (element != null) this.print(Status.INFO,"find element " + element.getText());
         if (locator != null) this.print(Status.INFO,"find element " + locator);
     }
-
-    @Override
-    public void afterFindElements(WebElement element, By locator, List<WebElement> result) {}
-    @Override
-    public void afterGetPageSource(WebDriver driver, String result) {}
     @Override
     public void afterClose(WebDriver driver) {
         if (driver != null) this.print(Status.INFO,"close " + driver);
@@ -41,7 +36,6 @@ public class DriverEventListener implements WebDriverListener {
     public void afterQuit(WebDriver driver) {
         if (driver != null) this.print(Status.INFO,"quit " + driver);
     }
-
     @Override
     public void afterExecuteScript(WebDriver driver, String script, Object[] args, Object result) {}
     @Override
