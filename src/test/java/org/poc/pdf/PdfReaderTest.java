@@ -1,31 +1,43 @@
 package org.poc.pdf;
 
+import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.PdfReaderExtension;
-import org.extensions.ExtentReportListener;
-import org.filesUtils.pdfReader.PdfConnector;
-import org.filesUtils.pdfReader.PdfReader;
+import org.extensions.pdf.PdfReaderExtension;
+import org.extensions.report.ExtentReportExtension;
+import org.extensions.anontations.Repeat;
+import org.extensions.anontations.pdf.PdfConnector;
+import org.extensions.anontations.pdf.PdfFileConfig;
+import org.files.pdfReader.PdfReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;
-import org.extensions.anontations.report.TestInfo;
+import org.extensions.anontations.report.TestReportInfo;
 
-import static org.extensions.PdfReaderExtension.pdfReader;
+import static com.aventstack.extentreports.Status.FAIL;
+import static com.aventstack.extentreports.Status.SKIP;
 
 @Slf4j
-@ExtendWith(value = { ExtentReportListener.class, PdfReaderExtension.class })
+@ExtendWith(value = { ExtentReportExtension.class, PdfReaderExtension.class })
 @ReportConfiguration(
-        reportPath = "target/reports",
-        generateExtraReportsBy = { Status.FAIL, Status.SKIP },
-        reportJsonSettingsPath = "src/main/resources/reportConfig.json")
-@PdfConnector(fileId = 1, path = "C:\\Users\\Lenovo\\IdeaProjects\\mobile.automation.extensions\\src\\test\\resources\\sample.pdf")
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.TEST,
+        mongoConnection = "project.mongo.connection"
+)
+@PdfConnector(pdfFileConfig = {
+        @PdfFileConfig(fileId = 1, path = "src/test/resources/sample.pdf"),
+        @PdfFileConfig(fileId = 2, path = "src/test/resources/sample.pdf")
+})
 public class PdfReaderTest {
 
     @Test
-    @TestInfo(assignCategory = "poc", assignAuthor = "aviad", assignDevice = "pixel")
-    public void testPdfReader() {
-        PdfReader.Actions action = pdfReader
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    public void testPdfReader1() {
+        PdfReader.Actions action = new PdfReaderExtension()
+                .getPdfReader()
                 .get(1)
                 .step(actions -> {
                     log.info("pdf text " + actions.getText());
@@ -35,4 +47,18 @@ public class PdfReaderTest {
         log.info(action.getText());
     }
 
+    @Test
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    public void testPdfReader2() {
+        PdfReader.Actions action = new PdfReaderExtension()
+                .getPdfReader()
+                .get(2)
+                .step(actions -> {
+                    log.info("pdf text " + actions.getText());
+                    actions.writeText("shit is not good");
+                    log.info("pdf text " + actions.getText());
+                }).build();
+        log.info(action.getText());
+    }
 }
