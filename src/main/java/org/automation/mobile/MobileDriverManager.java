@@ -1,7 +1,11 @@
 package org.automation.mobile;
 
 import io.appium.java_client.*;
+import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
+import io.appium.java_client.android.connection.ConnectionState;
+import io.appium.java_client.android.connection.ConnectionStateBuilder;
 import io.appium.java_client.driverscripts.ScriptOptions;
 import io.appium.java_client.driverscripts.ScriptValue;
 import io.appium.java_client.ios.IOSDriver;
@@ -19,7 +23,6 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
-import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.data.StringsUtilities;
@@ -40,8 +43,6 @@ public class MobileDriverManager implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
-    private final ThreadLocal<EventFiringDecorator<IOSDriver>> iosDecorator = new ThreadLocal<>();
-    private final ThreadLocal<EventFiringDecorator<AndroidDriver>> androidDecorator = new ThreadLocal<>();
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
     public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
@@ -93,6 +94,49 @@ public class MobileDriverManager implements
         this(capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
     }
 
+    /**
+     *
+     * @param connectionState
+     * @return
+     */
+    public ConnectionState setAndroidDeviceConnectionState(ConnectionStateBuilder connectionState) {
+        return this.androidDriver.get().setConnection(connectionState.build());
+    }
+
+    /**
+     * setAndroidInstallOptions
+     *   @param appPath
+     *   @param options
+     *  new AndroidInstallApplicationOptions()
+     *  .withAllowTestPackagesDisabled()
+     *  .withGrantPermissionsDisabled()
+     *  .withTimeout(Duration.of(100, ChronoUnit.SECONDS))
+     *  .withAllowTestPackagesEnabled()
+     *  .withUseSdcardEnabled();
+     */
+    public void setAndroidInstallOptions(String appPath, AndroidInstallApplicationOptions options) {
+        this.androidDriver.get().installApp(appPath, options);
+    }
+
+    /**
+     * setAndroidActivity
+     * @param appPackage ...
+     * @param appActivity ...
+     * activity.isStopApp();
+     * activity.setAppWaitPackage("")
+     * .setAppWaitPackage("")
+     * .setIntentAction("")
+     * .setIntentFlags("")
+     *  .setOptionalIntentArguments("");
+     * @return setAndroidActivity options
+     */
+    public Activity setAndroidActivity(String appPackage, String appActivity) {
+        try {
+            return new Activity(appPackage, appActivity);
+        } catch (Exception exception) {
+            throw new RuntimeException("set android activity error", exception);
+        }
+    }
     private synchronized void appiumLocal(String appiumBasePath) {
         String ip = StringsUtilities.splitString(appiumBasePath,"//",1);
         ip = StringsUtilities.splitString(ip,":",0);
