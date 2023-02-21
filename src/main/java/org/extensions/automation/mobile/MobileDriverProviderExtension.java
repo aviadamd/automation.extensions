@@ -3,7 +3,7 @@ package org.extensions.automation.mobile;
 import lombok.extern.slf4j.Slf4j;
 import org.automation.configuration.PropertiesManager;
 import org.automation.mobile.MobileConfiguration;
-import org.automation.mobile.MobileDriverManager;
+import org.automation.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
@@ -27,14 +27,14 @@ public class MobileDriverProviderExtension implements
         AfterAllCallback,
         JunitAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
-    private final ThreadLocal<MobileDriverManager> driverManager = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
         Class<?> clazz = parameterContext.getParameter().getType();
-        return clazz == MobileDriverManager.class && parameterContext.isAnnotated(DriverJsonProvider.class);
+        return clazz == MobileDriverProvider.class && parameterContext.isAnnotated(DriverJsonProvider.class);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class MobileDriverProviderExtension implements
                     this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.MOBILE, 0, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
-                    this.driverManager.set(new MobileDriverManager(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
+                    this.driverManager.set(new MobileDriverProvider(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
                     this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
                 }
             }

@@ -1,7 +1,7 @@
 package org.extensions.automation.mobile;
 
 import org.automation.mobile.MobileConfiguration;
-import org.automation.mobile.MobileDriverManager;
+import org.automation.mobile.MobileDriverProvider;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class MobileSharedObjectsProviderExtension implements ParameterResolver {
     private final ThreadLocal<MorphiaRepository> repository = new ThreadLocal<>();
     private final ThreadLocal<JacksonExtension<?>> jacksonHelper = new ThreadLocal<>();
-    private final ThreadLocal<MobileDriverManager> driverManager = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
 
     @Override
@@ -40,7 +40,7 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver {
 
                 Optional<DriverJsonProvider> driverJsonProvider = Optional.ofNullable(context.getElement().get().getAnnotation(DriverJsonProvider.class));
                 driverJsonProvider.ifPresent(provider -> this.mobileProperties.get().setProperty("android.caps.json", driverJsonProvider.get().jsonCapsPath()));
-                this.driverManager.set(new MobileDriverManager(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
+                this.driverManager.set(new MobileDriverProvider(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
 
                 return new MobileSharedObjects(this.driverManager.get(), this.jacksonHelper.get(), this.repository.get());
             } catch (Exception exception) {

@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Augmentable
-public class MobileDriverManager implements
+public class MobileDriverProvider implements
         WebElementGestures, ExecutesMethod,
         ExecutesDriverScript, LogsEvents,
         HasBrowserCheck, HasSettings  {
@@ -58,7 +58,7 @@ public class MobileDriverManager implements
     public WebDriver getMobileDriver() {
         return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();
     }
-    public MobileDriverManager oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
+    public MobileDriverProvider oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
         this.generalTimeOut = generalTimeOut;
         this.pollingEvery = pollingEvery;
         return this;
@@ -69,7 +69,7 @@ public class MobileDriverManager implements
      * @param caps
      * @param appiumBasePath appium url connection
      */
-    public MobileDriverManager(String type, DesiredCapabilities caps, String appiumBasePath) {
+    public MobileDriverProvider(String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
             switch (type) {
                 case "IOS" -> {
@@ -90,7 +90,7 @@ public class MobileDriverManager implements
      * MobileDriverManager
      * @param capsReader
      */
-    public MobileDriverManager(CapsReaderAdapter capsReader) {
+    public MobileDriverProvider(CapsReaderAdapter capsReader) {
         this(capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
     }
 

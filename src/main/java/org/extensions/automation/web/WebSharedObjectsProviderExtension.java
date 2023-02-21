@@ -1,7 +1,7 @@
 package org.extensions.automation.web;
 
 import org.automation.configuration.PropertiesManager;
-import org.automation.web.SeleniumWebDriverManager;
+import org.automation.web.SeleniumWebDriverProvider;
 import org.automation.web.WebConfiguration;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.automation.proxy.MobProxyExtension;
@@ -121,13 +121,13 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
 
         switch (client) {
             case "chrome" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverManager(
+                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
                             url,
                             duration,
                             chromedriver().capabilities(options.chromeOptions().merge(capabilities)).create())
                     );
             case "firefox" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverManager(
+                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
                             url,
                             duration,
                             firefoxdriver().capabilities(options.firefoxOptions().merge(capabilities)).create())
