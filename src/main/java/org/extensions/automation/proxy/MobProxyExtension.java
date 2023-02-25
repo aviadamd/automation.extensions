@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.EnumSet;
 
 public class MobProxyExtension {
-
     private Proxy proxy;
     private final BrowserMobProxyServer server;
     public Proxy getProxy() { return this.proxy; }

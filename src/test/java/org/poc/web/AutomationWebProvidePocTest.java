@@ -43,6 +43,7 @@ public class  AutomationWebProvidePocTest {
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
         log.info(webSharedObjects.getWebConfiguration().projectClient());
+        String a = webSharedObjects.getStringsUtilities().cleanWhiteSpaces("ererf");
     }
 
     @Test

@@ -32,8 +32,10 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver {
             try {
 
                 Optional<JacksonProvider> jacksonProvider = Optional.ofNullable(context.getElement().get().getAnnotation(JacksonProvider.class));
-                String path = System.getProperty("user.dir") + "/" + jacksonProvider.get().dir();
-                jacksonProvider.ifPresent(provider -> this.jacksonHelper.set(new JacksonExtension<>(path, new File(path + "/" + jacksonProvider.get().fileName()) , jacksonProvider.get().classObject())));
+                jacksonProvider.ifPresent(provider -> {
+                    String path = System.getProperty("user.dir") + "/" + jacksonProvider.get().dir();
+                    this.jacksonHelper.set(new JacksonExtension<>(path, new File(path + "/" + jacksonProvider.get().fileName()) , jacksonProvider.get().classObject()));
+                });
 
                 Optional<MongoMorphiaConnector> mongoConnectorProvider = Optional.ofNullable(context.getElement().get().getAnnotation(MongoMorphiaConnector.class));
                 mongoConnectorProvider.ifPresent(provider -> repository.set(new MorphiaRepository(provider.host(), provider.dbName())));

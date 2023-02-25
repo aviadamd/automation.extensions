@@ -11,9 +11,6 @@ import io.appium.java_client.driverscripts.ScriptValue;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
-import io.appium.java_client.service.local.AppiumDriverLocalService;
-import io.appium.java_client.service.local.AppiumServiceBuilder;
-import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import lombok.extern.slf4j.Slf4j;
 import org.automation.WebElementGestures;
 import org.extensions.automation.mobile.CapsReaderAdapter;
@@ -25,12 +22,9 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.data.StringsUtilities;
-import java.io.File;
 import java.net.URL;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Augmentable
@@ -136,23 +130,6 @@ public class MobileDriverProvider implements
         } catch (Exception exception) {
             throw new RuntimeException("set android activity error", exception);
         }
-    }
-    private synchronized void appiumLocal(String appiumBasePath) {
-        String ip = StringsUtilities.splitString(appiumBasePath,"//",1);
-        ip = StringsUtilities.splitString(ip,":",0);
-        String port = StringsUtilities.splitString(appiumBasePath,":",2);
-        port = StringsUtilities.splitString(port,"/",0);
-        AtomicReference<AppiumDriverLocalService> appiumLocalService = new AtomicReference<>();
-        appiumLocalService.set(new AppiumServiceBuilder()
-                .usingDriverExecutable(new File(System.getProperty("project.node.js")))
-                .withAppiumJS(new File(System.getProperty("project.appium.exe")))
-                .withIPAddress(ip)
-                .usingPort(Integer.parseInt(port))
-                .withArgument(GeneralServerFlag.BASEPATH, "/wd/hub")
-                .withArgument(GeneralServerFlag.ALLOW_INSECURE)
-                .withArgument(GeneralServerFlag.ASYNC_TRACE)
-                .build());
-        appiumLocalService.get().start();
     }
 
     private synchronized DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {

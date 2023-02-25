@@ -3,6 +3,8 @@ package org.extensions.automation.web;
 import com.aventstack.extentreports.Status;
 import org.automation.web.SeleniumWebDriverProvider;
 import org.automation.web.WebConfiguration;
+import org.data.StringsUtilities;
+import org.date.DateTimeUtilExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.report.ExtentTestManager;
 import org.files.jsonReader.JacksonExtension;
@@ -14,6 +16,9 @@ public class WebSharedObjects {
     private MorphiaRepository morphiaRepository;
     private WebConfiguration webConfiguration;
     private MobProxyExtension mobProxyExtension;
+    private DateTimeUtilExtension dateTimeUtilExtension;
+    private StringsUtilities stringsUtilities;
+
     protected void setDriverManager(SeleniumWebDriverProvider driverManager) {
         this.driverManager = driverManager;
     }
@@ -32,4 +37,14 @@ public class WebSharedObjects {
     }
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
     public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }
+
+    public DateTimeUtilExtension getDateTimeUtilExtension() {
+        this.dateTimeUtilExtension = new DateTimeUtilExtension();
+        return this.dateTimeUtilExtension;
+    }
+
+    public StringsUtilities getStringsUtilities() {
+        this.stringsUtilities = new StringsUtilities();
+        return this.stringsUtilities;
+    }
 }
