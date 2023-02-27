@@ -2,6 +2,7 @@ package org.rest.okHttp;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +19,7 @@ public class ResponseData {
             this.headersMap = response.headers().toMultimap();
             this.responseBody = response.peekBody(Long.MAX_VALUE).string();
         } catch (Exception exception) {
-            log.error(exception.getMessage());
+            Assertions.fail(exception);
         }
     }
 

@@ -1,27 +1,39 @@
 package org.rest.okHttp;
 
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
+import org.apache.http.HttpException;
+import org.junit.jupiter.api.Assertions;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import java.util.Arrays;
+import java.security.cert.X509Certificate;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class OkHttpBuilderExtensions {
-    private OkHttpClient okHttpClientInstance;
+    private boolean isWithInterceptor = false;
+
+    private boolean isWithDebugMode = false;
     private Request.Builder requestBuilder = new Request.Builder();
 
-    public OkHttpBuilderExtensions setRequestBuilder(Request.Builder requestBuilder) {
+    public OkHttpBuilderExtensions withDebugMode(boolean isWithInterceptor) {
+        this.isWithInterceptor = isWithInterceptor;
+        return this;
+    }
+
+    public OkHttpBuilderExtensions withInterceptor(boolean isWithInterceptor) {
+        this.isWithInterceptor = isWithInterceptor;
+        return this;
+    }
+
+    public OkHttpBuilderExtensions withRequestBuilder(Request.Builder requestBuilder) {
         this.requestBuilder = requestBuilder;
         return this;
     }
@@ -35,29 +47,17 @@ public class OkHttpBuilderExtensions {
     }
 
     public ResponseCollector build() {
-        Optional<Response> response = Optional.empty();
-
-        try {
-
-            if (this.okHttpClientInstance == null) {
-                this.okHttpClientInstance = this.okHttpClient();
-            }
-
-            response = Optional.ofNullable(Observable.just(this.okHttpClientInstance.newCall(this.requestBuilder.build()).execute())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.newThread())
-                    .blockingFirst());
-
-            if (response.isPresent()) {
-                if (response.get().isSuccessful()) {
-                    return new ResponseCollector(true, response.get(), "");
-                } else return new ResponseCollector(false, response.get(), "");
-            }
+        try(Response response = this.okHttpClient().newCall(this.requestBuilder.build()).execute()) {
+            return new ResponseCollector(response.isSuccessful(), response,"");
+        } catch (HttpClientErrorException | HttpServerErrorException httpException) {
+            if (!this.isWithDebugMode)
+                Assertions.fail("error " + httpException.getResponseBodyAsString(), httpException);
+            return new ResponseCollector(false, null, httpException.getResponseBodyAsString());
         } catch (Exception exception) {
-            return new ResponseCollector(false, response.orElse(null), exception.getMessage());
+            if (!this.isWithDebugMode)
+                Assertions.fail(exception);
+            return new ResponseCollector(false, null, exception.getMessage());
         }
-
-        return new ResponseCollector(false, null, "");
     }
     private OkHttpClient okHttpClient() {
         OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
@@ -67,14 +67,9 @@ public class OkHttpBuilderExtensions {
             sslContext.init(null, new TrustManager[]{ TRUST_ALL_CERTS }, new java.security.SecureRandom());
             builder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) TRUST_ALL_CERTS);
             builder.hostnameVerifier((s, sslSession) -> true);
+            if (this.isWithInterceptor) builder.addInterceptor(new OkHttpLoggingInterceptor());
         } catch (Exception exception) {
-            log.info("init okHttpClient ssl trust factory error: " + exception.getMessage());
-        }
-
-        try {
-            builder.addInterceptor(new OkHttpLoggingInterceptor());
-        } catch (Exception exception) {
-            log.info("init okHttpClient addInterceptor error: " + exception.getMessage());
+            log.info("init okHttpClient error: " + exception.getMessage());
         }
 
         return builder.connectTimeout(10, TimeUnit.SECONDS)
@@ -85,18 +80,14 @@ public class OkHttpBuilderExtensions {
 
     private final TrustManager TRUST_ALL_CERTS = new X509TrustManager() {
         @Override
-        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-            Arrays.asList(chain).forEach(print -> log.info("checkClientTrusted.getSigAlgName" + print.getSigAlgName()));
-        }
+        public void checkClientTrusted(X509Certificate[] chain, String authType) {}
 
         @Override
-        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
-            Arrays.asList(chain).forEach(print -> log.info("checkServerTrusted.getSigAlgName" + print.getSigAlgName() + ", authType " + authType));
-        }
+        public void checkServerTrusted(X509Certificate[] chain, String authType) {}
 
         @Override
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-            return new java.security.cert.X509Certificate[] {};
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[] {};
         }
     };
 

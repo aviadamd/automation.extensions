@@ -30,6 +30,8 @@ public class OkHttpLoggingInterceptor implements Interceptor {
 
             try (ResponseBody responseBody = response.peekBody(Long.MAX_VALUE)) {
                 logger.info("Received response body " + responseBody.string());
+            } catch (Exception exception) {
+
             }
         } catch (Exception exception) {
             logger.error(exception.getMessage());
