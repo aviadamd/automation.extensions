@@ -1,16 +1,16 @@
 package org.extensions.automation.web;
 
-import org.automation.configuration.PropertiesManager;
-import org.automation.web.SeleniumWebDriverManager;
-import org.automation.web.WebConfiguration;
+import org.base.configuration.PropertiesManager;
+import org.base.web.SeleniumWebDriverProvider;
+import org.base.web.WebConfiguration;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
-import org.files.jsonReader.FilesHelper;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.FilesHelper;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.mongo.morphia.MorphiaRepository;
+import org.utils.mongo.morphia.MorphiaRepository;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
@@ -121,13 +121,13 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
 
         switch (client) {
             case "chrome" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverManager(
+                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
                             url,
                             duration,
                             chromedriver().capabilities(options.chromeOptions().merge(capabilities)).create())
                     );
             case "firefox" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverManager(
+                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
                             url,
                             duration,
                             firefoxdriver().capabilities(options.firefoxOptions().merge(capabilities)).create())

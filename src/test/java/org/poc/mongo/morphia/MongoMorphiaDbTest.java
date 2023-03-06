@@ -12,13 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mongo.morphia.MorphiaRepository;
+import org.utils.mongo.morphia.MorphiaRepository;
 import org.poc.mongo.pojos.Ingredient;
-import org.springframework.beans.factory.annotation.Autowired;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
+
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MongoMorphiaDbExtension.class })
 @ReportConfiguration(
@@ -30,13 +28,12 @@ import static com.aventstack.extentreports.Status.SKIP;
 )
 public class MongoMorphiaDbTest {
 
-    @ValueSource(strings = {"value"})
-    @ParameterizedTest(name = "TestName - {0}")
+    @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void a_mobileTest(@Autowired MorphiaRepository morphiaRepository, String value) {
-        Ingredient bread = new Ingredient(new ObjectId(), value, true);
+    public void a_mobileTest(MorphiaRepository morphiaRepository) {
+        Ingredient bread = new Ingredient(new ObjectId(), "Aviad", true);
         morphiaRepository.getRepository().getDatastore().insert(bread);
     }
 
@@ -44,45 +41,45 @@ public class MongoMorphiaDbTest {
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void b_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
+    public void b_mobileTest(MorphiaRepository morphiaRepository) {
         Ingredient bread = new Ingredient(new ObjectId(),"Ella", true);
-        morphiaRepository.getRepository().getDatastore().insert(bread);
+        morphiaRepository.insert(bread);
     }
 
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void c_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
+    public void c_mobileTest(MorphiaRepository morphiaRepository) {
         Ingredient bread = new Ingredient(new ObjectId(),"Asaf", true);
-        morphiaRepository.getRepository().getDatastore().insert(bread);
+        morphiaRepository.insert(bread);
     }
 
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 4, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void d_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
+    public void d_mobileTest(MorphiaRepository morphiaRepository) {
         Ingredient bread = new Ingredient(new ObjectId(),"Yael", true);
-        morphiaRepository.getRepository().getDatastore().insert(bread);
+        morphiaRepository.insert(bread);
     }
 
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 5, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void e_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
+    public void e_mobileTest(MorphiaRepository morphiaRepository) {
         Ingredient bread = new Ingredient(new ObjectId(),"Dvir", true);
-        morphiaRepository.getRepository().getDatastore().insert(bread);
+        morphiaRepository.insert(bread);
     }
 
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 6, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
-    public void f_mobileTest(@Autowired MorphiaRepository morphiaRepository) {
+    public void f_mobileTest(MorphiaRepository morphiaRepository) {
         Ingredient bread = new Ingredient(new ObjectId(),"Michal", true);
-        morphiaRepository.getRepository().getDatastore().insert(bread);
+        morphiaRepository.insert(bread);
     }
 
 }

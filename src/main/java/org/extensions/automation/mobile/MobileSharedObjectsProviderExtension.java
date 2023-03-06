@@ -1,15 +1,15 @@
 package org.extensions.automation.mobile;
 
-import org.automation.mobile.MobileConfiguration;
-import org.automation.mobile.MobileDriverManager;
+import org.base.mobile.MobileConfiguration;
+import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
-import org.mongo.morphia.MorphiaRepository;
+import org.utils.mongo.morphia.MorphiaRepository;
 
 import java.io.File;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class MobileSharedObjectsProviderExtension implements ParameterResolver {
     private final ThreadLocal<MorphiaRepository> repository = new ThreadLocal<>();
     private final ThreadLocal<JacksonExtension<?>> jacksonHelper = new ThreadLocal<>();
-    private final ThreadLocal<MobileDriverManager> driverManager = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
 
     @Override
@@ -32,15 +32,17 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver {
             try {
 
                 Optional<JacksonProvider> jacksonProvider = Optional.ofNullable(context.getElement().get().getAnnotation(JacksonProvider.class));
-                String path = System.getProperty("user.dir") + "/" + jacksonProvider.get().dir();
-                jacksonProvider.ifPresent(provider -> this.jacksonHelper.set(new JacksonExtension<>(path, new File(path + "/" + jacksonProvider.get().fileName()) , jacksonProvider.get().classObject())));
+                jacksonProvider.ifPresent(provider -> {
+                    String path = System.getProperty("user.dir") + "/" + jacksonProvider.get().dir();
+                    this.jacksonHelper.set(new JacksonExtension<>(path, new File(path + "/" + jacksonProvider.get().fileName()) , jacksonProvider.get().classObject()));
+                });
 
                 Optional<MongoMorphiaConnector> mongoConnectorProvider = Optional.ofNullable(context.getElement().get().getAnnotation(MongoMorphiaConnector.class));
                 mongoConnectorProvider.ifPresent(provider -> repository.set(new MorphiaRepository(provider.host(), provider.dbName())));
 
                 Optional<DriverJsonProvider> driverJsonProvider = Optional.ofNullable(context.getElement().get().getAnnotation(DriverJsonProvider.class));
                 driverJsonProvider.ifPresent(provider -> this.mobileProperties.get().setProperty("android.caps.json", driverJsonProvider.get().jsonCapsPath()));
-                this.driverManager.set(new MobileDriverManager(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
+                this.driverManager.set(new MobileDriverProvider(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));
 
                 return new MobileSharedObjects(this.driverManager.get(), this.jacksonHelper.get(), this.repository.get());
             } catch (Exception exception) {

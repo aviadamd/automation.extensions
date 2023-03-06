@@ -4,7 +4,7 @@ import org.extensions.anontations.mySql.MySqlConnector;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.sql.MySqlSharedConnector;
+import org.utils.sql.MySqlSharedConnector;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
@@ -27,7 +27,6 @@ public class MySqlDbExtension implements ParameterResolver, AfterAllCallback, Ju
         }
         return new RuntimeException("Fail init sql connection");
     }
-
     @Override
     public synchronized void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {

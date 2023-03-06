@@ -3,8 +3,8 @@ package org.extensions.rest;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
 import org.junit.jupiter.api.extension.*;
-import org.rest.assured.ResponseObject;
-import org.rest.assured.RestAssuredBuilder;
+import org.utils.rest.assured.ResponseObject;
+import org.utils.rest.assured.RestAssuredBuilder;
 import java.util.HashMap;
 import java.util.Map;
 

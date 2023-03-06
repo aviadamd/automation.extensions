@@ -4,7 +4,7 @@ import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.mongo.morphia.MorphiaRepository;
+import org.utils.mongo.morphia.MorphiaRepository;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 

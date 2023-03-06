@@ -1,7 +1,7 @@
 package org.poc.mobile;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import org.automation.mobile.MobileDriverManager;
+import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -32,7 +32,7 @@ public class MobileBasePocTest {
     @Repeat(onStatus = { FAIL, SKIP })
     @DriverJsonProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
-    public void a_mobileTest(@Autowired MobileDriverManager driverManager) {
+    public void a_mobileTest(@Autowired MobileDriverProvider driverManager) {
         driverManager.click(elementToBeClickable(By.id("com.ideomobile.hapoalim:id/login_user_name_view_automation")));
         driverManager.click(elementToBeClickable(By.id("com.ideomobile.hapoalim:id/login_password_view_automation")));
     }
@@ -41,7 +41,7 @@ public class MobileBasePocTest {
     @Repeat(onStatus = { FAIL, SKIP })
     @DriverJsonProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
-    public void b_mobileTest(@Autowired MobileDriverManager driverManager) {
+    public void b_mobileTest(@Autowired MobileDriverProvider driverManager) {
         driverManager.click(elementToBeClickable(By.id("com.ideomobile.hapoalim:id/login_user_name_view_automation")));
         driverManager.click(elementToBeClickable(By.id("com.ideomobile.hapoalim:id/login_password_view_automation")));
     }

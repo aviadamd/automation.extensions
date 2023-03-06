@@ -1,7 +1,7 @@
 package org.extensions.excel;
 
 import org.extensions.anontations.excel.ExcelProvider;
-import org.files.excelReader.ExcelDbRepository;
+import org.data.files.excelReader.ExcelDbRepository;
 import org.junit.jupiter.api.extension.*;
 
 public class ExcelDbReaderExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {

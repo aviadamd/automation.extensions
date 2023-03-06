@@ -14,15 +14,13 @@ import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.sql.MySqlSharedConnector;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.utils.sql.MySqlSharedConnector;
 import java.util.List;
-
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
 
 @Slf4j
-@Execution(ExecutionMode.SAME_THREAD)
+@Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { MySqlDbExtension.class, ExtentReportExtension.class })
 @ReportConfiguration(
         reportPath = "project.report.path",
@@ -37,10 +35,10 @@ public class MySqlConnectionTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
-    public void a_mySqlConnectionTest(@Autowired MySqlSharedConnector mySqlSharedConnector) {
+    public void a_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
         List<Country> countriesList = mySqlSharedConnector
                 .setQuery(new SQL() {{ SELECT("*").FROM("world.city");}})
-                .queryToObjectsList(Country.class);
+                .findsBy(Country.class);
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());
@@ -56,10 +54,10 @@ public class MySqlConnectionTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
-    public void b_mySqlConnectionTest(@Autowired MySqlSharedConnector mySqlSharedConnector) {
+    public void b_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
         List<Country> countriesList = mySqlSharedConnector
                 .setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }})
-                .queryToObjectsList(Country.class);
+                .findsBy(Country.class);
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());
@@ -75,10 +73,10 @@ public class MySqlConnectionTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
-    public void c_mySqlConnectionTest(@Autowired MySqlSharedConnector mySqlSharedConnector) {
+    public void c_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
         List<Country> countriesList = mySqlSharedConnector
                 .setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }})
-                .queryToObjectsList(Country.class);
+                .findsBy(Country.class);
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());

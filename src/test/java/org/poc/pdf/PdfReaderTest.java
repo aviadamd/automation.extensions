@@ -8,7 +8,7 @@ import org.extensions.report.ExtentReportExtension;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.pdf.PdfConnector;
 import org.extensions.anontations.pdf.PdfFileConfig;
-import org.files.pdfReader.PdfReader;
+import org.data.files.pdfReader.PdfReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.extensions.anontations.report.ReportConfiguration;

@@ -2,7 +2,6 @@ package org.poc.mobile;
 
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import org.automation.mobile.MobileDriverManager;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openqa.selenium.By;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;

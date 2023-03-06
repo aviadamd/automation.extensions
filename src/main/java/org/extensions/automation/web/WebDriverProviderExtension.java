@@ -2,17 +2,14 @@ package org.extensions.automation.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
-import org.automation.configuration.PropertiesManager;
-import org.automation.web.SeleniumWebDriverManager;
-import org.automation.web.WebConfiguration;
+import org.base.configuration.PropertiesManager;
+import org.base.web.SeleniumWebDriverProvider;
+import org.base.web.WebConfiguration;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
@@ -30,12 +27,12 @@ public class WebDriverProviderExtension implements
 
     private final ThreadLocal<DesiredCapabilities> capabilities = new ThreadLocal<>();
     private final ThreadLocal<WebConfiguration> webProperties = new ThreadLocal<>();
-    private final ThreadLocal<SeleniumWebDriverManager> driverManager = new ThreadLocal<>();
+    private final ThreadLocal<SeleniumWebDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
-        return parameter.getParameter().getType() == SeleniumWebDriverManager.class;
+        return parameter.getParameter().getType() == SeleniumWebDriverProvider.class;
     }
     @Override
     public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
@@ -61,12 +58,12 @@ public class WebDriverProviderExtension implements
                     this.mobProxyExtension.get().getServer().newHar();
 
                     if (this.webProperties.get().projectClient().equalsIgnoreCase("chrome")) {
-                        this.driverManager.set(new SeleniumWebDriverManager(
+                        this.driverManager.set(new SeleniumWebDriverProvider(
                                 this.webProperties.get().projectUrl(),
                                 Duration.ofSeconds(driverType.get().generalTo()),
                                 WebDriverManager.chromedriver().capabilities(new WebDriverOptions().chromeOptions().merge(capabilities.get())).create()));
                     } else if (this.webProperties.get().projectClient().equalsIgnoreCase("firefox")) {
-                        this.driverManager.set(new SeleniumWebDriverManager(
+                        this.driverManager.set(new SeleniumWebDriverProvider(
                                 this.webProperties.get().projectUrl(),
                                 Duration.ofSeconds(driverType.get().generalTo()),
                                 WebDriverManager.firefoxdriver().capabilities(new WebDriverOptions().firefoxOptions().merge(capabilities.get())).create()));

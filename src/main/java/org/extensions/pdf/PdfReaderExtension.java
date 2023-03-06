@@ -2,7 +2,7 @@ package org.extensions.pdf;
 
 import org.extensions.anontations.pdf.PdfConnector;
 import org.extensions.anontations.pdf.PdfFileConfig;
-import org.files.pdfReader.PdfReader;
+import org.data.files.pdfReader.PdfReader;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;

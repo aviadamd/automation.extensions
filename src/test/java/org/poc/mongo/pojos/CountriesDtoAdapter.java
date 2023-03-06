@@ -2,7 +2,7 @@ package org.poc.mongo.pojos;
 
 import com.mongodb.BasicDBObject;
 import org.bson.Document;
-import org.mongo.legacy.DocumentAdapter;
+import org.utils.mongo.legacy.DocumentAdapter;
 
 public class CountriesDtoAdapter extends BasicDBObject {
     private CountriesDtoAdapter() {}
