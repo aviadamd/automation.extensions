@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.rest.okHttp.OkHttpBuilderExtensions;
-import org.rest.okHttp.ResponseCollector;
+import org.utils.rest.okHttp.OkHttpBuilderExtensions;
+import org.utils.rest.okHttp.ResponseCollector;
 import java.util.Map;
 
 @Slf4j

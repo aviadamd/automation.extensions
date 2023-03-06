@@ -1,15 +1,15 @@
 package org.extensions.automation.mobile;
 
-import org.automation.mobile.MobileConfiguration;
-import org.automation.mobile.MobileDriverProvider;
+import org.base.mobile.MobileConfiguration;
+import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
-import org.mongo.morphia.MorphiaRepository;
+import org.utils.mongo.morphia.MorphiaRepository;
 
 import java.io.File;
 import java.util.Optional;

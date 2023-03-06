@@ -2,9 +2,9 @@ package org.extensions.automation.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
-import org.automation.configuration.PropertiesManager;
-import org.automation.web.SeleniumWebDriverProvider;
-import org.automation.web.WebConfiguration;
+import org.base.configuration.PropertiesManager;
+import org.base.web.SeleniumWebDriverProvider;
+import org.base.web.WebConfiguration;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;

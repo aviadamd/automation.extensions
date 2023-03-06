@@ -1,14 +1,14 @@
 package org.extensions.automation.mobile;
 
 import lombok.extern.slf4j.Slf4j;
-import org.automation.configuration.PropertiesManager;
-import org.automation.mobile.MobileConfiguration;
-import org.automation.mobile.MobileDriverProvider;
+import org.base.configuration.PropertiesManager;
+import org.base.mobile.MobileConfiguration;
+import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
-import org.files.jsonReader.FilesHelper;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.FilesHelper;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.logging.LogEntry;

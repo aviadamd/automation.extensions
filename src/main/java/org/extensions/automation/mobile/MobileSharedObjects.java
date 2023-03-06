@@ -1,8 +1,8 @@
 package org.extensions.automation.mobile;
 
-import org.automation.mobile.MobileDriverProvider;
-import org.files.jsonReader.JacksonExtension;
-import org.mongo.morphia.MorphiaRepository;
+import org.base.mobile.MobileDriverProvider;
+import org.data.files.jsonReader.JacksonExtension;
+import org.utils.mongo.morphia.MorphiaRepository;
 
 public class MobileSharedObjects {
     private final MobileDriverProvider driverManager;

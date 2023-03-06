@@ -1,7 +1,7 @@
 package org.poc.date;
 
 import lombok.extern.slf4j.Slf4j;
-import org.date.DateTimeUtilExtension;
+import org.data.date.DateTimeUtilExtension;
 import org.junit.jupiter.api.Test;
 import java.time.*;
 import java.util.Locale;

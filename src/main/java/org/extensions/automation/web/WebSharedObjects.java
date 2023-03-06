@@ -1,14 +1,14 @@
 package org.extensions.automation.web;
 
 import com.aventstack.extentreports.Status;
-import org.automation.web.SeleniumWebDriverProvider;
-import org.automation.web.WebConfiguration;
+import org.base.web.SeleniumWebDriverProvider;
+import org.base.web.WebConfiguration;
 import org.data.StringsUtilities;
-import org.date.DateTimeUtilExtension;
+import org.data.date.DateTimeUtilExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.report.ExtentTestManager;
-import org.files.jsonReader.JacksonExtension;
-import org.mongo.morphia.MorphiaRepository;
+import org.data.files.jsonReader.JacksonExtension;
+import org.utils.mongo.morphia.MorphiaRepository;
 
 public class WebSharedObjects {
     private SeleniumWebDriverProvider driverManager;

@@ -3,10 +3,9 @@ package org.extensions.mongo.legacy;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.mongo.legacy.MongoRepoImplementation;
+import org.utils.mongo.legacy.MongoRepoImplementation;
 import org.extensions.anontations.mongo.MongoLegacyConnector;
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
 import java.util.Optional;
 
 public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {

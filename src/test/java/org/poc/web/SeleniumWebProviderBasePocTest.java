@@ -2,7 +2,7 @@ package org.poc.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
-import org.automation.web.SeleniumWebDriverProvider;
+import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
@@ -34,6 +34,7 @@ public class SeleniumWebProviderBasePocTest {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.homeTab));
+        webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
     }
 
     @Test
@@ -45,6 +46,7 @@ public class SeleniumWebProviderBasePocTest {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.homeTab));
+        webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
     }
 
     @Test
@@ -56,5 +58,6 @@ public class SeleniumWebProviderBasePocTest {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.homeTab));
+        webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
     }
 }

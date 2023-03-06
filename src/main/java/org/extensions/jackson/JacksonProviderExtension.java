@@ -1,7 +1,7 @@
 package org.extensions.jackson;
 
 import org.extensions.anontations.JacksonProvider;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolver;

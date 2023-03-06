@@ -1,7 +1,7 @@
 package org.poc.mobile;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import org.automation.mobile.MobileDriverProvider;
+import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverJsonProvider;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;

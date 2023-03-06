@@ -8,7 +8,7 @@ import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.automation.mobile.CapabilitiesObject;
 import org.extensions.report.ExtentReportExtension;
-import org.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
