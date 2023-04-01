@@ -59,24 +59,6 @@ public class ExtentTestManager {
 
         return destination;
     }
-    public synchronized static List<Log> onFail(ExtensionContext context) {
-        List<Log> collector = new ArrayList<>();
-        if (context.getExecutionException().isPresent()) {
-            for (Log log : ExtentTestManager.getExtentTest().getModel().getLogs()) {
-                log.setException(new ExceptionInfo(context.getExecutionException().get(), context.getRequiredTestMethod().getName(), Arrays.toString(context.getExecutionException().get().getStackTrace())));
-                collector.add(log);
-            }
-            assignCategory(context.getExecutionException().get().getClass().getSimpleName() + " error");
-        }
-        return collector.stream().distinct().collect(Collectors.toList());
-    }
-
-    public synchronized static Throwable onFails(ExtensionContext context) {
-        if (context.getExecutionException().isPresent()) {
-            return context.getExecutionException().get();
-        }
-        return new Throwable();
-    }
     public synchronized static void assignCategory(String assignCategory) {
         extentTest.get().assignCategory(assignCategory);
     }
