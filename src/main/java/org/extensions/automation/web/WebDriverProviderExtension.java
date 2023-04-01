@@ -37,8 +37,10 @@ public class WebDriverProviderExtension implements
     public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
-            if (driverType.isPresent()) return this.driverManager.get();
-        }
+            if (driverType.isPresent()) {
+                return this.driverManager.get();
+            } else throw new RuntimeException("WebDriverType annotation is missing in test method");
+    }
         throw new RuntimeException("WebDriverProviderExtension error");
     }
 
