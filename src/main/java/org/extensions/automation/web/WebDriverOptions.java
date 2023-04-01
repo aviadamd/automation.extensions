@@ -13,10 +13,11 @@ public class WebDriverOptions {
         chromeOptions.addArguments("--disable-notifications");
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--dns-prefetch-disable");
-        chromeOptions.addArguments("enable-automation");
-        chromeOptions.addArguments("start-maximized");
+        chromeOptions.addArguments("--remote-allow-origins=*");
         chromeOptions.addArguments("--disable-web-security");
         chromeOptions.addArguments("--allow-running-insecure-content");
+        chromeOptions.addArguments("enable-automation");
+        chromeOptions.addArguments("start-maximized");
         return chromeOptions;
     }
 

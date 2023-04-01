@@ -24,7 +24,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 public class WebSharedObjectsProviderExtension implements ParameterResolver,
-        BeforeEachCallback, AfterEachCallback,
+        BeforeAllCallback, BeforeEachCallback, AfterEachCallback,
         AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
 
@@ -45,6 +45,11 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     }
 
     @Override
+    public synchronized void beforeAll(ExtensionContext context) {
+        System.setProperty("webdriver.http.factory", "jdk-http-client");
+    }
+
+    @Override
     public synchronized void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<ProviderConfiguration> providerConfiguration = this.readAnnotation(context, ProviderConfiguration.class);
@@ -54,7 +59,7 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
                 this.initDriver(providerConfiguration.get(), this.initProxy());
                 this.initJackson(providerConfiguration.get());
                 this.initMongo(providerConfiguration.get());
-            } else throw new RuntimeException("fail provider initiation");
+            } else throw new RuntimeException("ProviderConfiguration annotation is missing in test method");
         } else throw new RuntimeException("fail provider initiation");
     }
     @Override
@@ -144,7 +149,7 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
         return Optional.empty();
     }
 
-    public WebDriver setWebDriver(String client, DesiredCapabilities capabilities) {
+    private WebDriver setWebDriver(String client, DesiredCapabilities capabilities) {
         switch (client) {
             case "chrome" -> { return this.initChromeDriver(new WebDriverOptions(), capabilities); }
             case "firefox" -> { return this.initFireFoxDriver(new WebDriverOptions(), capabilities); }
@@ -153,30 +158,28 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     }
 
     /**
-     *
+     * String url = "http://chromedriver.chromium.org/downloads"
      * @param options
      * @param capabilities
      * @return
      */
     private WebDriver initChromeDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        WebDriverManager manager = WebDriverManager.chromedriver();
+        manager.setup();
         ChromeOptions chromeOptions = options.chromeOptions().merge(capabilities);
-        return WebDriverManager
-                .chromedriver()
-                .capabilities(chromeOptions)
-                .create();
+        return manager.capabilities(chromeOptions).create();
     }
 
     /**
-     *
+     * "https://github.com/mozilla/geckodriver/releases"
      * @param options
      * @param capabilities
      * @return
      */
     private WebDriver initFireFoxDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        WebDriverManager manager = WebDriverManager.firefoxdriver();
+        manager.setup();
         FirefoxOptions firefoxOptions = options.firefoxOptions().merge(capabilities);
-        return WebDriverManager
-                .firefoxdriver()
-                .capabilities(firefoxOptions)
-                .create();
+        return manager.capabilities(firefoxOptions).create();
     }
 }
