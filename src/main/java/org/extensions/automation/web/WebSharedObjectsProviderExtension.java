@@ -67,7 +67,7 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
         if (context.getElement().isPresent()) {
             try {
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
-                    String testPath = System.getProperty("user.dir") + "/target/harFiles";
+                    String testPath = System.getProperty("user.dir") + "/target/har-files";
                     String testName = context.getRequiredTestMethod().getName();
                     FilesHelper filesHelper = new FilesHelper();
                     filesHelper.createDirectory(testPath);

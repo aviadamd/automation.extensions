@@ -159,7 +159,7 @@ public class ExtentReportExtension implements
             String className = context.getRequiredTestClass().getSimpleName();
             ExtentManager.getReportsInstance().flush();
 
-            String testPath = System.getProperty("user.dir") + "/target/testResults";
+            String testPath = System.getProperty("user.dir") + "/target/test-results";
 
             if (passTests.size() > 0) {
                 File passFilePath = new File(testPath + "/" + className + "Pass.json");

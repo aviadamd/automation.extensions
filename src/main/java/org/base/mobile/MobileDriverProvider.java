@@ -12,7 +12,9 @@ import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.base.WebElementGestures;
+import org.base.mobile.data.ElementsAttributes;
 import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +31,7 @@ import java.util.*;
 @Slf4j
 @Augmentable
 public class MobileDriverProvider implements
-        WebElementGestures,MobileGestures,
+        WebElementGestures, MobileGestures,
         ExecutesMethod, ExecutesDriverScript,
         LogsEvents, HasBrowserCheck, HasSettings  {
 
@@ -131,14 +133,6 @@ public class MobileDriverProvider implements
         } catch (Exception exception) {
             throw new RuntimeException("set android activity error", exception);
         }
-    }
-
-    private synchronized DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("browserName", "chrome");
-        capabilities.setCapability("chromedriverExecutable", chromedriverPath);
-        capabilities.merge(caps);
-        return capabilities;
     }
 
     public void activate(String appBundle) {
@@ -278,12 +272,21 @@ public class MobileDriverProvider implements
                 .until(condition -> ExpectedConditions.elementToBeClickable(element));
         element.sendKeys(keysToSend);
     }
+
     @Override
     public String getAttribute(WebElement element, String name) {
         return this.getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getAttribute(name));
+    }
+    @Override
+    public String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair) {
+        String setAttribute = isAndroid() ? attributesPair.getLeft().getTag() : attributesPair.getRight().getTag();
+        return this.getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> element.getAttribute(setAttribute));
     }
 
     @Override

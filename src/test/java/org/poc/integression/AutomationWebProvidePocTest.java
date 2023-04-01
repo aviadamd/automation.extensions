@@ -71,5 +71,12 @@ public class AutomationWebProvidePocTest {
                 .getScrollExtension()
                 .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.gitHubLink))
                 .click(boniGrciaWelcomePage.gitHubLink);
+
+
+        webSharedObjects.getDriverManager().get(webSharedObjects.getWebConfiguration().projectUrl());
+        webSharedObjects.getDriverManager()
+                .getScrollExtension()
+                .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.linkedinLink))
+                .click(boniGrciaWelcomePage.linkedinLink);
     }
 }
