@@ -5,8 +5,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
 public class WebDriverOptions {
-
-    protected ChromeOptions chromeOptions() {
+    public ChromeOptions chromeOptions() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--disable-popup-blocking");
@@ -20,8 +19,7 @@ public class WebDriverOptions {
         chromeOptions.addArguments("start-maximized");
         return chromeOptions;
     }
-
-    protected FirefoxOptions firefoxOptions() {
+    public FirefoxOptions firefoxOptions() {
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.addPreference("network.automatic-ntlm-auth.trusted-uris", "http://,https://");
         firefoxOptions.addPreference("network.automatic-ntlm-auth.allow-non-fqdn", true);

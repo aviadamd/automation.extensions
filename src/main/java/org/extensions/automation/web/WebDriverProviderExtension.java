@@ -1,8 +1,8 @@
 package org.extensions.automation.web;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
+import org.base.web.SeleniumWebDriverManager;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
 import org.extensions.anontations.web.WebDriverType;
@@ -10,7 +10,6 @@ import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -22,10 +21,10 @@ import java.util.*;
 
 @Slf4j
 public class WebDriverProviderExtension implements
-        ParameterResolver, BeforeEachCallback, AfterEachCallback,
+        ParameterResolver, BeforeEachCallback,
+        BeforeAllCallback, AfterEachCallback,
         AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
 
-    private final ThreadLocal<DesiredCapabilities> capabilities = new ThreadLocal<>();
     private final ThreadLocal<WebConfiguration> webProperties = new ThreadLocal<>();
     private final ThreadLocal<SeleniumWebDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
@@ -44,34 +43,33 @@ public class WebDriverProviderExtension implements
     }
 
     @Override
+    public synchronized void beforeAll(ExtensionContext context) {
+        System.setProperty("webdriver.http.factory", "jdk-http-client");
+    }
+
+    @Override
     public void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            try {
-                Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
-                if (driverType.isPresent()) {
+            Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
+            if (driverType.isPresent()) {
+                this.webProperties.set(new PropertiesManager().getOrCreate(WebConfiguration.class));
+                this.initDriver(driverType.get());
+            } else throw new RuntimeException("WebDriverType annotation is missing in test method");
+        }
+    }
 
-                    this.webProperties.set(new PropertiesManager().getOrCreate(WebConfiguration.class));
-                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost()));
-                    this.capabilities.set(new DesiredCapabilities());
-                    this.capabilities.get().setCapability(CapabilityType.PROXY, this.mobProxyExtension.get().getProxy());
-                    this.capabilities.get().acceptInsecureCerts();
-                    this.mobProxyExtension.get().getServer().newHar();
-
-                    if (this.webProperties.get().projectClient().equalsIgnoreCase("chrome")) {
-                        this.driverManager.set(new SeleniumWebDriverProvider(
-                                this.webProperties.get().projectUrl(),
-                                Duration.ofSeconds(driverType.get().generalTo()),
-                                WebDriverManager.chromedriver().capabilities(new WebDriverOptions().chromeOptions().merge(capabilities.get())).create()));
-                    } else if (this.webProperties.get().projectClient().equalsIgnoreCase("firefox")) {
-                        this.driverManager.set(new SeleniumWebDriverProvider(
-                                this.webProperties.get().projectUrl(),
-                                Duration.ofSeconds(driverType.get().generalTo()),
-                                WebDriverManager.firefoxdriver().capabilities(new WebDriverOptions().firefoxOptions().merge(capabilities.get())).create()));
-                    }
-                }
-            } catch (Exception exception) {
-                Assertions.fail("create driver error " + exception.getMessage(), exception);
-            }
+    private synchronized void initDriver(WebDriverType driverType) {
+        try {
+            SeleniumWebDriverManager driverManager = new SeleniumWebDriverManager();
+            Duration duration = driverManager.setWebDriverWaitDuration(driverType.durationOf(), driverType.generalTo());
+            String url = this.webProperties.get().projectUrl();
+            String projectClient = this.webProperties.get().projectClient();
+            MobProxyExtension mobProxyExtension = new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost());
+            this.mobProxyExtension.set(mobProxyExtension);
+            DesiredCapabilities capabilities = driverManager.initProxy(mobProxyExtension);
+            this.driverManager.set(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(projectClient, capabilities)));
+        } catch (Exception exception) {
+            Assertions.fail("initDriver error " + exception, exception);
         }
     }
     @Override
@@ -81,7 +79,7 @@ public class WebDriverProviderExtension implements
                 Optional<WebDriverType> driverType = this.readAnnotation(context, WebDriverType.class);
                 if (driverType.isPresent()) {
                     if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
-                        String testPath = System.getProperty("user.dir") + "/target/harFiles";
+                        String testPath = System.getProperty("user.dir") + "/target/har_files";
                         String testName = context.getRequiredTestMethod().getName();
                         Files.createDirectories(Path.of(testPath));
                         File file = new File(testPath + "/" + testName + ".json");
@@ -94,6 +92,7 @@ public class WebDriverProviderExtension implements
             }
         }
     }
+
     @Override
     public synchronized void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -107,6 +106,7 @@ public class WebDriverProviderExtension implements
             }
         }
     }
+
     @Override
     public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {

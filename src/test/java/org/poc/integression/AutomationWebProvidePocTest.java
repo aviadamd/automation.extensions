@@ -21,8 +21,6 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.poc.jackson.ObjectPojo;
 import org.poc.web.BoniGrciaWelcomePage;
-import org.poc.web.WallaWelcomePage;
-
 import java.util.concurrent.TimeUnit;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
@@ -42,28 +40,12 @@ public class AutomationWebProvidePocTest {
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "wallaOpenPageTest")
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestOne")
     @ProviderConfiguration(
             jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
             driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
             dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
-    void wallaOpenPageTest(WebSharedObjects webSharedObjects) {
-        WallaWelcomePage wallaWelcomePage = new WallaWelcomePage(webSharedObjects.getDriverManager().getDriver());
-        webSharedObjects.getDriverManager()
-                .getScrollExtension()
-                .scrollToElement(10, ScrollDirection.DOWN, elementToBeClickable(wallaWelcomePage.travelSection))
-                .click(wallaWelcomePage.travelSection);
-    }
-
-    @Test
-    @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePage")
-    @ProviderConfiguration(
-            jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
-            driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
-            dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
-    void boniGrciaWelcomePage(WebSharedObjects webSharedObjects) {
+    void boniGrciaWelcomePageTestOne(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
@@ -72,6 +54,29 @@ public class AutomationWebProvidePocTest {
                 .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.gitHubLink))
                 .click(boniGrciaWelcomePage.gitHubLink);
 
+        webSharedObjects.getDriverManager().get(webSharedObjects.getWebConfiguration().projectUrl());
+        webSharedObjects.getDriverManager()
+                .getScrollExtension()
+                .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.linkedinLink))
+                .click(boniGrciaWelcomePage.linkedinLink);
+    }
+
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.MINUTES)
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestTwo")
+    @ProviderConfiguration(
+            jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
+            driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
+            dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
+    void boniGrciaWelcomePageTestTwo(WebSharedObjects webSharedObjects) {
+        BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
+        webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
+        webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
+        webSharedObjects.getDriverManager()
+                .getScrollExtension()
+                .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.gitHubLink))
+                .click(boniGrciaWelcomePage.gitHubLink);
 
         webSharedObjects.getDriverManager().get(webSharedObjects.getWebConfiguration().projectUrl());
         webSharedObjects.getDriverManager()
