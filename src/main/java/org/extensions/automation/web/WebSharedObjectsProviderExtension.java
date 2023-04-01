@@ -1,5 +1,6 @@
 package org.extensions.automation.web;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.base.configuration.PropertiesManager;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
@@ -10,17 +11,17 @@ import org.data.files.jsonReader.FilesHelper;
 import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.utils.mongo.morphia.MorphiaRepository;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
-import static io.github.bonigarcia.wdm.WebDriverManager.chromedriver;
-import static io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver;
 
 public class WebSharedObjectsProviderExtension implements ParameterResolver,
         BeforeEachCallback, AfterEachCallback,
@@ -46,17 +47,14 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     @Override
     public synchronized void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            try {
-                Optional<ProviderConfiguration> testWith = this.readAnnotation(context, ProviderConfiguration.class);
-                if (testWith.isPresent()) {
-                    this.webSharedObjects.set(new WebSharedObjects());
-                    this.webSharedObjects.get().setWebConfiguration(new PropertiesManager().getOrCreate(WebConfiguration.class));
-                    this.initProvider(testWith.get());
-                } else throw new RuntimeException("fail provider initiation");
-
-            } catch (Exception exception) {
-                throw new RuntimeException("fail provider initiation", exception);
-            }
+            Optional<ProviderConfiguration> providerConfiguration = this.readAnnotation(context, ProviderConfiguration.class);
+            if (providerConfiguration.isPresent()) {
+                this.webSharedObjects.set(new WebSharedObjects());
+                this.webSharedObjects.get().setWebConfiguration(new PropertiesManager().getOrCreate(WebConfiguration.class));
+                this.initDriver(providerConfiguration.get(), this.initProxy());
+                this.initJackson(providerConfiguration.get());
+                this.initMongo(providerConfiguration.get());
+            } else throw new RuntimeException("fail provider initiation");
         } else throw new RuntimeException("fail provider initiation");
     }
     @Override
@@ -71,9 +69,9 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
                     File file = new File(testPath + "/" + testName + ".json");
                     this.webSharedObjects.get().getMobProxyExtension().writeHarFile(file, this.webSharedObjects.get().getMobProxyExtension().getServer().getHar().getLog());
                 }
-                this.webSharedObjects.get().getDriverManager().getDriver().quit();
+                this.webSharedObjects.get().getDriverManager().quit();
             } catch (Exception exception) {
-                Assertions.fail("generate har file error ", exception);
+                Assertions.fail("afterEach error ", exception);
             }
         }
     }
@@ -90,50 +88,48 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
             }
         }
     }
-    private synchronized void initProvider(ProviderConfiguration testWith) {
-        this.setDriver(testWith, this.setProxy(testWith));
-        String path = System.getProperty("user.dir") + "/" + testWith.jacksonProvider().dir();
-        this.webSharedObjects.get().setJacksonExtension(new JacksonExtension<>(path, new File(path + "/" + testWith.jacksonProvider().fileName()), testWith.jacksonProvider().classObject()));
-        MorphiaRepository repository = new MorphiaRepository(testWith.dbProvider().host(), testWith.dbProvider().dbName());
-        this.webSharedObjects.get().setMorphiaRepository(repository);
+
+    private synchronized void initDriver(ProviderConfiguration providerConfiguration, DesiredCapabilities capabilities) {
+        try {
+            Duration duration = Duration.ofSeconds(providerConfiguration.driverProvider().generalTo());
+            String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
+            String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
+            this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, this.setWebDriver(client, capabilities)));
+        } catch (Exception exception) {
+            Assertions.fail("initDriver error " + exception, exception);
+        }
     }
 
-    private synchronized DesiredCapabilities setProxy(ProviderConfiguration driver) {
-        int port = driver.driverProvider().proxyPort();
+    private synchronized void initJackson(ProviderConfiguration providerConfiguration) {
+        try {
+            String path = System.getProperty("user.dir") + "/" + providerConfiguration.jacksonProvider().dir();
+            File jsonPath = new File(path + "/" + providerConfiguration.jacksonProvider().fileName());
+            this.webSharedObjects.get().setJacksonExtension(new JacksonExtension<>(path, jsonPath, providerConfiguration.jacksonProvider().classObject()));
+        } catch (Exception exception) {
+            Assertions.fail("initJackson error " + exception, exception);
+        }
+    }
+
+    private synchronized void initMongo(ProviderConfiguration providerConfiguration) {
+        try {
+            MorphiaRepository repository = new MorphiaRepository(providerConfiguration.dbProvider().host(), providerConfiguration.dbProvider().dbName());
+            this.webSharedObjects.get().setMorphiaRepository(repository);
+        } catch (Exception exception) {
+            Assertions.fail("initMongo error " + exception, exception);
+        }
+    }
+
+    private synchronized DesiredCapabilities initProxy() {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         try {
-            MobProxyExtension proxy = new MobProxyExtension(MobProxyExtension.ProxyType.WEB, port, Inet4Address.getLocalHost());
-            this.webSharedObjects.get().setMobProxyExtension(proxy);
+            this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost()));
             capabilities.setCapability(CapabilityType.PROXY, this.webSharedObjects.get().getMobProxyExtension().getProxy());
             capabilities.acceptInsecureCerts();
             this.webSharedObjects.get().getMobProxyExtension().getServer().newHar();
-        } catch (UnknownHostException unknownHostException) {
-            throw new RuntimeException(unknownHostException);
+        } catch (Exception exception) {
+            Assertions.fail("initProxy error " + exception, exception);
         }
         return capabilities;
-    }
-
-    private synchronized void setDriver(ProviderConfiguration driver, DesiredCapabilities capabilities) {
-        Duration duration = Duration.ofSeconds(driver.driverProvider().generalTo());
-        String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
-        String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
-        WebDriverOptions options = new WebDriverOptions();
-
-        switch (client) {
-            case "chrome" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
-                            url,
-                            duration,
-                            chromedriver().capabilities(options.chromeOptions().merge(capabilities)).create())
-                    );
-            case "firefox" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
-                            url,
-                            duration,
-                            firefoxdriver().capabilities(options.firefoxOptions().merge(capabilities)).create())
-                    );
-            default -> throw new RuntimeException("you most provide chrome or firefox driver name");
-        }
     }
 
     @Override
@@ -146,5 +142,41 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
             }
         }
         return Optional.empty();
+    }
+
+    public WebDriver setWebDriver(String client, DesiredCapabilities capabilities) {
+        switch (client) {
+            case "chrome" -> { return this.initChromeDriver(new WebDriverOptions(), capabilities); }
+            case "firefox" -> { return this.initFireFoxDriver(new WebDriverOptions(), capabilities); }
+            default -> throw new RuntimeException("you most provide chrome or firefox driver name");
+        }
+    }
+
+    /**
+     *
+     * @param options
+     * @param capabilities
+     * @return
+     */
+    private WebDriver initChromeDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        ChromeOptions chromeOptions = options.chromeOptions().merge(capabilities);
+        return WebDriverManager
+                .chromedriver()
+                .capabilities(chromeOptions)
+                .create();
+    }
+
+    /**
+     *
+     * @param options
+     * @param capabilities
+     * @return
+     */
+    private WebDriver initFireFoxDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        FirefoxOptions firefoxOptions = options.firefoxOptions().merge(capabilities);
+        return WebDriverManager
+                .firefoxdriver()
+                .capabilities(firefoxOptions)
+                .create();
     }
 }

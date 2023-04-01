@@ -162,18 +162,20 @@ public class ExtentReportExtension implements
             String testPath = System.getProperty("user.dir") + "/target/testResults";
 
             if (passTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, new File(testPath + "/" + className + "Pass.json"), TestInformation.class);
+                File passFilePath = new File(testPath + "/" + className + "Pass.json");
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, passFilePath, TestInformation.class);
                 testWriter.writeToJson(passTests);
             }
 
             if (failTests.size() > 0) {
-                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, new File(testPath + "/" + className + "Fail.json"), TestInformation.class);
+                File failFilePath = new File(testPath + "/" + className + "Fail.json");
+                JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, failFilePath, TestInformation.class);
                 testWriter.writeToJson(failTests);
             }
 
             if (reportConfiguration.isPresent() && !reportConfiguration.get().mongoConnection().isEmpty()) {
                 this.reportConfigurations.get().setProperty("project.mongo.connection", reportConfiguration.get().mongoConnection());
-                String dbName = "mobileTests";
+                String dbName = "automationTests";
                 if (passTestsMongo.size() > 0) {
                     MongoRepoImplementation mongo = new MongoRepoImplementation(this.reportConfigurations.get().mongoConnection(), dbName, "PassTestResults");
                     mongo.insertElements(PassTestAdapter.toDocuments(passTestsMongo));

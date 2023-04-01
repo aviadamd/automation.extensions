@@ -16,12 +16,8 @@ public class WebSharedObjects {
     private MorphiaRepository morphiaRepository;
     private WebConfiguration webConfiguration;
     private MobProxyExtension mobProxyExtension;
-    private DateTimeUtilExtension dateTimeUtilExtension;
-    private StringsUtilities stringsUtilities;
 
-    protected void setDriverManager(SeleniumWebDriverProvider driverManager) {
-        this.driverManager = driverManager;
-    }
+    protected void setDriverManager(SeleniumWebDriverProvider driverManager) {this.driverManager = driverManager;}
     protected void setJacksonExtension(JacksonExtension<?> jacksonExtension) { this.jacksonExtension = jacksonExtension; }
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
@@ -37,14 +33,6 @@ public class WebSharedObjects {
     }
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
     public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }
-
-    public DateTimeUtilExtension getDateTimeUtilExtension() {
-        this.dateTimeUtilExtension = new DateTimeUtilExtension();
-        return this.dateTimeUtilExtension;
-    }
-
-    public StringsUtilities getStringsUtilities() {
-        this.stringsUtilities = new StringsUtilities();
-        return this.stringsUtilities;
-    }
+    public DateTimeUtilExtension getDateTimeUtilExtension() {return new DateTimeUtilExtension();}
+    public StringsUtilities getStringsUtilities() {return new StringsUtilities();}
 }

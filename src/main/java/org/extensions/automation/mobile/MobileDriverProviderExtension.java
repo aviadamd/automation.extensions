@@ -54,7 +54,7 @@ public class MobileDriverProviderExtension implements
             if (context.getElement().isPresent()) {
                 Optional<DriverJsonProvider> provider = this.readAnnotation(context, DriverJsonProvider.class);
                 if (provider.isPresent()) {
-                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.MOBILE, 0, Inet4Address.getLocalHost()));
+                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
                     this.driverManager.set(new MobileDriverProvider(new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities())));

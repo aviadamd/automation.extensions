@@ -22,14 +22,19 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, WebDriverProviderExtension.class })
-@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
+@ReportConfiguration(
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.TEST,
+        mongoConnection = "project.mongo.connection")
 public class SeleniumWebProviderBasePocTest {
 
     @Test
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
-    @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
+    @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
     void openPageFirstTest(SeleniumWebDriverProvider webDriverExtension) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
@@ -41,7 +46,7 @@ public class SeleniumWebProviderBasePocTest {
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
-    @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
+    @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
     void openPageSecondTest(SeleniumWebDriverProvider webDriverExtension) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
@@ -53,7 +58,7 @@ public class SeleniumWebProviderBasePocTest {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
-    @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
+    @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
     void openPageThirdTest(SeleniumWebDriverProvider webDriverExtension) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));

@@ -29,9 +29,10 @@ import java.util.*;
 @Slf4j
 @Augmentable
 public class MobileDriverProvider implements
-        WebElementGestures, ExecutesMethod,
-        ExecutesDriverScript, LogsEvents,
-        HasBrowserCheck, HasSettings  {
+        WebElementGestures,MobileGestures,
+        ExecutesMethod, ExecutesDriverScript,
+        LogsEvents, HasBrowserCheck, HasSettings  {
+
     private Duration generalTimeOut = Duration.ofSeconds(15);
     private Duration pollingEvery = Duration.ofSeconds(5);
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
@@ -236,7 +237,11 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(WebElement element) {
-        element.click();
+        this.getWebDriverWait()
+                .withTimeout(Duration.ofSeconds(3))
+                .pollingEvery(Duration.ofSeconds(1))
+                .until(ExpectedConditions.elementToBeClickable(element))
+                .click();
     }
 
     @Override
@@ -309,5 +314,20 @@ public class MobileDriverProvider implements
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(WebDriver::getPageSource);
+    }
+
+    @Override
+    public void get(String url) {
+        this.getMobileDriver().get(url);
+    }
+
+    @Override
+    public void close() {
+        if (this.getMobileDriver() != null) this.getMobileDriver().close();
+    }
+
+    @Override
+    public void quit() {
+        if (this.getMobileDriver() != null)  this.getMobileDriver().quit();
     }
 }

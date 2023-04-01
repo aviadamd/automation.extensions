@@ -13,7 +13,6 @@ import java.util.Set;
 
 @Slf4j
 public class WebDriverEventHandler implements WebDriverListener {
-
     @Override
     public void onError(Object target, Method method, Object[] args, InvocationTargetException e) {
         this.print(Status.FAIL,"driver event listener on error trigger " + e.getMessage());

@@ -26,7 +26,12 @@ import static com.aventstack.extentreports.Status.SKIP;
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, WebSharedObjectsProviderExtension.class })
-@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
+@ReportConfiguration(
+        reportPath = "project.report.path",
+        extraReportsBy = { FAIL, SKIP },
+        reportSettingsPath = "project.report.config",
+        analysisStrategy = AnalysisStrategy.TEST,
+        mongoConnection = "project.mongo.connection")
 public class  AutomationWebProvidePocTest {
 
     @Test
@@ -35,15 +40,12 @@ public class  AutomationWebProvidePocTest {
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "openPageFirstTest")
     @ProviderConfiguration(
             jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
-            driverProvider = @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
+            driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
             dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
     void openPageFirstTest(WebSharedObjects webSharedObjects) {
-        webSharedObjects.log(Status.INFO,"bla bla");
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
-        log.info(webSharedObjects.getWebConfiguration().projectClient());
-        String a = webSharedObjects.getStringsUtilities().cleanWhiteSpaces("ererf");
     }
 
     @Test
@@ -52,13 +54,12 @@ public class  AutomationWebProvidePocTest {
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "openPageSecondTest")
     @ProviderConfiguration(
             jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
-            driverProvider = @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
+            driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
             dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
     void openPageSecondTest(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
-        log.info(webSharedObjects.getWebConfiguration().projectClient());
     }
 
     @Test
@@ -67,12 +68,11 @@ public class  AutomationWebProvidePocTest {
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "openPageThirdTest")
     @ProviderConfiguration(
             jacksonProvider = @JacksonProvider(dir = "src/test/resources", fileName = "someJson.json", classObject = ObjectPojo.class),
-            driverProvider = @WebDriverType(proxyPort = 0, baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
+            driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30),
             dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"))
     void openPageThirdTest(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.resumeTab);
         webSharedObjects.getDriverManager().click(boniGrciaWelcomePage.homeTab);
-        log.info(webSharedObjects.getWebConfiguration().projectClient());
     }
 }

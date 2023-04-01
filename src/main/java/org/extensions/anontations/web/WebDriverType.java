@@ -9,8 +9,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface WebDriverType {
     String baseUrl() default "";
-    int proxyPort();
-    int generalTo();
+    int generalTo() default 10;
     String driversInstance();
-
 }

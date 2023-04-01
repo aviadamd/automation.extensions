@@ -15,7 +15,6 @@ public class DateTimeUtilTest {
         String format = "dd MMMM yyyy";
         LocalDate localDate = new DateTimeUtilExtension()
                 .withFutureDate(true)
-                .withLocalTime(LocalTime.now())
                 .withStringFormat(format)
                 .withStartDateAs(Period.of(0,0,0))
                 .buildDate();

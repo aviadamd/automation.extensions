@@ -51,7 +51,7 @@ public class WebDriverProviderExtension implements
                 if (driverType.isPresent()) {
 
                     this.webProperties.set(new PropertiesManager().getOrCreate(WebConfiguration.class));
-                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, driverType.get().proxyPort(), Inet4Address.getLocalHost()));
+                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost()));
                     this.capabilities.set(new DesiredCapabilities());
                     this.capabilities.get().setCapability(CapabilityType.PROXY, this.mobProxyExtension.get().getProxy());
                     this.capabilities.get().acceptInsecureCerts();
@@ -70,7 +70,7 @@ public class WebDriverProviderExtension implements
                     }
                 }
             } catch (Exception exception) {
-                Assertions.fail("generate har file error ", exception);
+                Assertions.fail("create driver error " + exception.getMessage(), exception);
             }
         }
     }

@@ -23,11 +23,6 @@ public class DateTimeUtilExtension extends DateTimeUtil {
         return this;
     }
 
-    public DateTimeUtilExtension withLocalTime(LocalTime localTime) {
-        this.localTime = localTime;
-        return this;
-    }
-
     public DateTimeUtilExtension withStartDateAs(TemporalAdjuster startDate) {
         this.startDate = startDate;
         return this;
@@ -36,7 +31,7 @@ public class DateTimeUtilExtension extends DateTimeUtil {
     public LocalDate buildDate() {
         try {
             LocalDate localDate = this.setLocalDate(this.startDate, this.isFuture, this.period);
-            this.offsetDateTime = OffsetDateTime.of(localDate, this.localTime, ZoneOffset.UTC);
+            this.offsetDateTime = OffsetDateTime.of(localDate, LocalTime.now(), ZoneOffset.UTC);
             return this.offsetDateTime.toLocalDate();
         } catch (Exception exception) {
             throw new RuntimeException("generate date error", exception);
