@@ -1,4 +1,4 @@
-package org.poc.web;
+package org.poc.integression;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
@@ -19,6 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.poc.jackson.ObjectPojo;
+import org.poc.web.BoniGrciaWelcomePage;
+
 import java.util.concurrent.TimeUnit;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
