@@ -1,4 +1,4 @@
-package org.poc.mobile;
+package org.poc.integression;
 
 
 import com.aventstack.extentreports.AnalysisStrategy;
