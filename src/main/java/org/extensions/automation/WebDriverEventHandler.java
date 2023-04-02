@@ -12,6 +12,7 @@ public class WebDriverEventHandler implements WebDriverListener {
     @Override
     public void afterGet(WebDriver driver, String url) {
         this.print("navigate to get " + url);
+        ExtentTestManager.logScreenShot(Status.PASS, driver, "navigate to " + url + " pass");
     }
 
     @Override
@@ -66,12 +67,4 @@ public class WebDriverEventHandler implements WebDriverListener {
             ExtentTestManager.log(Status.INFO, message);
         } catch (Exception ignore) {}
     }
-
-    private void screenShot(Status status, WebDriver driver, String message) {
-        try {
-            log.info(Status.INFO + " | " + message);
-            ExtentTestManager.log(status, ExtentTestManager.getScreenShot(driver, message));
-        } catch (Exception ignore) {}
-    }
-
 }

@@ -4,18 +4,16 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.markuputils.Markup;
-import com.aventstack.extentreports.model.ExceptionInfo;
-import com.aventstack.extentreports.model.Log;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +50,9 @@ public class ExtentTestManager {
             String dateName = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
             TakesScreenshot ts = (TakesScreenshot) driver;
             File source = ts.getScreenshotAs(OutputType.FILE);
-            destination = System.getProperty("user.dir") + "/FailedTestsScreenshots/"+screenshotName+dateName+".png";
+            String fileDirPath = System.getProperty("user.dir") + "/target/tests_screen_shots";
+            createDir(Path.of(fileDirPath));
+            destination = fileDirPath + "/" + screenshotName + dateName + ".png";
             File finalDestination = new File(destination);
             FileUtils.copyFile(source, finalDestination);
         } catch (Exception ignore) {}
@@ -93,4 +93,16 @@ public class ExtentTestManager {
         log.info(status + " " +  details + " " + throwable.getMessage());
     }
 
+    public synchronized static void logScreenShot(Status status, WebDriver driver, String message) {
+        if (getExtentTest() != null) {
+            log(status, ExtentTestManager.getScreenShot(driver, message));
+            log.info(status + " " + message);
+        }
+    }
+
+    private synchronized static void createDir(Path path) {
+        try {
+            Files.createDirectory(path);
+        } catch (Exception ignore) {}
+    }
 }

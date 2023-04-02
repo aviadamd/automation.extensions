@@ -11,7 +11,6 @@ import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
-import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.morphia.MorphiaRepository;
@@ -56,7 +55,6 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
                 this.webSharedObjects.set(new WebSharedObjects());
                 this.initWebProperties();
                 this.initDriver(provider.get().driverProvider());
-                this.initJackson(provider.get().jacksonProvider());
                 this.initMongo(provider.get().dbProvider());
             } else throw new RuntimeException("ProviderConfiguration annotation is missing in test method");
         }
@@ -67,7 +65,7 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
         if (context.getElement().isPresent()) {
             try {
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
-                    String testPath = System.getProperty("user.dir") + "/target/har-files";
+                    String testPath = System.getProperty("user.dir") + "/target/har_files";
                     String testName = context.getRequiredTestMethod().getName();
                     FilesHelper filesHelper = new FilesHelper();
                     filesHelper.createDirectory(testPath);
@@ -113,17 +111,10 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
             DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
             this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
         } catch (Exception exception) {
+            if (exception.getMessage().contains("ERR_TUNNEL_CONNECTION_FAILED")) {
+                Assertions.fail("initDriver error with no Internet connection " + exception, exception);
+            }
             Assertions.fail("initDriver error " + exception, exception);
-        }
-    }
-
-    private synchronized void initJackson(JacksonProvider jacksonProvider) {
-        try {
-            String path = System.getProperty("user.dir") + "/" + jacksonProvider.dir();
-            File jsonPath = new File(path + "/" + jacksonProvider.fileName());
-            this.webSharedObjects.get().setJacksonExtension(new JacksonExtension<>(path, jsonPath, jacksonProvider.classObject()));
-        } catch (Exception exception) {
-            Assertions.fail("initJackson error " + exception, exception);
         }
     }
 
@@ -140,7 +131,11 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
-                return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
+                if (context.getRequiredTestClass().getAnnotation(annotation) != null) {
+                    return Optional.ofNullable(context.getRequiredTestClass().getAnnotation(annotation));
+                } else if (context.getRequiredTestMethod().getAnnotation(annotation) != null) {
+                    return Optional.ofNullable(context.getRequiredTestMethod().getAnnotation(annotation));
+                } else return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
             } catch (Exception exception) {
                 Assertions.fail("read annotation error ", exception);
             }

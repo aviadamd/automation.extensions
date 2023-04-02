@@ -1,6 +1,8 @@
 package org.base.web;
 
+import com.aventstack.extentreports.Status;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import lombok.extern.slf4j.Slf4j;
 import org.base.WebElementGestures;
 import org.extensions.automation.WebDriverEventHandler;
 import org.openqa.selenium.*;
@@ -12,6 +14,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.*;
 
+import static org.extensions.report.ExtentTestManager.logScreenShot;
+
+@Slf4j
 public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures {
     private Duration generalTimeOut = Duration.ofSeconds(5);
     private Duration pollingEvery = Duration.ofSeconds(1);
@@ -94,11 +99,13 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
     @Override
     public void click(WebElement element) {
-        this.getWebDriverWait()
+        WebElement findElement = this.getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(3))
                 .pollingEvery(Duration.ofSeconds(1))
-                .until(ExpectedConditions.elementToBeClickable(element))
-                .click();
+                .until(ExpectedConditions.elementToBeClickable(element));
+        String eleText = findElement.getText();
+        findElement.click();
+        logScreenShot(Status.PASS, this.getDriver(),"pass click on " + eleText);
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {

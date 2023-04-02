@@ -2,6 +2,7 @@ package org.poc.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
+import org.base.DurationOf;
 import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -34,7 +35,7 @@ public class SeleniumWebProviderBasePocTest {
     @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
-    @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
+    @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30, durationOf = DurationOf.MINUTES)
     void openPageFirstTest(SeleniumWebDriverProvider webDriverExtension) {
         BoniGrciaWelcomePage boniGrciaWelcomePage = new BoniGrciaWelcomePage(webDriverExtension.getDriver());
         webDriverExtension.oveRideTimeOut(ofSeconds(15), ofSeconds(2)).click(elementToBeClickable(boniGrciaWelcomePage.resumeTab));
