@@ -15,9 +15,9 @@ import net.lightbody.bmp.mitm.util.TrustUtil;
 import net.lightbody.bmp.proxy.CaptureType;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.Proxy;
+import org.springframework.util.SocketUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.text.DateFormat;
@@ -30,15 +30,15 @@ public class MobProxyExtension {
     public Proxy getProxy() { return this.proxy; }
     public BrowserMobProxyServer getServer() { return this.server; }
 
-    public MobProxyExtension(ProxyType proxyType, int port, InetAddress inetAddress) {
-        this.server = this.setServer(port, inetAddress, proxyType);
+    public MobProxyExtension(ProxyType proxyType, InetAddress inetAddress) {
+        this.server = this.setServer(inetAddress, proxyType);
     }
 
     public enum ProxyType {
         MOBILE,
         WEB
     }
-    private BrowserMobProxyServer setServer(int port, InetAddress inetAddress, ProxyType proxyType) {
+    private BrowserMobProxyServer setServer(InetAddress inetAddress, ProxyType proxyType) {
         try {
 
             BrowserMobProxyServer mobProxyServer = new BrowserMobProxyServer();
@@ -57,13 +57,16 @@ public class MobProxyExtension {
             trustSource.add(TrustUtil.getJavaTrustedCAs());
             trustSource.add(TrustUtil.getDefaultJavaTrustManager().getAcceptedIssuers());
             mobProxyServer.setTrustSource(trustSource);
+
+            int port = SocketUtils.findAvailableTcpPort(SocketUtils.PORT_RANGE_MIN, SocketUtils.PORT_RANGE_MAX);
             mobProxyServer.start(port, inetAddress);
 
             if (proxyType == ProxyType.WEB) this.proxy = this.setSeleniumProxy(mobProxyServer);
             return mobProxyServer;
 
         } catch (Exception exception) {
-            throw new RuntimeException("init mob proxy fails ", exception);
+            Assertions.fail("init mob proxy fails " + exception.getMessage(), exception);
+            return null;
         }
     }
 
@@ -75,7 +78,8 @@ public class MobProxyExtension {
             seleniumProxy.setSslProxy(hostIp + ":" + browserMobProxy.getPort());
             return seleniumProxy;
         } catch (Exception exception) {
-            throw new RuntimeException("init selenium proxy fails ", exception);
+            Assertions.fail("init selenium proxy fails ", exception);
+            return null;
         }
     }
 

@@ -9,7 +9,6 @@ public class DateTimeUtil {
     protected boolean isFuture = true;
     protected String format = "dd.MM.yyyy";
     protected TemporalAdjuster startDate = null;
-    protected LocalTime localTime = LocalTime.now();
     protected Period period = Period.of(0,0,0);
     protected OffsetDateTime offsetDateTime = OffsetDateTime.now(ZoneOffset.UTC);
     protected LocalDate setLocalDate(TemporalAdjuster startDate, boolean isFuture, Period period) {

@@ -1,11 +1,12 @@
 package org.base.web;
 
+import com.aventstack.extentreports.Status;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import lombok.extern.slf4j.Slf4j;
 import org.base.WebElementGestures;
 import org.extensions.automation.WebDriverEventHandler;
 import org.openqa.selenium.*;
-import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -13,27 +14,39 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.*;
 
+import static org.extensions.report.ExtentTestManager.logScreenShot;
+
+@Slf4j
 public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures {
     private Duration generalTimeOut = Duration.ofSeconds(5);
     private Duration pollingEvery = Duration.ofSeconds(1);
     private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private final ThreadLocal<WebDriverWait> webDriverWait = new ThreadLocal<>();
-    private final ThreadLocal<HasDevTools> hasDevTools = new ThreadLocal<>();
-
+    private final ThreadLocal<WebDriverScrollExtension> scrollExtension = new ThreadLocal<>();
+    public Collection<Class<? extends Exception>> findElementExceptions() {
+        return new ArrayList<>(Arrays.asList(
+                Exception.class,
+                WebDriverException.class,
+                NoSuchElementException.class
+        ));
+    }
     public WebDriver getDriver() { return driver.get(); }
     public WebDriverWait getWebDriverWait() { return this.webDriverWait.get(); }
-    public DevTools getDevTools() { return this.hasDevTools.get().getDevTools(); }
+    public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
 
     public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
-        this.driver.set(new EventFiringDecorator<>(new WebDriverEventHandler()).decorate(webDriver));
-        this.webDriverWait.set(new WebDriverWait(this.getDriver(), duration));
-        this.hasDevTools.set((HasDevTools) this.driver.get());
+        WebDriverEventHandler eventHandler = new WebDriverEventHandler();
+        this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(webDriver));
+        this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
+        this.scrollExtension.set(new WebDriverScrollExtension(this));
     }
     public SeleniumWebDriverProvider(String baseUrl, Class<? extends WebDriver> driverInstance, Duration duration) {
-        this.driver.set(WebDriverManager.getInstance(driverInstance).create());
-        this.webDriverWait.set(new WebDriverWait(this.getDriver(), duration));
+        WebDriverEventHandler eventHandler = new WebDriverEventHandler();
+        this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(WebDriverManager.getInstance(driverInstance).create()));
+        this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
+        this.scrollExtension.set(new WebDriverScrollExtension(this));
     }
 
     public SeleniumWebDriverProvider oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
@@ -43,9 +56,7 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
 
     @Override
-    public void get(String url) {
-        this.getDriver().get(url);
-    }
+    public void get(String url) {this.getDriver().get(url);}
     @Override
     public String getCurrentUrl() {
         return this.getWebDriverWait().until(WebDriver::getCurrentUrl);
@@ -76,15 +87,25 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
     @Override
     public void close() {
-        this.getDriver().close();
+        try {
+            if (this.driver.get() != null) this.getDriver().close();
+        } catch (Exception ignore) {}
     }
     @Override
     public void quit() {
-        this.getDriver().quit();
+        try {
+            if (this.driver.get() != null) this.getDriver().quit();
+        } catch (Exception ignore) {}
     }
     @Override
     public void click(WebElement element) {
-        element.click();
+        WebElement findElement = this.getWebDriverWait()
+                .withTimeout(Duration.ofSeconds(3))
+                .pollingEvery(Duration.ofSeconds(1))
+                .until(ExpectedConditions.elementToBeClickable(element));
+        String eleText = findElement.getText();
+        findElement.click();
+        logScreenShot(Status.PASS, this.getDriver(),"pass click on " + eleText);
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {
@@ -157,5 +178,4 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
                 .pollingEvery(this.pollingEvery)
                 .until(WebDriver::getPageSource);
     }
-
 }

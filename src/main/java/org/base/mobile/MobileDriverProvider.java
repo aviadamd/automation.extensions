@@ -12,7 +12,9 @@ import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.base.WebElementGestures;
+import org.base.mobile.data.ElementsAttributes;
 import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
@@ -29,9 +31,10 @@ import java.util.*;
 @Slf4j
 @Augmentable
 public class MobileDriverProvider implements
-        WebElementGestures, ExecutesMethod,
-        ExecutesDriverScript, LogsEvents,
-        HasBrowserCheck, HasSettings  {
+        WebElementGestures, MobileGestures,
+        ExecutesMethod, ExecutesDriverScript,
+        LogsEvents, HasBrowserCheck, HasSettings  {
+
     private Duration generalTimeOut = Duration.ofSeconds(15);
     private Duration pollingEvery = Duration.ofSeconds(5);
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
@@ -132,14 +135,6 @@ public class MobileDriverProvider implements
         }
     }
 
-    private synchronized DesiredCapabilities capsForChromeAndroid(DesiredCapabilities caps, String browserVersion, String chromedriverPath) {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("browserName", "chrome");
-        capabilities.setCapability("chromedriverExecutable", chromedriverPath);
-        capabilities.merge(caps);
-        return capabilities;
-    }
-
     public void activate(String appBundle) {
         if (this.isAndroid()) {
             this.getAndroidDriver().activateApp(appBundle);
@@ -236,7 +231,11 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(WebElement element) {
-        element.click();
+        this.getWebDriverWait()
+                .withTimeout(Duration.ofSeconds(3))
+                .pollingEvery(Duration.ofSeconds(1))
+                .until(ExpectedConditions.elementToBeClickable(element))
+                .click();
     }
 
     @Override
@@ -273,12 +272,21 @@ public class MobileDriverProvider implements
                 .until(condition -> ExpectedConditions.elementToBeClickable(element));
         element.sendKeys(keysToSend);
     }
+
     @Override
     public String getAttribute(WebElement element, String name) {
         return this.getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getAttribute(name));
+    }
+    @Override
+    public String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair) {
+        String setAttribute = isAndroid() ? attributesPair.getLeft().getTag() : attributesPair.getRight().getTag();
+        return this.getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> element.getAttribute(setAttribute));
     }
 
     @Override
@@ -309,5 +317,20 @@ public class MobileDriverProvider implements
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(WebDriver::getPageSource);
+    }
+
+    @Override
+    public void get(String url) {
+        this.getMobileDriver().get(url);
+    }
+
+    @Override
+    public void close() {
+        if (this.getMobileDriver() != null) this.getMobileDriver().close();
+    }
+
+    @Override
+    public void quit() {
+        if (this.getMobileDriver() != null)  this.getMobileDriver().quit();
     }
 }

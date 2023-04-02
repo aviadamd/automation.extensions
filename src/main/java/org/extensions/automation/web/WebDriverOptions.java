@@ -5,22 +5,21 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
 public class WebDriverOptions {
-
-    protected ChromeOptions chromeOptions() {
+    public ChromeOptions chromeOptions() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--disable-popup-blocking");
         chromeOptions.addArguments("--disable-notifications");
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--dns-prefetch-disable");
-        chromeOptions.addArguments("enable-automation");
-        chromeOptions.addArguments("start-maximized");
+        chromeOptions.addArguments("--remote-allow-origins=*");
         chromeOptions.addArguments("--disable-web-security");
         chromeOptions.addArguments("--allow-running-insecure-content");
+        chromeOptions.addArguments("enable-automation");
+        chromeOptions.addArguments("start-maximized");
         return chromeOptions;
     }
-
-    protected FirefoxOptions firefoxOptions() {
+    public FirefoxOptions firefoxOptions() {
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.addPreference("network.automatic-ntlm-auth.trusted-uris", "http://,https://");
         firefoxOptions.addPreference("network.automatic-ntlm-auth.allow-non-fqdn", true);

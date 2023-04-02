@@ -1,29 +1,28 @@
 package org.extensions.automation.web;
 
 import org.base.configuration.PropertiesManager;
+import org.base.web.SeleniumWebDriverManager;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
+import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.ProviderConfiguration;
+import org.extensions.anontations.mongo.MongoMorphiaConnector;
+import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
-import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.morphia.MorphiaRepository;
-import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Optional;
-import static io.github.bonigarcia.wdm.WebDriverManager.chromedriver;
-import static io.github.bonigarcia.wdm.WebDriverManager.firefoxdriver;
 
 public class WebSharedObjectsProviderExtension implements ParameterResolver,
-        BeforeEachCallback, AfterEachCallback,
+        BeforeAllCallback, BeforeEachCallback, AfterEachCallback,
         AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
 
@@ -44,36 +43,38 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     }
 
     @Override
+    public synchronized void beforeAll(ExtensionContext context) {
+        System.setProperty("webdriver.http.factory", "jdk-http-client");
+    }
+
+    @Override
     public synchronized void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            try {
-                Optional<ProviderConfiguration> testWith = this.readAnnotation(context, ProviderConfiguration.class);
-                if (testWith.isPresent()) {
-                    this.webSharedObjects.set(new WebSharedObjects());
-                    this.webSharedObjects.get().setWebConfiguration(new PropertiesManager().getOrCreate(WebConfiguration.class));
-                    this.initProvider(testWith.get());
-                } else throw new RuntimeException("fail provider initiation");
-
-            } catch (Exception exception) {
-                throw new RuntimeException("fail provider initiation", exception);
-            }
-        } else throw new RuntimeException("fail provider initiation");
+            Optional<ProviderConfiguration> provider = this.readAnnotation(context, ProviderConfiguration.class);
+            if (provider.isPresent()) {
+                this.webSharedObjects.set(new WebSharedObjects());
+                this.initWebProperties();
+                this.initDriver(provider.get().driverProvider());
+                this.initMongo(provider.get().dbProvider());
+            } else throw new RuntimeException("ProviderConfiguration annotation is missing in test method");
+        }
     }
+
     @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
-                    String testPath = System.getProperty("user.dir") + "/target/harFiles";
+                    String testPath = System.getProperty("user.dir") + "/target/har_files";
                     String testName = context.getRequiredTestMethod().getName();
                     FilesHelper filesHelper = new FilesHelper();
                     filesHelper.createDirectory(testPath);
                     File file = new File(testPath + "/" + testName + ".json");
                     this.webSharedObjects.get().getMobProxyExtension().writeHarFile(file, this.webSharedObjects.get().getMobProxyExtension().getServer().getHar().getLog());
                 }
-                this.webSharedObjects.get().getDriverManager().getDriver().quit();
+                this.webSharedObjects.get().getDriverManager().quit();
             } catch (Exception exception) {
-                Assertions.fail("generate har file error ", exception);
+                Assertions.fail("afterEach error ", exception);
             }
         }
     }
@@ -90,49 +91,39 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
             }
         }
     }
-    private synchronized void initProvider(ProviderConfiguration testWith) {
-        this.setDriver(testWith, this.setProxy(testWith));
-        String path = System.getProperty("user.dir") + "/" + testWith.jacksonProvider().dir();
-        this.webSharedObjects.get().setJacksonExtension(new JacksonExtension<>(path, new File(path + "/" + testWith.jacksonProvider().fileName()), testWith.jacksonProvider().classObject()));
-        MorphiaRepository repository = new MorphiaRepository(testWith.dbProvider().host(), testWith.dbProvider().dbName());
-        this.webSharedObjects.get().setMorphiaRepository(repository);
-    }
 
-    private synchronized DesiredCapabilities setProxy(ProviderConfiguration driver) {
-        int port = driver.driverProvider().proxyPort();
-        DesiredCapabilities capabilities = new DesiredCapabilities();
+    private synchronized void initWebProperties() {
         try {
-            MobProxyExtension proxy = new MobProxyExtension(MobProxyExtension.ProxyType.WEB, port, Inet4Address.getLocalHost());
-            this.webSharedObjects.get().setMobProxyExtension(proxy);
-            capabilities.setCapability(CapabilityType.PROXY, this.webSharedObjects.get().getMobProxyExtension().getProxy());
-            capabilities.acceptInsecureCerts();
-            this.webSharedObjects.get().getMobProxyExtension().getServer().newHar();
-        } catch (UnknownHostException unknownHostException) {
-            throw new RuntimeException(unknownHostException);
+            PropertiesManager propertiesManager = new PropertiesManager();
+            this.webSharedObjects.get().setWebConfiguration(propertiesManager.getOrCreate(WebConfiguration.class));
+        } catch (Exception exception) {
+            Assertions.fail("initWebProperties error " + exception, exception);
         }
-        return capabilities;
     }
 
-    private synchronized void setDriver(ProviderConfiguration driver, DesiredCapabilities capabilities) {
-        Duration duration = Duration.ofSeconds(driver.driverProvider().generalTo());
-        String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
-        String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
-        WebDriverOptions options = new WebDriverOptions();
+    private synchronized void initDriver(WebDriverType webDriverType) {
+        try {
+            SeleniumWebDriverManager driverManager = new SeleniumWebDriverManager();
+            Duration duration = driverManager.setWebDriverWaitDuration(webDriverType.durationOf(), webDriverType.generalTo());
+            String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
+            String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
+            this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost()));
+            DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
+            this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
+        } catch (Exception exception) {
+            if (exception.getMessage().contains("ERR_TUNNEL_CONNECTION_FAILED")) {
+                Assertions.fail("initDriver error with no Internet connection " + exception, exception);
+            }
+            Assertions.fail("initDriver error " + exception, exception);
+        }
+    }
 
-        switch (client) {
-            case "chrome" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
-                            url,
-                            duration,
-                            chromedriver().capabilities(options.chromeOptions().merge(capabilities)).create())
-                    );
-            case "firefox" ->
-                    this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(
-                            url,
-                            duration,
-                            firefoxdriver().capabilities(options.firefoxOptions().merge(capabilities)).create())
-                    );
-            default -> throw new RuntimeException("you most provide chrome or firefox driver name");
+    private synchronized void initMongo(MongoMorphiaConnector dbProvider) {
+        try {
+            MorphiaRepository repository = new MorphiaRepository(dbProvider.host(), dbProvider.dbName());
+            this.webSharedObjects.get().setMorphiaRepository(repository);
+        } catch (Exception exception) {
+            Assertions.fail("initMongo error " + exception, exception);
         }
     }
 
@@ -140,11 +131,16 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
-                return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
+                if (context.getRequiredTestClass().getAnnotation(annotation) != null) {
+                    return Optional.ofNullable(context.getRequiredTestClass().getAnnotation(annotation));
+                } else if (context.getRequiredTestMethod().getAnnotation(annotation) != null) {
+                    return Optional.ofNullable(context.getRequiredTestMethod().getAnnotation(annotation));
+                } else return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
             } catch (Exception exception) {
                 Assertions.fail("read annotation error ", exception);
             }
         }
         return Optional.empty();
     }
+
 }
