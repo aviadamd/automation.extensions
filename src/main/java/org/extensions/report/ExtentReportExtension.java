@@ -1,6 +1,7 @@
 package org.extensions.report;
 
 import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.markuputils.ExtentColor;
 import com.aventstack.extentreports.model.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
@@ -106,6 +107,7 @@ public class ExtentReportExtension implements
 
             String error = context.getExecutionException().get().getMessage();
             String testClass = context.getRequiredTestClass().getSimpleName();
+            String testMethod = context.getRequiredTestMethod().getName();
 
             context.getElement().ifPresent(element -> {
                 Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
@@ -117,9 +119,7 @@ public class ExtentReportExtension implements
                     failTestsMongo.add(new FailTestInfoMongo(new ObjectId(), testClass, new TestMetaData(testInfo, context.getExecutionException().get().getMessage()), error));
                 });
             });
-
-            ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " fails");
-            ExtentTestManager.log(Status.SKIP,"error description  " + throwable.getMessage());
+            ExtentTestManager.onFail(Status.SKIP, testMethod + " error ", throwable.getMessage());
         }
     }
 
@@ -129,6 +129,7 @@ public class ExtentReportExtension implements
 
             String error = throwable.getMessage();
             String testClass = context.getRequiredTestClass().getSimpleName();
+            String testMethod = context.getRequiredTestMethod().getName();
 
             context.getElement().ifPresent(element -> {
                 Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
@@ -141,8 +142,7 @@ public class ExtentReportExtension implements
                 });
             });
 
-            ExtentTestManager.log(Status.INFO,"test " + context.getRequiredTestMethod().getName() + " fails");
-            ExtentTestManager.log(Status.FAIL,"error description  " + throwable.getMessage());
+            ExtentTestManager.onFail(Status.FAIL, testMethod + " error ", throwable.getMessage());
         }
     }
 

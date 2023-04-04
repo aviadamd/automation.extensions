@@ -53,7 +53,9 @@ public class AutomationWebProvidePocTest {
                 .homeTab()
                 .gitHubLink()
                 .openPage(webSharedObjects.getWebConfiguration())
-                .linkedinLink();
+                .linkedinLink()
+                .homeTab()
+                .gitHubLink();
     }
 
     @Test

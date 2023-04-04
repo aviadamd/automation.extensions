@@ -1,21 +1,13 @@
 package org.extensions.report;
 
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.*;
 import com.aventstack.extentreports.markuputils.Markup;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Slf4j
 public class ExtentTestManager {
@@ -51,25 +43,31 @@ public class ExtentTestManager {
     }
 
     /**
-     * getScreenShot
+     * base64ScreenShot
      * @param driver
-     * @param screenshotName
      * @return
      */
-    public synchronized static String getScreenShot(WebDriver driver, String screenshotName) {
-        String destination = "";
+    private synchronized static String base64ScreenShot(WebDriver driver) {
         try {
-            String fileDirPath = System.getProperty("user.dir") + "/target/tests_screen_shots";
-            createDir(Path.of(fileDirPath));
-            destination = fileDirPath + "/" + screenshotName + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ".png";
-            File finalDestination = new File(destination);
-            FileUtils.copyFile(((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE), finalDestination);
-            return destination;
+            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BASE64);
         } catch (Exception ignore) {
-            return destination;
+            return "";
         }
     }
 
+    /**
+     * base64ScreenShot
+     *
+     * @param driver
+     * @return
+     */
+    private synchronized static byte[] byteScreenShot(WebDriver driver) {
+        try {
+            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
     /**
      * assignCategory
      * @param assignCategory
@@ -85,7 +83,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Media media) {
         extentTest.get().log(status, media);
-        log.info(status + " " + media.getTitle());
+        innerLog(status, media.getTitle());
     }
 
     /**
@@ -95,7 +93,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, String details) {
         extentTest.get().log(status, details);
-        log.info(status + " " + details);
+        innerLog(status, details);
     }
 
     /**
@@ -105,7 +103,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Markup markup) {
         extentTest.get().log(status, markup);
-        log.info(status + " " + markup.getMarkup());
+        innerLog(status," " + markup.getMarkup());
     }
 
     /**
@@ -115,7 +113,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Throwable throwable) {
         extentTest.get().log(status, throwable);
-        log.info(status + " " + throwable.getMessage());
+        innerLog(status, throwable.getMessage());
     }
 
     /**
@@ -126,7 +124,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, String details, Media media) {
         extentTest.get().log(status, details, media);
-        log.info(status + " " + details);
+        innerLog(status, details);
     }
 
     /**
@@ -137,7 +135,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Throwable throwable, Media media) {
         extentTest.get().log(status, throwable, media);
-        log.info(status + " " + throwable.getMessage());
+        innerLog(status, throwable.getMessage());
     }
 
     /**
@@ -149,7 +147,7 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, String details, Throwable throwable, Media media) {
         extentTest.get().log(status, details, throwable, media);
-        log.info(status + " " +  details + " " + throwable.getMessage());
+        innerLog(status, details + " " + throwable.getMessage());
     }
 
     /**
@@ -160,18 +158,34 @@ public class ExtentTestManager {
      */
     public synchronized static void logScreenShot(Status status, WebDriver driver, String message) {
         if (extentTest.get() != null && driver != null) {
-            extentTest.get().log(status, ExtentTestManager.getScreenShot(driver, message));
-            log.info(status + " " +  message);
+            String base64ScreenShot = base64ScreenShot(driver);
+            Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
+            extentTest.get().log(status, message, media);
+            innerLog(status, message);
         }
     }
 
     /**
-     * createDir
-     * @param path
+     *
+     * @param status
+     * @param expendMessage
+     * @param bodyDesc
      */
-    private synchronized static void createDir(Path path) {
+    public synchronized static void onFail(Status status, String expendMessage, String bodyDesc) {
         try {
-            Files.createDirectory(path);
+            if (status == Status.FAIL || status == Status.SKIP) {
+                extentTest.get().createNode("test error click for more details")
+                        .log(status, expendMessage)
+                        .log(status, bodyDesc);
+            }
         } catch (Exception ignore) {}
+    }
+
+    private synchronized static void innerLog(Status status, String details) {
+        switch (status) {
+            case INFO, PASS -> log.info(status + " " +  details);
+            case WARNING -> log.warn(status + " " +  details);
+            case SKIP, FAIL -> log.error(status + " " + details);
+        }
     }
 }

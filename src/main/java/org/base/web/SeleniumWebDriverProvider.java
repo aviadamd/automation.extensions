@@ -14,8 +14,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.*;
 
-import static org.extensions.report.ExtentTestManager.logScreenShot;
-
 @Slf4j
 public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures {
     private Duration generalTimeOut = Duration.ofSeconds(5);
@@ -35,15 +33,14 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
 
     public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
-        WebDriverEventHandler eventHandler = new WebDriverEventHandler();
+        WebDriverEventHandler eventHandler = new WebDriverEventHandler(webDriver);
         this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(webDriver));
         this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));
     }
     public SeleniumWebDriverProvider(String baseUrl, Class<? extends WebDriver> driverInstance, Duration duration) {
-        WebDriverEventHandler eventHandler = new WebDriverEventHandler();
-        this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(WebDriverManager.getInstance(driverInstance).create()));
+        this.driver.set(WebDriverManager.getInstance(driverInstance).create());
         this.webDriverWait.set(new WebDriverWait(this.driver.get(), duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));
@@ -99,13 +96,10 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
     @Override
     public void click(WebElement element) {
-        WebElement findElement = this.getWebDriverWait()
+        this.getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(3))
                 .pollingEvery(Duration.ofSeconds(1))
-                .until(ExpectedConditions.elementToBeClickable(element));
-        String eleText = findElement.getText();
-        findElement.click();
-        logScreenShot(Status.PASS, this.getDriver(),"pass click on " + eleText);
+                .until(ExpectedConditions.elementToBeClickable(element)).click();
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {

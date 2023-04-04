@@ -1,16 +1,17 @@
 package org.extensions.automation.web;
 
+import com.aventstack.extentreports.Status;
 import org.base.configuration.PropertiesManager;
 import org.base.web.SeleniumWebDriverManager;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
-import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
+import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.morphia.MorphiaRepository;
@@ -21,9 +22,10 @@ import java.net.Inet4Address;
 import java.time.Duration;
 import java.util.Optional;
 
-public class WebSharedObjectsProviderExtension implements ParameterResolver,
-        BeforeAllCallback, BeforeEachCallback, AfterEachCallback,
-        AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+public class WebSharedObjectsProviderExtension implements
+        ParameterResolver, BeforeAllCallback,
+        BeforeEachCallback, AfterEachCallback, AfterAllCallback,
+        JunitAnnotationHandler.ExtensionContextHandler, TestWatcher {
     private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
 
     @Override
@@ -45,6 +47,22 @@ public class WebSharedObjectsProviderExtension implements ParameterResolver,
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
         System.setProperty("webdriver.http.factory", "jdk-http-client");
+    }
+
+    @Override
+    public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
+            String methodName = context.getRequiredTestMethod().getName();
+            ExtentTestManager.logScreenShot(Status.FAIL, webSharedObjects.get().getDriverManager().getDriver(), methodName + " fails");
+        }
+    }
+
+    @Override
+    public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
+            String methodName = context.getRequiredTestMethod().getName();
+            ExtentTestManager.logScreenShot(Status.SKIP, webSharedObjects.get().getDriverManager().getDriver(), methodName + " fails");
+        }
     }
 
     @Override
