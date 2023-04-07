@@ -9,6 +9,7 @@ import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
+import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.extensions.report.ExtentTestManager;
@@ -26,7 +27,7 @@ public class WebSharedObjectsProviderExtension implements
         ParameterResolver, BeforeAllCallback,
         BeforeEachCallback, AfterEachCallback, AfterAllCallback,
         JunitAnnotationHandler.ExtensionContextHandler, TestWatcher {
-    private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
+    private final ThreadLocal<WebSharedObjects<?>> webSharedObjects = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext extension) {
@@ -70,7 +71,7 @@ public class WebSharedObjectsProviderExtension implements
         if (context.getElement().isPresent()) {
             Optional<ProviderConfiguration> provider = this.readAnnotation(context, ProviderConfiguration.class);
             if (provider.isPresent()) {
-                this.webSharedObjects.set(new WebSharedObjects());
+                this.webSharedObjects.set(new WebSharedObjects<>());
                 this.initWebProperties();
                 this.initDriver(provider.get().driverProvider());
                 this.initMongo(provider.get().dbProvider());
@@ -125,7 +126,7 @@ public class WebSharedObjectsProviderExtension implements
             Duration duration = driverManager.setWebDriverWaitDuration(webDriverType.durationOf(), webDriverType.generalTo());
             String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
             String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
-            this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost()));
+            this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(ProxyType.WEB, Inet4Address.getLocalHost()));
             DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
             this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
         } catch (Exception exception) {

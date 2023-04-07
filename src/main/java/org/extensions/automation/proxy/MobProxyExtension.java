@@ -16,7 +16,6 @@ import net.lightbody.bmp.proxy.CaptureType;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.Proxy;
 import org.springframework.util.SocketUtils;
-
 import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -34,10 +33,6 @@ public class MobProxyExtension {
         this.server = this.setServer(inetAddress, proxyType);
     }
 
-    public enum ProxyType {
-        MOBILE,
-        WEB
-    }
     private BrowserMobProxyServer setServer(InetAddress inetAddress, ProxyType proxyType) {
         try {
 

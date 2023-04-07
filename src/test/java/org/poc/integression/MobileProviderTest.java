@@ -3,7 +3,7 @@ package org.poc.integression;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.extensions.anontations.Repeat;
-import org.extensions.anontations.mobile.DriverJsonProvider;
+import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.mobile.appium.AndroidServerArgumentsInjections;
 import org.extensions.anontations.mobile.appium.AppiumServerArgumentsInjections;
 import org.extensions.anontations.mobile.appium.IosServerArgumentsInjections;
@@ -35,7 +35,7 @@ public class MobileProviderTest {
 
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
-    @DriverJsonProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
+    @DriverProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
     @AppiumServerArgumentsInjections(
             android = @AndroidServerArgumentsInjections(keys = {""}, values = {""}),
             ios = @IosServerArgumentsInjections(keys = {""}, values = {""})

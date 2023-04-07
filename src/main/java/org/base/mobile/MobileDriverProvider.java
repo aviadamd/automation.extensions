@@ -40,9 +40,12 @@ public class MobileDriverProvider implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverActions> mobileDriverActions = new ThreadLocal<>();
+
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
     public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
+    public MobileDriverActions getMobileDriverActions() { return mobileDriverActions.get(); }
 
     private boolean isAndroid() {
         return System.getProperty("project.mobile.client").equalsIgnoreCase("android");
@@ -68,15 +71,17 @@ public class MobileDriverProvider implements
      */
     public MobileDriverProvider(String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
-            switch (type) {
-                case "IOS" -> {
-                    this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
-                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
-                }
-                case "ANDROID" -> {
+            this.mobileDriverActions.set(new MobileDriverActions(type,this));
+            switch (this.mobileDriverActions.get().getDriverType()) {
+                case ANDROID -> {
                     this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
                     this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
                 }
+                case IOS -> {
+                    this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
+                    this.webDriverWait.set(new AppiumFluentWait<>(this.getMobileDriver()));
+                }
+                case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
             }
         } catch (Exception exception) {
             Assertions.fail("init driver fail ", exception);

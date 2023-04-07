@@ -4,11 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
-import org.extensions.anontations.mobile.DriverJsonProvider;
+import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.mobile.appium.AndroidServerArgumentsInjections;
 import org.extensions.anontations.mobile.appium.AppiumServerArgumentsInjections;
 import org.extensions.anontations.mobile.appium.IosServerArgumentsInjections;
 import org.extensions.automation.proxy.MobProxyExtension;
+import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.data.files.jsonReader.JacksonExtension;
@@ -41,13 +42,13 @@ public class MobileDriverProviderExtension implements
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
         Class<?> clazz = parameterContext.getParameter().getType();
-        return clazz == MobileDriverProvider.class && parameterContext.isAnnotated(DriverJsonProvider.class);
+        return clazz == MobileDriverProvider.class && parameterContext.isAnnotated(DriverProvider.class);
     }
 
     @Override
     public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            Optional<DriverJsonProvider> provider = this.readAnnotation(context, DriverJsonProvider.class);
+            Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
             if (provider.isPresent()) {
                 return this.driverManager.get();
             }
@@ -59,9 +60,9 @@ public class MobileDriverProviderExtension implements
     public void beforeEach(ExtensionContext context) {
         try {
             if (context.getElement().isPresent()) {
-                Optional<DriverJsonProvider> provider = this.readAnnotation(context, DriverJsonProvider.class);
+                Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
                 if (provider.isPresent()) {
-                    this.mobProxyExtension.set(new MobProxyExtension(MobProxyExtension.ProxyType.MOBILE, Inet4Address.getLocalHost()));
+                    this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
                     Optional<AppiumServerArgumentsInjections> serverArguments = this.readAnnotation(context, AppiumServerArgumentsInjections.class);

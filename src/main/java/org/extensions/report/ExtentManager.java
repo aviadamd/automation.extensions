@@ -33,6 +33,14 @@ public class ExtentManager {
             Assertions.fail("ExtentManager createInstance error " + exception.getMessage(), exception);
         }
     }
+
+    protected static synchronized void flush() {
+        try {
+            getReportsInstance().flush();
+        } catch (Exception exception) {
+            Assertions.fail("fail to flush report", exception);
+        }
+    }
 }
 
 

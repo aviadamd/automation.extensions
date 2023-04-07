@@ -1,9 +1,9 @@
 package org.base.web;
 
-import com.aventstack.extentreports.Status;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
 import org.base.WebElementGestures;
+import org.base.mobile.MobileDriverActions;
 import org.extensions.automation.WebDriverEventHandler;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
@@ -21,6 +21,7 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private final ThreadLocal<WebDriverWait> webDriverWait = new ThreadLocal<>();
     private final ThreadLocal<WebDriverScrollExtension> scrollExtension = new ThreadLocal<>();
+
     public Collection<Class<? extends Exception>> findElementExceptions() {
         return new ArrayList<>(Arrays.asList(
                 Exception.class,

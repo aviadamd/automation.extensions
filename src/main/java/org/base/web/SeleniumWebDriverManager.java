@@ -6,13 +6,12 @@ import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.web.WebDriverOptions;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.time.Duration;
 
 public class SeleniumWebDriverManager {
@@ -31,6 +30,14 @@ public class SeleniumWebDriverManager {
             case "firefox" -> { return this.initFireFoxDriver(new WebDriverOptions(), capabilities); }
             default -> throw new RuntimeException("you most provide chrome or firefox driver name");
         }
+    }
+
+    public WebDriver setWebDriver(WebDriver webDriver, DesiredCapabilities capabilities) {
+        if (webDriver instanceof ChromeDriver) {
+            return this.initChromeDriver(new WebDriverOptions(), capabilities);
+        } else if (webDriver instanceof FirefoxDriver) {
+            return this.initFireFoxDriver(new WebDriverOptions(), capabilities);
+        } else throw new RuntimeException("you most provide chrome or firefox driver name");
     }
 
     public DesiredCapabilities initProxy(MobProxyExtension mobProxyExtension) {

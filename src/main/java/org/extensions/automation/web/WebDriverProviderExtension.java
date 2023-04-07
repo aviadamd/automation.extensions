@@ -7,6 +7,7 @@ import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
+import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
@@ -66,7 +67,7 @@ public class WebDriverProviderExtension implements
             Duration duration = driverManager.setWebDriverWaitDuration(driverType.durationOf(), driverType.generalTo());
             String url = this.webProperties.get().projectUrl();
             String projectClient = this.webProperties.get().projectClient();
-            MobProxyExtension mobProxyExtension = new MobProxyExtension(MobProxyExtension.ProxyType.WEB, Inet4Address.getLocalHost());
+            MobProxyExtension mobProxyExtension = new MobProxyExtension(ProxyType.WEB, Inet4Address.getLocalHost());
             this.mobProxyExtension.set(mobProxyExtension);
             DesiredCapabilities capabilities = driverManager.initProxy(mobProxyExtension);
             this.driverManager.set(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(projectClient, capabilities)));

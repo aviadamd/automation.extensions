@@ -159,9 +159,11 @@ public class ExtentTestManager {
     public synchronized static void logScreenShot(Status status, WebDriver driver, String message) {
         if (extentTest.get() != null && driver != null) {
             String base64ScreenShot = base64ScreenShot(driver);
-            Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
-            extentTest.get().log(status, message, media);
-            innerLog(status, message);
+            if (!base64ScreenShot.isEmpty()) {
+                Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
+                extentTest.get().log(status, message, media);
+                innerLog(status, message);
+            }
         }
     }
 
