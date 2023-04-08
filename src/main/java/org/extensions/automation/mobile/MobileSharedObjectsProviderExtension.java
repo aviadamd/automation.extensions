@@ -3,7 +3,7 @@ package org.extensions.automation.mobile;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.AppiumServerArgumentsInjections;
+import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -55,13 +55,13 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver, 
             if (driverJsonProvider.isPresent()) {
                 String jsonCapsPath = driverJsonProvider.get().jsonCapsPath();
                 this.mobileProperties.get().setProperty("android.caps.json", jsonCapsPath);
-                AppiumServerArgumentsInjections argumentsInjections = context.getElement().get().getAnnotation(AppiumServerArgumentsInjections.class);
+                CapabilitiesInjections argumentsInjections = context.getElement().get().getAnnotation(CapabilitiesInjections.class);
                 CapsReaderAdapter capsReaderAdapter = this.capsReaderAdapter(argumentsInjections);
                 this.mobileSharedObjects.get().setDriverManager(new MobileDriverProvider(capsReaderAdapter));
             } else throw new RuntimeException("fail resolve driver provider initiation");
         }
     }
-    private CapsReaderAdapter capsReaderAdapter(AppiumServerArgumentsInjections serverArguments) {
+    private CapsReaderAdapter capsReaderAdapter(CapabilitiesInjections serverArguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
         CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
         if (serverArguments != null) desiredCapabilities.merge(this.setCapabilitiesExtra(capsReaderAdapter, serverArguments));
@@ -69,7 +69,7 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver, 
         return capsReaderAdapter;
     }
 
-    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, AppiumServerArgumentsInjections arguments) {
+    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesInjections arguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
 
         String clientType = capsAdapter.getJsonObject().getClient();

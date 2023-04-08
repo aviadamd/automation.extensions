@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.data.files.jsonReader.JacksonExtension;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.AndroidServerArgumentsInjections;
-import org.extensions.anontations.mobile.appium.AppiumServerArgumentsInjections;
-import org.extensions.anontations.mobile.appium.IosServerArgumentsInjections;
+import org.extensions.anontations.mobile.appium.Android;
+import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
+import org.extensions.anontations.mobile.appium.Ios;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.automation.mobile.CapabilitiesObject;
@@ -40,9 +40,9 @@ public class AutomationMobileProviderTest {
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @DriverProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
-    @AppiumServerArgumentsInjections(
-            android = @AndroidServerArgumentsInjections(keys = {""}, values = {""}),
-            ios = @IosServerArgumentsInjections(keys = {""}, values = {""})
+    @CapabilitiesInjections(
+            android = @Android(keys = {""}, values = {""}),
+            ios = @Ios(keys = {""}, values = {""})
     )
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
     public void a_mobileTest(MobileSharedObjects<CapabilitiesObject> mobileSharedObjects) {

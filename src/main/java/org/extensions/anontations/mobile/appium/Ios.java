@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD })
-public @interface AppiumServerArgumentsInjections {
-    AndroidServerArgumentsInjections android();
-    IosServerArgumentsInjections ios();
+public @interface Ios {
+    String [] keys() default "";
+    String [] values() default "";
 }
