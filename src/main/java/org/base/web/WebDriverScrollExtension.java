@@ -14,15 +14,18 @@ public class WebDriverScrollExtension {
     public WebDriverScrollExtension(SeleniumWebDriverProvider seleniumWebDriverProvider) {
         this.seleniumWebDriverProvider = seleniumWebDriverProvider;
     }
+
+    public JavascriptExecutor javascriptExecutor() {
+        return (JavascriptExecutor) this.seleniumWebDriverProvider.getDriver();
+    }
+
     public SeleniumWebDriverProvider scrollDown() {
-        JavascriptExecutor js = (JavascriptExecutor) this.seleniumWebDriverProvider.getDriver();
-        js.executeScript("window.scrollBy(0,500)");
+        this.javascriptExecutor().executeScript("window.scrollBy(0,500)");
         return this.seleniumWebDriverProvider;
     }
 
     public SeleniumWebDriverProvider scrollUp() {
-        JavascriptExecutor js = (JavascriptExecutor) this.seleniumWebDriverProvider.getDriver();
-        js.executeScript("window.scrollBy(0,-500)");
+        this.javascriptExecutor().executeScript("window.scrollBy(0,-500)");
         return this.seleniumWebDriverProvider;
     }
 
@@ -38,8 +41,8 @@ public class WebDriverScrollExtension {
         for (int i = 0; i < search; i++) {
             try {
                 searchElement = this.seleniumWebDriverProvider
-                        .getWebDriverWait()
-                        .ignoreAll(this.seleniumWebDriverProvider.findElementExceptions())
+                        .getWaitExtensions()
+                        .optionalFluentWait()
                         .until(condition);
                 if (searchElement != null) break;
                 this.scroll(direction);
@@ -52,8 +55,8 @@ public class WebDriverScrollExtension {
 
     private void searchResult(WebElement searchElement, ScrollDirection direction, ExpectedCondition<WebElement> condition) {
         if (searchElement == null) {
-            Assertions.fail("fail to find "+condition.toString()+ ", with scroll " + direction + " to element");
-        } else this.print("find "+condition.toString()+ ", with scroll " + direction + " to element");
+            Assertions.fail("fail to find " + condition.toString() + " with scroll " + direction + " to element");
+        } else this.print("find " + condition.toString() + ", with scroll " + direction + " to element");
     }
 
     private void print(String message) {

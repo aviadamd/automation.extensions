@@ -10,14 +10,15 @@ import org.extensions.report.ExtentTestManager;
 import org.data.files.jsonReader.JacksonExtension;
 import org.utils.mongo.morphia.MorphiaRepository;
 
-public class WebSharedObjects<T> {
-    private JacksonExtension<T> jacksonExtension;
+public class WebSharedObjects<JSON_POJO_CLASS> {
+    private JacksonExtension<JSON_POJO_CLASS> jacksonExtension;
     private SeleniumWebDriverProvider driverManager;
     private MorphiaRepository morphiaRepository;
     private WebConfiguration webConfiguration;
     private MobProxyExtension mobProxyExtension;
+
     protected void setDriverManager(SeleniumWebDriverProvider driverManager) { this.driverManager = driverManager; }
-    public void setJacksonExtension(JacksonExtension<T> jacksonExtension) {
+    public void setJacksonExtension(JacksonExtension<JSON_POJO_CLASS> jacksonExtension) {
         this.jacksonExtension = jacksonExtension;
     }
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
@@ -25,7 +26,7 @@ public class WebSharedObjects<T> {
     protected void setMorphiaRepository(MorphiaRepository morphiaRepository) { this.morphiaRepository = morphiaRepository; }
     public void log(Status status, String desc) { ExtentTestManager.log(status, desc); }
     public SeleniumWebDriverProvider getDriverManager() { return this.driverManager; }
-    public JacksonExtension<T> getJacksonExtension() {
+    public JacksonExtension<JSON_POJO_CLASS> getJacksonExtension() {
         return this.jacksonExtension;
     }
     public MorphiaRepository getMorphiaRepository() {

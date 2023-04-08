@@ -15,6 +15,7 @@ import org.data.files.jsonReader.FilesHelper;
 import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
+import org.openqa.selenium.WebDriver;
 import org.utils.mongo.morphia.MorphiaRepository;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
@@ -52,17 +53,25 @@ public class WebSharedObjectsProviderExtension implements
 
     @Override
     public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
-        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
-            String methodName = context.getRequiredTestMethod().getName();
-            ExtentTestManager.logScreenShot(Status.FAIL, webSharedObjects.get().getDriverManager().getDriver(), methodName + " fails");
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()
+                && this.webSharedObjects.get().getDriverManager() != null) {
+            WebDriver driver = this.webSharedObjects.get().getDriverManager().getDriver();
+            if (driver != null) {
+                String methodName = context.getRequiredTestMethod().getName();
+                ExtentTestManager.logScreenShot(Status.FAIL, driver, methodName + " fails with error: " + throwable.getMessage());
+            }
         }
     }
 
     @Override
     public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
-        if (context.getElement().isPresent() && context.getExecutionException().isPresent()) {
-            String methodName = context.getRequiredTestMethod().getName();
-            ExtentTestManager.logScreenShot(Status.SKIP, webSharedObjects.get().getDriverManager().getDriver(), methodName + " fails");
+        if (context.getElement().isPresent() && context.getExecutionException().isPresent()
+                && this.webSharedObjects.get().getDriverManager() != null) {
+            WebDriver driver = this.webSharedObjects.get().getDriverManager().getDriver();
+            if (driver != null) {
+                String methodName = context.getRequiredTestMethod().getName();
+                ExtentTestManager.logScreenShot(Status.SKIP, driver, methodName + " fails with error: " + throwable.getMessage());
+            }
         }
     }
 
@@ -130,10 +139,7 @@ public class WebSharedObjectsProviderExtension implements
             DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
             this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
         } catch (Exception exception) {
-            if (exception.getMessage().contains("ERR_TUNNEL_CONNECTION_FAILED")) {
-                Assertions.fail("initDriver error with no Internet connection " + exception, exception);
-            }
-            Assertions.fail("initDriver error " + exception, exception);
+            Assertions.fail("initDriver error " + exception.getMessage(), exception);
         }
     }
 

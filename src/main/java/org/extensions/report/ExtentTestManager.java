@@ -5,6 +5,7 @@ import com.aventstack.extentreports.markuputils.Markup;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -161,26 +162,50 @@ public class ExtentTestManager {
             String base64ScreenShot = base64ScreenShot(driver);
             if (!base64ScreenShot.isEmpty()) {
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
-                extentTest.get().log(status, message, media);
+                extentTest.get().createNode("click for more details... ").log(status, message, media);
                 innerLog(status, message);
             }
         }
     }
 
     /**
-     *
-     * @param status
      * @param expendMessage
      * @param bodyDesc
      */
-    public synchronized static void onFail(Status status, String expendMessage, String bodyDesc) {
+    public synchronized static void onPass(boolean asNewNode,String expendMessage, String bodyDesc) {
         try {
-            if (status == Status.FAIL || status == Status.SKIP) {
-                extentTest.get().createNode("test error click for more details")
-                        .log(status, expendMessage)
-                        .log(status, bodyDesc);
-            }
+            if (asNewNode) {
+                extentTest.get()
+                        .createNode("test pass, click for more details... ")
+                        .log(Status.PASS, expendMessage)
+                        .log(Status.PASS, bodyDesc);
+            } else extentTest.get().log(Status.PASS, expendMessage + " " + bodyDesc);
         } catch (Exception ignore) {}
+    }
+
+    public enum FailStatus {
+        FAIL(Status.FAIL),
+        SKIP(Status.SKIP);
+        private final Status status;
+        FailStatus(Status status) { this.status = status;}
+        public Status getStatus() { return status; }
+    }
+    /**
+     * @param status
+     * @param expendMessage
+     * @param bodyDesc
+     * @return
+     */
+    public synchronized static void onFail(boolean asNewNode, FailStatus status, String expendMessage, String bodyDesc) {
+        try {
+            if (asNewNode) {
+                extentTest.get()
+                        .createNode("test error, click for more details... ")
+                        .log(status.getStatus(), expendMessage)
+                        .log(status.getStatus(), bodyDesc);
+            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
+        } catch (Exception ignore) {}
+
     }
 
     private synchronized static void innerLog(Status status, String details) {

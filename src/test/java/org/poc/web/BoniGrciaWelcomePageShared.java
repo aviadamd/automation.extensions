@@ -3,7 +3,6 @@ package org.poc.web;
 import org.base.web.ScrollDirection;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
-
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 
 public class BoniGrciaWelcomePageShared {

@@ -18,11 +18,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.Extensions;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.poc.web.BoniGrciaWelcomePageShared;
-
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -51,8 +49,8 @@ public class AutomationWebProvidePocTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestOne")
     void boniGrciaWelcomePageTestOne(WebSharedObjects<CapabilitiesObject> webSharedObjects) {
         String path = System.getProperty("user.dir") + "/" + "src/test/resources/androidCaps1.json";
@@ -69,8 +67,8 @@ public class AutomationWebProvidePocTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestTwo")
     void boniGrciaWelcomePageTestTwo(WebSharedObjects<?> webSharedObjects) {
         this.boniGrciaWelcomePageShared.resumeTab()
@@ -81,8 +79,8 @@ public class AutomationWebProvidePocTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestThree")
     void boniGrciaWelcomePageTestThree(WebSharedObjects<?> webSharedObjects) {
         this.boniGrciaWelcomePageShared.resumeTab()

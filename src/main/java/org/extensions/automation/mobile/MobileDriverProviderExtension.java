@@ -5,9 +5,7 @@ import org.base.configuration.PropertiesManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.AndroidServerArgumentsInjections;
 import org.extensions.anontations.mobile.appium.AppiumServerArgumentsInjections;
-import org.extensions.anontations.mobile.appium.IosServerArgumentsInjections;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitAnnotationHandler;
@@ -17,15 +15,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static org.base.mobile.MobileDriverProvider.isAndroidClient;
 
 @Slf4j
 public class MobileDriverProviderExtension implements
@@ -65,11 +60,8 @@ public class MobileDriverProviderExtension implements
                     this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
-                    Optional<AppiumServerArgumentsInjections> serverArguments = this.readAnnotation(context, AppiumServerArgumentsInjections.class);
-                    DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-                    serverArguments.ifPresent(appiumServerArgumentsInjections -> desiredCapabilities.merge(this.setCapabilitiesExtra(appiumServerArgumentsInjections)));
-                    CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilities());
-                    desiredCapabilities.merge(capsReaderAdapter.getCapabilities());
+                    AppiumServerArgumentsInjections serverArguments = context.getElement().get().getAnnotation(AppiumServerArgumentsInjections.class);
+                    CapsReaderAdapter capsReaderAdapter = this.capsReaderAdapter(serverArguments);
                     this.driverManager.set(new MobileDriverProvider(capsReaderAdapter));
                     this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
                 }
@@ -103,30 +95,37 @@ public class MobileDriverProviderExtension implements
 
     @Override
     public void afterAll(ExtensionContext extensionContext)  {
-        if (this.mobProxyExtension.get().getProxy() != null && this.mobProxyExtension.get().getServer().isStarted()) {
+        if (this.mobProxyExtension.get() != null
+                && this.mobProxyExtension.get().getProxy() != null
+                && this.mobProxyExtension.get().getServer().isStarted()) {
             this.mobProxyExtension.get().getServer().stop();
         }
     }
 
-    private DesiredCapabilities setCapabilitiesExtra(AppiumServerArgumentsInjections serverArguments) {
+    private CapsReaderAdapter capsReaderAdapter(AppiumServerArgumentsInjections serverArguments) {
+        DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
+        CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
+        if (serverArguments != null) desiredCapabilities.merge(this.setCapabilitiesExtra(capsReaderAdapter, serverArguments));
+        desiredCapabilities.merge(capsReaderAdapter.getCapabilities());
+        return capsReaderAdapter;
+    }
+
+    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, AppiumServerArgumentsInjections arguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
 
-        if (serverArguments != null) {
-            if (isAndroidClient()) {
-                AndroidServerArgumentsInjections androidServerArguments = serverArguments.android();
-                if (androidServerArguments.keys().length > 0) {
-                    for (int i = 0; i < androidServerArguments.keys().length; i++) {
-                        desiredCapabilities.setCapability(androidServerArguments.keys()[i], androidServerArguments.values()[i]);
-                    }
-                }
-            } else {
-                IosServerArgumentsInjections iosServerArguments = serverArguments.ios();
-                if (iosServerArguments.keys().length > 0) {
-                    for (int i = 0; i < iosServerArguments.keys().length; i++) {
-                        desiredCapabilities.setCapability(iosServerArguments.keys()[i], iosServerArguments.values()[i]);
-                    }
+        String clientType = capsAdapter.getJsonObject().getClient();
+        switch (clientType) {
+            case "ANDROID" -> {
+                if (arguments.android() != null && arguments.android().keys().length > 0) {
+                    desiredCapabilities.merge(capsAdapter.setDesiredCapabilities(arguments.android().keys(), arguments.android().values()));
                 }
             }
+            case "IOS" -> {
+                if (arguments.ios() != null && arguments.ios().keys().length > 0) {
+                    desiredCapabilities.merge(capsAdapter.setDesiredCapabilities(arguments.ios().keys(), arguments.ios().values()));
+                }
+            }
+            default -> throw new RuntimeException("no android or ios driver name was provided");
         }
 
         return desiredCapabilities;

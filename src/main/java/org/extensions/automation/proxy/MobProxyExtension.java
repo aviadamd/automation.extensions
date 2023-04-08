@@ -73,7 +73,7 @@ public class MobProxyExtension {
             seleniumProxy.setSslProxy(hostIp + ":" + browserMobProxy.getPort());
             return seleniumProxy;
         } catch (Exception exception) {
-            Assertions.fail("init selenium proxy fails ", exception);
+            Assertions.fail("init selenium proxy fails " + exception.getMessage(), exception);
             return null;
         }
     }
@@ -144,7 +144,7 @@ public class MobProxyExtension {
             jsonGenerator.close();
 
         } catch (Exception exception) {
-            Assertions.fail("har json generator error ", exception);
+            Assertions.fail("har json generator error " + exception.getMessage(), exception);
         }
     }
 }

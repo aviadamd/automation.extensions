@@ -11,5 +11,6 @@ public @interface TestReportInfo {
     int testId();
     String assignCategory();
     String assignAuthor();
+    String deviceName() default "";
     String info() default "";
 }
