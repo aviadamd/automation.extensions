@@ -43,7 +43,7 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver, 
                     MorphiaRepository morphiaRepository = new MorphiaRepository(mongoConnectorProvider.get().host(), mongoConnectorProvider.get().dbName());
                     this.mobileSharedObjects.get().setMorphiaRepository(morphiaRepository);
                 }
-            }
+            } else throw new RuntimeException("fail resolve morphia mongo db provider initiation");
         } catch (Exception exception) {
             Assertions.fail("set morphia mongo db connection error " + exception.getMessage(), exception);
         }

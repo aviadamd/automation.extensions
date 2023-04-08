@@ -21,7 +21,6 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
     private final ThreadLocal<WebDriverWaitExtensions> waitExtensions = new ThreadLocal<>();
     private final ThreadLocal<WebDriverScrollExtension> scrollExtension = new ThreadLocal<>();
-
     public WebDriver getDriver() { return driver.get(); }
     public WebDriverWaitExtensions getWaitExtensions() { return this.waitExtensions.get(); }
     public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
@@ -50,61 +49,71 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
         try {
             if (!url.isEmpty()) new URL(url).openConnection().connect();
         } catch (IOException ioException) {
-            Assertions.fail("unable to open connection to " + url + ", error: " + ioException.getMessage(), ioException);
+            Assertions.fail("connection to " + url + ", error: " + ioException.getMessage(), ioException);
         }
     }
 
     @Override
     public void get(String url) {
-        this.getDriver().get(url);
+        this.driver.get().get(url);
     }
 
     @Override
     public String getCurrentUrl() {
-        return this.waitExtensions.get().getWebDriverWait().until(WebDriver::getCurrentUrl);
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .until(WebDriver::getCurrentUrl);
     }
 
     @Override
     public String getTitle() {
-        return this.waitExtensions.get().getWebDriverWait().until(WebDriver::getTitle);
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .until(WebDriver::getTitle);
     }
 
     @Override
     public Options manage() {
-        return this.getDriver().manage();
+        return this.driver.get().manage();
     }
 
     @Override
     public TargetLocator switchTo() {
-        return this.getDriver().switchTo();
+        return this.driver.get().switchTo();
     }
 
     @Override
     public Navigation navigate() {
-        return this.getDriver().navigate();
+        return this.driver.get().navigate();
     }
 
     @Override
     public Set<String> getWindowHandles() {
-        return this.getDriver().getWindowHandles();
+        return this.driver.get().getWindowHandles();
     }
 
     @Override
     public String getWindowHandle() {
-        return this.getDriver().getWindowHandle();
+        return this.driver.get().getWindowHandle();
     }
 
     @Override
     public void close() {
         try {
-            if (this.driver.get() != null) this.getDriver().close();
+            if (this.driver.get() != null) {
+                this.driver.get().close();
+            }
         } catch (Exception ignore) {}
     }
 
     @Override
     public void quit() {
         try {
-            if (this.driver.get() != null) this.getDriver().quit();
+            if (this.driver.get() != null) {
+                this.driver.get().quit();
+            }
         } catch (Exception ignore) {}
     }
 

@@ -40,10 +40,7 @@ public class AutomationMobileProviderTest {
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @DriverProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
-    @CapabilitiesInjections(
-            android = @Android(keys = {""}, values = {""}),
-            ios = @Ios(keys = {""}, values = {""})
-    )
+    @CapabilitiesInjections(android = @Android(keys = {""}, values = {""}), ios = @Ios(keys = {""}, values = {""}))
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
     public void a_mobileTest(MobileSharedObjects<CapabilitiesObject> mobileSharedObjects) {
         String path = System.getProperty("user.dir") + "/" + "src/test/resources/androidCaps1.json";
