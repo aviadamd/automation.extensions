@@ -81,9 +81,9 @@ public class WebSharedObjectsProviderExtension implements
             Optional<ProviderConfiguration> provider = this.readAnnotation(context, ProviderConfiguration.class);
             if (provider.isPresent()) {
                 this.webSharedObjects.set(new WebSharedObjects<>());
-                this.initWebProperties();
-                this.initDriver(provider.get().driverProvider());
+                this.initWebProperties(new PropertiesManager());
                 this.initMongo(provider.get().dbProvider());
+                this.initDriver(provider.get().driverProvider());
             } else throw new RuntimeException("ProviderConfiguration annotation is missing in test method");
         }
     }
@@ -95,23 +95,27 @@ public class WebSharedObjectsProviderExtension implements
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
                     String testPath = System.getProperty("user.dir") + "/target/har_files";
                     String testName = context.getRequiredTestMethod().getName();
-                    FilesHelper filesHelper = new FilesHelper();
-                    filesHelper.createDirectory(testPath);
+                    new FilesHelper().createDirectory(testPath);
                     File file = new File(testPath + "/" + testName + ".json");
                     this.webSharedObjects.get().getMobProxyExtension().writeHarFile(file, this.webSharedObjects.get().getMobProxyExtension().getServer().getHar().getLog());
                 }
-                this.webSharedObjects.get().getDriverManager().quit();
+                this.closeDriver();
             } catch (Exception exception) {
                 Assertions.fail("afterEach error ", exception);
             }
         }
     }
 
+    private synchronized void closeDriver() {
+        this.webSharedObjects.get().getDriverManager().close();
+    }
+
     @Override
     public synchronized void afterAll(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
-                if (this.webSharedObjects.get().getMobProxyExtension().getServer() != null) {
+                if (this.webSharedObjects.get().getMobProxyExtension() != null
+                        && this.webSharedObjects.get().getMobProxyExtension().getServer() != null) {
                     this.webSharedObjects.get().getMobProxyExtension().getServer().stop();
                 }
             } catch (Exception exception) {
@@ -120,9 +124,8 @@ public class WebSharedObjectsProviderExtension implements
         }
     }
 
-    private synchronized void initWebProperties() {
+    private synchronized void initWebProperties(PropertiesManager propertiesManager) {
         try {
-            PropertiesManager propertiesManager = new PropertiesManager();
             this.webSharedObjects.get().setWebConfiguration(propertiesManager.getOrCreate(WebConfiguration.class));
         } catch (Exception exception) {
             Assertions.fail("initWebProperties error " + exception, exception);
@@ -133,8 +136,8 @@ public class WebSharedObjectsProviderExtension implements
         try {
             SeleniumWebDriverManager driverManager = new SeleniumWebDriverManager();
             Duration duration = driverManager.setWebDriverWaitDuration(webDriverType.durationOf(), webDriverType.generalTo());
-            String url = this.webSharedObjects.get().getWebConfiguration().projectUrl();
-            String client = this.webSharedObjects.get().getWebConfiguration().projectClient();
+            String url = this.setNewProperty(webDriverType.baseUrl(), this.webSharedObjects.get().getWebConfiguration().projectUrl());
+            String client = this.setNewProperty(webDriverType.driversInstance(), this.webSharedObjects.get().getWebConfiguration().projectClient());
             this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(ProxyType.WEB, Inet4Address.getLocalHost()));
             DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
             this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
@@ -145,10 +148,22 @@ public class WebSharedObjectsProviderExtension implements
 
     private synchronized void initMongo(MongoMorphiaConnector dbProvider) {
         try {
-            MorphiaRepository repository = new MorphiaRepository(dbProvider.host(), dbProvider.dbName());
+            String mongoConnection = this.setNewProperty(dbProvider.host(), this.webSharedObjects.get().getWebConfiguration().mongoConnection());
+            MorphiaRepository repository = new MorphiaRepository(mongoConnection, dbProvider.dbName());
             this.webSharedObjects.get().setMorphiaRepository(repository);
         } catch (Exception exception) {
             Assertions.fail("initMongo error " + exception, exception);
+        }
+    }
+
+    private synchronized String setNewProperty(String key, String value) {
+        try {
+            if (key.contains(".")) {
+                System.setProperty(key, value);
+                return System.getProperty(key);
+            } else return value;
+        } catch (Exception exception) {
+            throw new RuntimeException("properties not valid with key: "+key+", or with value: "+value, exception);
         }
     }
 

@@ -9,5 +9,10 @@ public interface WebConfiguration extends Config {
     String projectClient();
     @Config.Key("project.url")
     String projectUrl();
+    @Config.Key("project.db.url")
+    String mongoConnection();
+
     void setProperty(String key, String value);
+    String getProperty(String key);
+
 }

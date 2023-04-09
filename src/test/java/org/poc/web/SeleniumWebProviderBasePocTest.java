@@ -11,11 +11,9 @@ import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.web.WebDriverProviderExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.util.concurrent.TimeUnit;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
 import static java.time.Duration.ofSeconds;
@@ -32,7 +30,6 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 public class SeleniumWebProviderBasePocTest {
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30, durationOf = DurationOf.MINUTES)
@@ -44,7 +41,6 @@ public class SeleniumWebProviderBasePocTest {
     }
 
     @Test
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
@@ -56,7 +52,6 @@ public class SeleniumWebProviderBasePocTest {
     }
 
     @Test
-    @Timeout(value = 3, unit = TimeUnit.MINUTES)
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)

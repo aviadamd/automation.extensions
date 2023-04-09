@@ -105,7 +105,9 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
             if (this.driver.get() != null) {
                 this.driver.get().close();
             }
-        } catch (Exception ignore) {}
+        } catch (Exception exception) {
+            Assertions.fail("close driver error ", exception);
+        }
     }
 
     @Override
@@ -114,7 +116,9 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
             if (this.driver.get() != null) {
                 this.driver.get().quit();
             }
-        } catch (Exception ignore) {}
+        } catch (Exception exception) {
+            Assertions.fail("quit driver error ", exception);
+        }
     }
 
     @Override

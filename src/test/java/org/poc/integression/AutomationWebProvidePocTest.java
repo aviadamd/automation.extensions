@@ -31,7 +31,7 @@ import static com.aventstack.extentreports.Status.SKIP;
         analysisStrategy = AnalysisStrategy.TEST,
         mongoConnection = "project.mongo.connection")
 @ProviderConfiguration(
-        dbProvider = @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "dbNew"),
+        dbProvider = @MongoMorphiaConnector(host = "project.db.url", dbName = "dbNew"),
         driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30))
 public class AutomationWebProvidePocTest {
 
