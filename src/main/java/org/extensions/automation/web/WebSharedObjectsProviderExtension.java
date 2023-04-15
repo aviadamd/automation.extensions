@@ -139,7 +139,7 @@ public class WebSharedObjectsProviderExtension implements
             String url = this.setNewProperty(webDriverType.baseUrl(), this.webSharedObjects.get().getWebConfiguration().projectUrl());
             String client = this.setNewProperty(webDriverType.driversInstance(), this.webSharedObjects.get().getWebConfiguration().projectClient());
             this.webSharedObjects.get().setMobProxyExtension(new MobProxyExtension(ProxyType.WEB, Inet4Address.getLocalHost()));
-            DesiredCapabilities capabilities = driverManager.initProxy(this.webSharedObjects.get().getMobProxyExtension());
+            DesiredCapabilities capabilities = driverManager.setProxyCapabilities(this.webSharedObjects.get().getMobProxyExtension());
             this.webSharedObjects.get().setDriverManager(new SeleniumWebDriverProvider(url, duration, driverManager.setWebDriver(client, capabilities)));
         } catch (Exception exception) {
             Assertions.fail("initDriver error " + exception.getMessage(), exception);

@@ -6,6 +6,7 @@ import org.base.WebElementGestures;
 import org.extensions.automation.WebDriverEventHandler;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -28,12 +29,6 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
         WebDriverEventHandler eventHandler = new WebDriverEventHandler(webDriver);
         this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(webDriver));
-        this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
-        if (!baseUrl.isEmpty()) this.get(baseUrl);
-        this.scrollExtension.set(new WebDriverScrollExtension(this));
-    }
-    public SeleniumWebDriverProvider(String baseUrl, Class<? extends WebDriver> driverInstance, Duration duration) {
-        this.driver.set(WebDriverManager.getInstance(driverInstance).create());
         this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));
