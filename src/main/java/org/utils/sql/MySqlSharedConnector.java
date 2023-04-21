@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.ibatis.jdbc.SQL;
 import org.junit.jupiter.api.Assertions;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ public class MySqlSharedConnector {
         try {
             BeanListHandler<T> beanListHandler = new BeanListHandler<>(tClass);
             QueryRunner queryRunner = new QueryRunner();
+            log.info("create query with: " + this.sqlQuery.toString());
+            log.info("with bean: " + tClass.toString());
             return queryRunner.query(this.connection, this.sqlQuery.toString(), beanListHandler);
         } catch (Exception exception) {
             Assertions.fail("queryToObjectsList error ", exception);
@@ -39,7 +42,19 @@ public class MySqlSharedConnector {
     }
 
     public synchronized void closeConnection() {
-        DbUtils.closeQuietly(this.connection);
+        try {
+            DbUtils.closeQuietly(this.connection);
+        } catch (Exception exception) {
+            log.debug("close connection" +exception.getMessage());
+        }
+    }
+
+    public synchronized DatabaseMetaData getMetaData() {
+        try {
+            return this.connection.getMetaData();
+        } catch (SQLException sqlException) {
+            throw new RuntimeException("sql get meta data error ", sqlException);
+        }
     }
 
     private synchronized Connection setConnection(String connection, String user, String pass) {
@@ -48,7 +63,9 @@ public class MySqlSharedConnector {
                     ? DriverManager.getConnection(connection)
                     : DriverManager.getConnection(connection, user, pass);
         } catch (SQLException sqlException) {
-            throw new RuntimeException("set sql connection error ",sqlException);
+            throw new RuntimeException("set sql connection error ", sqlException);
         }
     }
+
 }
+
