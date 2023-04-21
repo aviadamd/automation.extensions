@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RestDataProvider {
     String baseUri();
-    RestStep[] restStep();
+    RestStep[] restSteps();
 }

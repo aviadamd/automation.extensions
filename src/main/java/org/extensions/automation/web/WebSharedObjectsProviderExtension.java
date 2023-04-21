@@ -58,7 +58,7 @@ public class WebSharedObjectsProviderExtension implements
             WebDriver driver = this.webSharedObjects.get().getDriverManager().getDriver();
             if (driver != null) {
                 String methodName = context.getRequiredTestMethod().getName();
-                ExtentTestManager.logScreenShot(Status.FAIL, driver, methodName + " fails with error: " + throwable.getMessage());
+                ExtentTestManager.logScreenShot(Status.FAIL, driver, methodName + " fails with error: " + throwable.getMessage(), true);
             }
         }
     }
@@ -70,7 +70,7 @@ public class WebSharedObjectsProviderExtension implements
             WebDriver driver = this.webSharedObjects.get().getDriverManager().getDriver();
             if (driver != null) {
                 String methodName = context.getRequiredTestMethod().getName();
-                ExtentTestManager.logScreenShot(Status.SKIP, driver, methodName + " fails with error: " + throwable.getMessage());
+                ExtentTestManager.logScreenShot(Status.SKIP, driver, methodName + " fails with error: " + throwable.getMessage(), true);
             }
         }
     }

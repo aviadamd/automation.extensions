@@ -1,6 +1,9 @@
 package org.utils.mongo.legacy;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.ClientSessionOptions;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
@@ -9,6 +12,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Assertions;
+import org.utils.mongo.MongoDbListener;
+
 import java.util.*;
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -24,12 +29,21 @@ public class MongoRepoImplementation {
 
     public MongoRepoImplementation(String stringConnection, String dbName, String collectionName) {
         try {
+
             CodecProvider provider = PojoCodecProvider.builder().automatic(true).build();
             CodecRegistry registry = fromRegistries(getDefaultCodecRegistry(), fromProviders(provider));
+
             this.dbName = dbName;
-            this.mongoClient.set(MongoClients.create(stringConnection));
-            this.mongoDatabase.set(this.mongoClient.get().getDatabase(dbName).withCodecRegistry(registry));
             this.collectionName = collectionName;
+
+            MongoClientSettings settings = MongoClientSettings.builder()
+                    .applyConnectionString(new ConnectionString(stringConnection))
+                    .addCommandListener(new MongoDbListener())
+                    .build();
+
+            this.mongoClient.set(MongoClients.create(settings));
+            this.mongoDatabase.set(this.mongoClient.get().getDatabase(dbName).withCodecRegistry(registry));
+
         } catch (Exception exception) {
             Assertions.fail("MongoRepoImplementation connection error", exception);
         }

@@ -157,12 +157,15 @@ public class ExtentTestManager {
      * @param driver
      * @param message
      */
-    public synchronized static void logScreenShot(Status status, WebDriver driver, String message) {
+    public synchronized static void logScreenShot(Status status, WebDriver driver, String message, boolean createNode) {
         if (extentTest.get() != null && driver != null) {
             String base64ScreenShot = base64ScreenShot(driver);
             if (!base64ScreenShot.isEmpty()) {
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
-                extentTest.get().createNode("click for more details... ").log(status, message, media);
+                if (createNode) extentTest.get()
+                        .createNode("click for more details... ")
+                        .log(status, message, media);
+                else extentTest.get().log(status, message, media);
                 innerLog(status, message);
             }
         }
@@ -183,13 +186,6 @@ public class ExtentTestManager {
         } catch (Exception ignore) {}
     }
 
-    public enum FailStatus {
-        FAIL(Status.FAIL),
-        SKIP(Status.SKIP);
-        private final Status status;
-        FailStatus(Status status) { this.status = status;}
-        public Status getStatus() { return status; }
-    }
     /**
      * @param status
      * @param expendMessage

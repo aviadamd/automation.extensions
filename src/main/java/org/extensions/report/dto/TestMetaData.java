@@ -19,16 +19,17 @@ public class TestMetaData {
 
     public TestMetaData() {}
 
-    public TestMetaData(TestReportInfo testInfo, String error) {
-        this.assignCategory = testInfo.assignCategory();
-        this.assignAuthor = testInfo.assignAuthor();
-        this.error = error;
+    public TestMetaData(String assignCategory, String assignAuthor) {
+        this.assignCategory = assignCategory;
+        this.assignAuthor = assignAuthor;
     }
-    public TestMetaData(TestReportInfo testInfo, Throwable throwable) {
-        this.assignCategory = testInfo.assignCategory();
-        this.assignAuthor = testInfo.assignAuthor();
-        this.throwable = throwable;
+
+    public TestMetaData(String assignCategory, String assignAuthor, List<Log> testLogs) {
+        this.assignCategory = assignCategory;
+        this.assignAuthor = assignAuthor;
+        this.testLogs = testLogs;
     }
+
     public TestMetaData(TestReportInfo testInfo, List<Log> testLogs) {
         this.assignCategory = testInfo.assignCategory();
         this.assignAuthor = testInfo.assignAuthor();
@@ -41,6 +42,14 @@ public class TestMetaData {
         this.testLogs = testLogs;
         this.error = error;
     }
+
+    public TestMetaData(String assignCategory, String assignAuthor, List<Log> testLogs, String error) {
+        this.assignCategory = assignCategory;
+        this.assignAuthor = assignAuthor;
+        this.testLogs = testLogs;
+        this.error = error;
+    }
+
     public String getAssignAuthor() { return this.assignAuthor; }
     public String getAssignCategory() { return assignCategory; }
     public List<Log> getTestLogs() { return testLogs; }

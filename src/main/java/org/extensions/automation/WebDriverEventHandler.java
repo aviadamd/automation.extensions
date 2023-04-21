@@ -80,7 +80,7 @@ public class WebDriverEventHandler implements WebDriverListener {
     private void screenShot(WebDriver driver, String message) {
         try {
             this.print(message);
-            if (driver != null) ExtentTestManager.logScreenShot(Status.PASS, driver, message);
+            if (driver != null) ExtentTestManager.logScreenShot(Status.PASS, driver, message, false);
         } catch (Exception ignore) {}
     }
 }

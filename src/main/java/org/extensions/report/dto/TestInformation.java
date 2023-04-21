@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @JsonPropertyOrder({"time", "status", "className", "testName", "testInfo"})
 public class TestInformation {
@@ -18,6 +19,12 @@ public class TestInformation {
     private TestMetaData testInfo;
 
     public TestInformation() {}
+
+    public TestInformation(String className, TestMetaData testInfo) {
+        this.time = new Date().toString();
+        this.className = className;
+        this.testInfo = testInfo;
+    }
 
     public TestInformation(String time, String className, TestMetaData testInfo) {
         this.time = time;

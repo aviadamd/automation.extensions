@@ -1,4 +1,4 @@
-package org.poc.integression;
+package org.integression.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;

@@ -3,16 +3,19 @@ package org.utils.rest.okHttp;
 import okhttp3.Response;
 
 public class ResponseCollector {
-    public boolean passRequest;
+    private boolean passRequest;
+    private String exception;
+    private ResponseData responseData;
 
-    public String exception;
-    public Response response;
-    public ResponseData responseData;
-
-    public ResponseCollector(boolean passRequest, Response response, String exception) {
+    public void setPassRequest(boolean passRequest) {
         this.passRequest = passRequest;
-        this.response = response;
+    }
+
+    public void setException(String exception) {
         this.exception = exception;
+    }
+
+    public void setResponseData(Response response) {
         this.responseData = new ResponseData(response);
     }
 
@@ -20,4 +23,13 @@ public class ResponseCollector {
     public String getException() { return exception; }
     public ResponseData getResponseData() { return responseData; }
 
+
+    @Override
+    public String toString() {
+        return "ResponseCollector{" +
+                "passRequest=" + passRequest +
+                ", exception='" + exception + '\'' +
+                ", responseData=" + responseData +
+                '}';
+    }
 }

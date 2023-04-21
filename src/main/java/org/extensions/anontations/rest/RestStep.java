@@ -13,9 +13,7 @@ import java.lang.annotation.Target;
 public @interface RestStep {
     int stepId();
     ContentType contentType();
-
     Method method();
-
     String path();
 
     Class<?> value();

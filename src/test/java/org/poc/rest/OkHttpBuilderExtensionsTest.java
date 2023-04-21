@@ -30,10 +30,8 @@ public class OkHttpBuilderExtensionsTest {
                 .header("Content-Type", "application/json");
 
         ResponseCollector optionalResponse = this.okHttpBuilderExtensions
-                .withDebugMode(true)
-                .withInterceptor(true)
                 .withRequestBuilder(request)
-                .build();
+                .execute(false, false);
 
         if (optionalResponse.isPassRequest()) {
             log.info(optionalResponse.getResponseData().getHeadersMap().toString());
@@ -43,8 +41,8 @@ public class OkHttpBuilderExtensionsTest {
 
     @Test
     public void testPostRequest() {
-        FormBody body = this.okHttpBuilderExtensions.setBodyMap(
-                false, Map.of("title","foo","body","1","userId","1"));
+        Map<String, String> bodyMap = Map.of("title", "foo", "body", "1", "userId", "1");
+        FormBody formBody = this.okHttpBuilderExtensions.setBodyMap(false, bodyMap);
 
         Request.Builder request = new Request.Builder()
                 .url(new HttpUrl.Builder()
@@ -53,9 +51,13 @@ public class OkHttpBuilderExtensionsTest {
                         .addPathSegment("posts")
                         .build())
                 .headers(Headers.of(Map.of("Content-Type","application/json")))
-                .post(body);
+                .post(formBody);
 
-        ResponseCollector responseCollector = this.okHttpBuilderExtensions.withRequestBuilder(request).build();
-        log.info(responseCollector.getResponseData().getResponseBody());
+        ResponseCollector responseCollector = this.okHttpBuilderExtensions
+                .withRequestBuilder(request)
+                .execute(false, false);
+        if (responseCollector.isPassRequest()) {
+            log.info(responseCollector.getResponseData().getResponseBody());
+        }
     }
 }

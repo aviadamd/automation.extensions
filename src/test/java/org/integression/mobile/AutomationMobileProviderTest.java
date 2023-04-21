@@ -1,4 +1,4 @@
-package org.poc.integression;
+package org.integression.mobile;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import lombok.extern.slf4j.Slf4j;

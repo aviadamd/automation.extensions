@@ -21,9 +21,6 @@ public class RestAssuredBuilderExtension implements BeforeEachCallback, Paramete
     public Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
         if (context.getElement().isPresent()) {
             return this.responseMap.get();
-        }
-        if (context.getExecutionException().isPresent()) {
-            throw new RuntimeException("fail init rest calls ", context.getExecutionException().get());
         } else throw new RuntimeException("fail init rest calls " );
     }
 
@@ -34,20 +31,19 @@ public class RestAssuredBuilderExtension implements BeforeEachCallback, Paramete
             this.restAssuredBuilder.set(new RestAssuredBuilder());
             RestDataProvider provider = context.getElement().get().getAnnotation(RestDataProvider.class);
 
-            for (RestStep stepProvider: provider.restStep()) {
+            for (RestStep stepProvider: provider.restSteps()) {
 
                 HashMap<String, String> queryParams = this.arrayToMap(stepProvider.paramsKeys(), stepProvider.paramsValues());
                 HashMap<String, String> headerParams = this.arrayToMap(stepProvider.headersKeys(), stepProvider.headersValues());
                 HashMap<String, String> bodyParams = this.arrayToMap(stepProvider.bodyKeys(), stepProvider.bodyValues());
 
-                ResponseObject<?> responseObject = this.restAssuredBuilder.get()
-                        .setBaseUri(provider.baseUri())
-                        .setPath(stepProvider.path())
-                        .setContentType(stepProvider.contentType())
-                        .setQueryParams(queryParams)
-                        .setHeaders(headerParams)
-                        .setBody(bodyParams)
-                        .build(stepProvider.method(), stepProvider.value());
+                RestAssuredBuilder assuredBuilder = this.restAssuredBuilder.get().setBaseUri(provider.baseUri()).setPath(stepProvider.path());
+
+                if (stepProvider.contentType() != null) assuredBuilder.setContentType(stepProvider.contentType());
+                if (queryParams.size() > 0) assuredBuilder.setQueryParams(queryParams);
+                if (headerParams.size() > 0) assuredBuilder.setHeaders(headerParams);
+                if (bodyParams.size() > 0) assuredBuilder.setBody(bodyParams);
+                ResponseObject<?> responseObject = assuredBuilder.build(stepProvider.method(), stepProvider.value());
                 this.responseMap.set(Map.of(stepProvider.stepId(), responseObject));
             }
         }

@@ -1,9 +1,13 @@
 package org.poc.rest;
 
 import com.aventstack.extentreports.AnalysisStrategy;
+import com.aventstack.extentreports.Status;
+import com.google.gson.JsonObject;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 import lombok.extern.slf4j.Slf4j;
+import org.extensions.anontations.Repeat;
+import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.rest.RestStep;
@@ -23,33 +27,27 @@ import static com.aventstack.extentreports.Status.SKIP;
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(value = { ExtentReportExtension.class, RestAssuredBuilderExtension.class })
-@ReportConfiguration(
-        reportPath = "project.report.path",
-        extraReportsBy = { FAIL, SKIP },
-        reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST,
-        mongoConnection = "project.mongo.connection"
-)
+@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
 public class RestAssuredExtensionTest {
 
     @Test
-    @RestDataProvider(baseUri = "", restStep = {
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @RestDataProvider(baseUri = "sonplaceholder.typicode.com",
+            restSteps = {
             @RestStep(
                     stepId = 1,
                     contentType = ContentType.ANY,
                     method = Method.GET,
-                    path = "",
-                    value = String.class
-            ),
-            @RestStep(
-                    stepId = 2,
-                    contentType = ContentType.ANY,
-                    method = Method.GET,
-                    path = "",
-                    value = String.class
+                    path = "comments",
+                    paramsKeys = {"postId" },
+                    paramsValues = {"2" },
+                    headersKeys = {"Content-Type" },
+                    headersValues = {"application/json" },
+                    value = JsonObject.class
             )
     })
-    public void testRestCalls(Map<Integer, ResponseObject<String>> responseObject) {
-        log.info(responseObject.get(1).getResponseToObject());
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls")
+    public void testRestCalls(Map<Integer, ResponseObject<JsonObject>> responseObject) {
+        log.info("" + responseObject.get(1).getResponseToObject());
     }
 }

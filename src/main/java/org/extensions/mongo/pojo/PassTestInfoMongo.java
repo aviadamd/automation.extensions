@@ -6,6 +6,8 @@ import dev.morphia.annotations.Id;
 import org.bson.types.ObjectId;
 import org.extensions.report.dto.TestMetaData;
 
+import java.util.Date;
+
 @Entity("passTestInfo")
 public class PassTestInfoMongo extends BasicDBObject {
     @Id
@@ -13,6 +15,12 @@ public class PassTestInfoMongo extends BasicDBObject {
     private String className;
     private TestMetaData testInfo;
     public PassTestInfoMongo() {}
+
+    public PassTestInfoMongo(String className, TestMetaData testInfo) {
+        this.id = new ObjectId(new Date());
+        this.className = className;
+        this.testInfo = testInfo;
+    }
 
     public PassTestInfoMongo(ObjectId id, String className, TestMetaData testInfo) {
         this.id = id;
