@@ -10,7 +10,7 @@ import org.data.files.jsonReader.JacksonExtension;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.extensions.mongo.pojo.FailTestAdapter;
 import org.extensions.mongo.pojo.FailTestInfoMongo;
 import org.extensions.mongo.pojo.PassTestAdapter;
@@ -29,7 +29,7 @@ import static java.lang.System.getProperty;
 @Slf4j
 public class ExtentReportExtension implements TestWatcher,
         BeforeAllCallback, BeforeEachCallback, AfterEachCallback,
-        AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+        AfterAllCallback, JunitReflectionAnnotationHandler.ExtensionContextHandler {
 
     private final static List<TestInformation> failTestsCollector = new ArrayList<>();
     private final static List<TestInformation> passTestsCollector = new ArrayList<>();

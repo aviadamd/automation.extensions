@@ -8,7 +8,7 @@ import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.data.files.jsonReader.JacksonExtension;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +28,7 @@ public class MobileDriverProviderExtension implements
         BeforeEachCallback,
         AfterEachCallback,
         AfterAllCallback,
-        JunitAnnotationHandler.ExtensionContextHandler {
+        JunitReflectionAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();

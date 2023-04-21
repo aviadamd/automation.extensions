@@ -14,5 +14,4 @@ public class MobileSharedObjects<T> {
     public JacksonExtension<T> getJacksonExtension() { return this.jacksonExtension; }
     public MobileDriverProvider getDriverManager() { return driverManager; }
     public MorphiaRepository getMorphiaRepository() { return morphiaRepository; }
-
 }

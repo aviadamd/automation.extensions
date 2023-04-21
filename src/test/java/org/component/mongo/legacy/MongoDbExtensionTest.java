@@ -1,6 +1,5 @@
 package org.component.mongo.legacy;
 
-import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.mongodb.client.MongoCollection;
 import org.bson.types.ObjectId;
@@ -16,18 +15,10 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.utils.mongo.legacy.MongoRepoImplementation;
 import org.component.mongo.pojos.Countries;
-import static com.aventstack.extentreports.Status.FAIL;
-import static com.aventstack.extentreports.Status.SKIP;
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MongoDbLegacyExtension.class })
-@ReportConfiguration(
-        reportPath = "project.report.path",
-        extraReportsBy = { FAIL, SKIP },
-        reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.CLASS,
-        mongoConnection = "project.mongo.connection"
-)
+@ReportConfiguration
 public class MongoDbExtensionTest {
     @Test
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })

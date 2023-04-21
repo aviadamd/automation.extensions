@@ -1,4 +1,4 @@
-package org.component.sql;
+package org.component.sql.pojo;
 
 public class Country {
 

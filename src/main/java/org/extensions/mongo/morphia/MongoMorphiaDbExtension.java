@@ -1,14 +1,14 @@
 package org.extensions.mongo.morphia;
 
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.morphia.MorphiaRepository;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResolver, JunitAnnotationHandler.ExtensionContextHandler {
+public class MongoMorphiaDbExtension implements AfterAllCallback, ParameterResolver, JunitReflectionAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<MorphiaRepository> repository = new ThreadLocal<>();
 
     @Override

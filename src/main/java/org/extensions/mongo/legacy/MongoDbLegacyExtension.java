@@ -1,6 +1,6 @@
 package org.extensions.mongo.legacy;
 
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.legacy.MongoRepoImplementation;
@@ -8,7 +8,7 @@ import org.extensions.anontations.mongo.MongoLegacyConnector;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+public class MongoDbLegacyExtension implements ParameterResolver, AfterAllCallback, JunitReflectionAnnotationHandler.ExtensionContextHandler {
     private final ThreadLocal<MongoRepoImplementation> mongoRepo = new ThreadLocal<>();
 
     @Override

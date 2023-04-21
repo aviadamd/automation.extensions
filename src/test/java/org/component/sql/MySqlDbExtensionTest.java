@@ -1,9 +1,9 @@
 package org.component.sql;
 
-import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
+import org.component.sql.pojo.Country;
 import org.extensions.anontations.mySql.MySqlConnector;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.sql.MySqlDbExtension;
@@ -16,20 +16,12 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.utils.sql.MySqlSharedConnector;
 import java.util.List;
-import static com.aventstack.extentreports.Status.FAIL;
-import static com.aventstack.extentreports.Status.SKIP;
 
 @Slf4j
+@ReportConfiguration
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(value = { ExtentReportExtension.class, MySqlDbExtension.class })
-@ReportConfiguration(
-        reportPath = "project.report.path",
-        extraReportsBy = { FAIL, SKIP },
-        reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST,
-        mongoConnection = "project.mongo.connection"
-)
-public class MySqlConnectionTest {
+public class MySqlDbExtensionTest {
 
     @Test
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })

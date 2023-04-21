@@ -28,13 +28,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MobileSharedObjectsProviderExtension.class })
-@ReportConfiguration(
-        reportPath = "project.report.path",
-        extraReportsBy = { FAIL, SKIP },
-        reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST,
-        mongoConnection = "project.mongo.connection"
-)
+@ReportConfiguration
 public class AutomationMobileProviderTest {
 
     @Test

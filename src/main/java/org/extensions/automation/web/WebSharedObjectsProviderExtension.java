@@ -10,7 +10,7 @@ import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class WebSharedObjectsProviderExtension implements
         ParameterResolver, BeforeAllCallback,
         BeforeEachCallback, AfterEachCallback, AfterAllCallback,
-        JunitAnnotationHandler.ExtensionContextHandler, TestWatcher {
+        JunitReflectionAnnotationHandler.ExtensionContextHandler, TestWatcher {
     private final ThreadLocal<WebSharedObjects<?>> webSharedObjects = new ThreadLocal<>();
 
     @Override

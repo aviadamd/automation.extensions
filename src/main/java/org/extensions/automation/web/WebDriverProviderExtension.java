@@ -8,12 +8,9 @@ import org.base.web.WebConfiguration;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
-import org.extensions.factory.JunitAnnotationHandler;
+import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -27,7 +24,7 @@ import java.util.*;
 public class WebDriverProviderExtension implements
         ParameterResolver, BeforeEachCallback,
         BeforeAllCallback, AfterEachCallback,
-        AfterAllCallback, JunitAnnotationHandler.ExtensionContextHandler {
+        AfterAllCallback, JunitReflectionAnnotationHandler.ExtensionContextHandler {
 
     private final ThreadLocal<WebConfiguration> webProperties = new ThreadLocal<>();
     private final ThreadLocal<SeleniumWebDriverProvider> driverManager = new ThreadLocal<>();
