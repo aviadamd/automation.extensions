@@ -1,8 +1,6 @@
-package org.utils.mongo;
+package org.utils.mongo.manager;
 
-import com.mongodb.event.CommandFailedEvent;
-import com.mongodb.event.CommandListener;
-import com.mongodb.event.CommandSucceededEvent;
+import com.mongodb.event.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import java.util.HashMap;
@@ -18,7 +16,7 @@ public class MongoDbListener implements CommandListener {
             String commandName = event.getCommandName();
             int count =  this.commands.getOrDefault(commandName, 0);
             this.commands.put(commandName, count + 1);
-            log.info("command succeeded " +  this.commands + " with response " + event.getResponse().toJson());
+            log.info("Command succeeded " +  this.commands + " with response " + event.getResponse().toJson());
         } catch (Exception exception) {
             Assertions.fail("commandSucceeded error: " + exception.getMessage(), exception);
         }

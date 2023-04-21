@@ -1,7 +1,6 @@
 package org.utils.mongo.legacy;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.ClientSessionOptions;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
@@ -12,7 +11,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.junit.jupiter.api.Assertions;
-import org.utils.mongo.MongoDbListener;
+import org.utils.mongo.manager.MongoConnectionPoolListener;
+import org.utils.mongo.manager.MongoDbListener;
 
 import java.util.*;
 import static com.mongodb.MongoClient.getDefaultCodecRegistry;
@@ -39,6 +39,7 @@ public class MongoRepoImplementation {
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(new ConnectionString(stringConnection))
                     .addCommandListener(new MongoDbListener())
+                    .applyToConnectionPoolSettings(builder -> builder.addConnectionPoolListener(new MongoConnectionPoolListener()))
                     .build();
 
             this.mongoClient.set(MongoClients.create(settings));

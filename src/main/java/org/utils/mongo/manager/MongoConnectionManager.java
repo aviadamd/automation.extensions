@@ -1,4 +1,4 @@
-package org.utils.mongo;
+package org.utils.mongo.manager;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
