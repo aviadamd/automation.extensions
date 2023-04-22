@@ -2,6 +2,7 @@ package org.extensions.anontations.report;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
+import org.extensions.assertions.AssertionsExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -12,11 +13,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-@ExtendWith(value = { ExtentReportExtension.class })
+@ExtendWith(value = { ExtentReportExtension.class, AssertionsExtension.class })
 public @interface ReportConfiguration {
     String reportPath() default "project.report.path";
     String reportSettingsPath() default "project.report.config";
     Status[] extraReportsBy() default { Status.FAIL, Status.SKIP };
-    AnalysisStrategy analysisStrategy() default AnalysisStrategy.CLASS;
+    AnalysisStrategy analysisStrategy() default AnalysisStrategy.TEST;
     String mongoConnection() default "project.mongo.connection";
 }
