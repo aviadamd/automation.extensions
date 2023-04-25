@@ -21,12 +21,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, WebDriverProviderExtension.class })
-@ReportConfiguration(
-        reportPath = "project.report.path",
-        extraReportsBy = { FAIL, SKIP },
-        reportSettingsPath = "project.report.config",
-        analysisStrategy = AnalysisStrategy.TEST,
-        mongoConnection = "project.mongo.connection")
+@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class SeleniumWebProviderBasePocTest {
 
     @Test

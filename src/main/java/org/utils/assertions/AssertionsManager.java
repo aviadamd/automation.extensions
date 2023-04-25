@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.*;
 import org.extensions.assertions.AssertionsLevel;
 import org.extensions.report.ExtentTestManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +44,16 @@ public class AssertionsManager extends SoftAssertions {
         } else this.printError(Status.INFO,"assertion error" + assertionError.getMessage());
     }
 
+    /**
+     * failAll
+     * has assertionErrors
+     */
+    public void failAll(List<AssertionError> assertionErrors) {
+        if (assertionErrors.size() > 0) {
+            assertionErrors.forEach(error -> this.printError(Status.FAIL,"assertion error" + error.getMessage()));
+            Assertions.fail("assertion errors test fail");
+        }
+    }
     /**
      * print printError
      * to ExtentTestManager report if instance is not null

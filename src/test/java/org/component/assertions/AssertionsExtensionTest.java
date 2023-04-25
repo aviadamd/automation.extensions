@@ -16,7 +16,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Slf4j
 @ReportConfiguration
-@Execution(ExecutionMode.SAME_THREAD)
+@Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, AssertionsExtension.class })
 public class AssertionsExtensionTest {
 

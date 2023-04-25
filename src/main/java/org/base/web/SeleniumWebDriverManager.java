@@ -50,9 +50,7 @@ public class SeleniumWebDriverManager {
      */
     public WebDriver initChromeDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
         return this.chromeDriverManger()
-                .capabilities(options
-                        .chromeOptions()
-                        .merge(capabilities))
+                .capabilities(options.chromeOptions().merge(capabilities))
                 .create();
     }
 
@@ -64,9 +62,7 @@ public class SeleniumWebDriverManager {
      */
     public WebDriver initFireFoxDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
         return this.fireFoxDriverManager()
-                .capabilities(options
-                        .firefoxOptions()
-                        .merge(capabilities))
+                .capabilities(options.firefoxOptions().merge(capabilities))
                 .create();
     }
 

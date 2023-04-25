@@ -23,8 +23,8 @@ import static com.aventstack.extentreports.Status.SKIP;
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class , JacksonProviderExtension.class })
-@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
-public class JacksonReaderTest {
+@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
+public class JacksonExtensionReaderTest {
 
     @Test
     @DisplayName("readJsonTestA")
