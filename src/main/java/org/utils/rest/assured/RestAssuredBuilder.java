@@ -42,17 +42,24 @@ public class RestAssuredBuilder {
         return this;
     }
     public <T> ResponseObject<T> build(Method method, Class<T> tClass) {
-        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder().setBasePath(this.baseUri);
+        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
+        try {
 
-        if (!this.setPath.isEmpty()) requestSpecBuilder.setBasePath(this.setPath);
-        if (this.setContentType != null && !this.setContentType.toString().isEmpty()) requestSpecBuilder.setContentType(this.setContentType);
-        if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
-        if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
-        if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
+            requestSpecBuilder.setBasePath(this.baseUri);
+            requestSpecBuilder.setBasePath(this.setPath);
 
-        Response response = RestAssured.given().spec(requestSpecBuilder.build()).request(method);
-        ResponseObject<T> responseObject = new ResponseObject<>(response, response.jsonPath());
-        if (tClass != null) responseObject.setResponseToObject(tClass);
-        return responseObject;
+            if (this.setContentType != null) requestSpecBuilder.setContentType(this.setContentType);
+            if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
+            if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
+            if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
+
+            Response response = RestAssured.given().spec(requestSpecBuilder.build()).request(method);
+            ResponseObject<T> responseObject = new ResponseObject<>(response, response.jsonPath());
+            if (tClass != null) responseObject.setResponseToObject(tClass);
+            return responseObject;
+
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
     }
 }

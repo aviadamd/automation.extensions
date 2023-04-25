@@ -1,22 +1,14 @@
-[ {
-  "id" : "5",
-  "name" : "orit"
-}, {
-  "id" : "2",
-  "name" : "ella"
-}, {
-  "id" : "3",
-  "name" : "adva"
-}, {
-  "id" : "5",
-  "name" : "orit"
-}, {
-  "id" : "2",
-  "name" : "ella"
-}, {
-  "id" : "3",
-  "name" : "adva"
-}, {
-  "id" : "5",
-  "name" : "orit"
-} ]
+[
+  {
+    "id" : "2",
+    "name" : "ella"
+  },
+  {
+    "id" : "3",
+    "name" : "adva"
+  },
+  {
+    "id" : "5",
+    "name" : "orit"
+  }
+]

@@ -5,20 +5,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.extensions.report.ExtentTestManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.events.WebDriverListener;
+
 import java.util.Arrays;
 
 @Slf4j
 public class WebDriverEventHandler implements WebDriverListener {
+    private final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+
+    public WebDriverEventHandler(WebDriver driver) {
+        this.driver.set(driver);
+    }
+
     @Override
     public void afterGet(WebDriver driver, String url) {
-        this.print("navigate to get " + url);
-        ExtentTestManager.logScreenShot(Status.PASS, driver, "navigate to " + url + " pass");
+        if(driver != null) this.screenShot(driver,"navigate to " + url);
     }
 
     @Override
     public void afterFindElement(WebElement element, By locator, WebElement result) {
-        if (element != null) this.print("find element " + element.getText());
-        if (locator != null) this.print("find element " + locator);
+        if (locator != null) this.screenShot(this.driver.get(),"find element " + locator.toString());
+
     }
 
     @Override
@@ -29,11 +35,6 @@ public class WebDriverEventHandler implements WebDriverListener {
     @Override
     public void afterQuit(WebDriver driver) {
         this.print("quit driver session");
-    }
-
-    @Override
-    public void beforeExecuteScript(WebDriver driver, String script, Object[] args) {
-        this.print("before execute script " + script + " with args " + Arrays.toString(args));
     }
 
     @Override
@@ -61,10 +62,25 @@ public class WebDriverEventHandler implements WebDriverListener {
         this.print("send keys text " + Arrays.toString(keysToSend) +  " to " + element.getText());
     }
 
+    /**
+     * print
+     * @param message
+     */
     private void print(String message) {
         try {
-            log.info(Status.INFO + " | " + message);
             ExtentTestManager.log(Status.INFO, message);
+        } catch (Exception ignore) {}
+    }
+
+    /**
+     * screenShot
+     * @param driver
+     * @param message
+     */
+    private void screenShot(WebDriver driver, String message) {
+        try {
+            this.print(message);
+            if (driver != null) ExtentTestManager.logScreenShot(Status.PASS, driver, message, false);
         } catch (Exception ignore) {}
     }
 }

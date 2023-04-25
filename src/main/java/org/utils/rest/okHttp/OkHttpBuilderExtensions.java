@@ -14,19 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class OkHttpBuilderExtensions {
-    private boolean isWithInterceptor = false;
-    private boolean isWithDebugMode = false;
     private Request.Builder requestBuilder = new Request.Builder();
-
-    public OkHttpBuilderExtensions withDebugMode(boolean isWithInterceptor) {
-        this.isWithInterceptor = isWithInterceptor;
-        return this;
-    }
-
-    public OkHttpBuilderExtensions withInterceptor(boolean isWithInterceptor) {
-        this.isWithInterceptor = isWithInterceptor;
-        return this;
-    }
 
     public OkHttpBuilderExtensions withRequestBuilder(Request.Builder requestBuilder) {
         this.requestBuilder = requestBuilder;
@@ -41,21 +29,31 @@ public class OkHttpBuilderExtensions {
         return builder.build();
     }
 
-    public ResponseCollector build() {
-        try(Response response = this.okHttpClient().newCall(this.requestBuilder.build()).execute()) {
-            return new ResponseCollector(response.isSuccessful(), response, "");
-        } catch (HttpClientErrorException | HttpServerErrorException httpException) {
-            if (!this.isWithDebugMode)
-                Assertions.fail("error " + httpException.getResponseBodyAsString(), httpException);
-            return new ResponseCollector(false, null, httpException.getResponseBodyAsString());
-        } catch (Exception exception) {
-            if (!this.isWithDebugMode)
-                Assertions.fail(exception);
-            return new ResponseCollector(false, null, exception.getMessage());
-        }
+    public ResponseCollector execute() {
+        return this.execute(true,true);
     }
 
-    private OkHttpClient okHttpClient() {
+    public ResponseCollector execute(boolean failOnException, boolean isWithInterceptor) {
+        ResponseCollector responseCollector = new ResponseCollector();
+        try {
+            responseCollector.setResponseData(this.okHttpClient(isWithInterceptor).newCall(this.requestBuilder.build()).execute());
+            responseCollector.setPassRequest(true);
+        } catch (HttpClientErrorException | HttpServerErrorException httpStatusCodeException) {
+            responseCollector.setPassRequest(false);
+            responseCollector.setException(httpStatusCodeException.getResponseBodyAsString());
+        } catch (Exception exception) {
+            responseCollector.setPassRequest(false);
+            responseCollector.setException(exception.getMessage());
+        }
+
+        if (!responseCollector.isPassRequest() && failOnException) {
+            throw new RuntimeException(responseCollector.getException());
+        }
+
+        return responseCollector;
+    }
+
+    private OkHttpClient okHttpClient(boolean isWithInterceptor) {
         OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
 
         try {
@@ -63,9 +61,9 @@ public class OkHttpBuilderExtensions {
             sslContext.init(null, new TrustManager[]{ TRUST_ALL_CERTS }, new java.security.SecureRandom());
             builder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) TRUST_ALL_CERTS);
             builder.hostnameVerifier((s, sslSession) -> true);
-            if (this.isWithInterceptor) builder.addInterceptor(new OkHttpLoggingInterceptor());
+            if (isWithInterceptor) builder.addInterceptor(new OkHttpLoggingInterceptor());
         } catch (Exception exception) {
-            log.info("init okHttpClient error: " + exception.getMessage());
+            throw new RuntimeException("init okHttpClient error ", exception);
         }
 
         return builder.connectTimeout(10, TimeUnit.SECONDS)

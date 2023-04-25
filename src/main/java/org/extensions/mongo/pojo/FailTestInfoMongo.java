@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.extensions.report.dto.TestMetaData;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @Entity("failTestInfo")
 public class FailTestInfoMongo extends BasicDBObject {
@@ -19,6 +20,14 @@ public class FailTestInfoMongo extends BasicDBObject {
     private TestMetaData testInfo;
 
     public FailTestInfoMongo() {}
+
+    public FailTestInfoMongo(String className, TestMetaData testInfo, String error) {
+        this.id = new ObjectId(new Date());
+        this.className = className;
+        this.error = error;
+        this.testInfo = testInfo;
+    }
+
     public FailTestInfoMongo(ObjectId id, String className, TestMetaData testInfo, String error) {
         this.id = id;
         this.className = className;

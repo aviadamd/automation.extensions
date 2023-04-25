@@ -10,18 +10,18 @@ import static com.aventstack.extentreports.reporter.configuration.ViewName.LOG;
 
 public class ExtentManager {
     private static ExtentReports extentInstance;
+    protected synchronized static ExtentReports getReportsInstance() { return extentInstance; }
 
-    private static ExtentSparkReporter extentSparkReporter;
-    protected synchronized static ExtentReports getReportsInstance() {
-        return extentInstance;
-    }
-    protected synchronized static ExtentSparkReporter getExtentSparkInstance() {
-        return extentSparkReporter;
-    }
-    protected static synchronized ExtentReports createInstance(String file, String jsonSettingsPath, String reportName) {
+    /**
+     * createInstance
+     * @param file
+     * @param jsonSettingsPath
+     * @param reportName
+     */
+    protected static synchronized void createInstance(String file, String jsonSettingsPath, String reportName) {
         try {
             extentInstance = new ExtentReports();
-            extentSparkReporter = new ExtentSparkReporter(file);
+            ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(file);
             extentSparkReporter.viewConfigurer()
                     .viewOrder()
                     .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
@@ -32,7 +32,14 @@ public class ExtentManager {
         } catch (Exception exception) {
             Assertions.fail("ExtentManager createInstance error " + exception.getMessage(), exception);
         }
-        return extentInstance;
+    }
+
+    protected static synchronized void flush() {
+        try {
+            getReportsInstance().flush();
+        } catch (Exception exception) {
+            Assertions.fail("fail to flush report", exception);
+        }
     }
 }
 

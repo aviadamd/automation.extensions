@@ -16,7 +16,6 @@ import net.lightbody.bmp.proxy.CaptureType;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.Proxy;
 import org.springframework.util.SocketUtils;
-
 import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -34,10 +33,6 @@ public class MobProxyExtension {
         this.server = this.setServer(inetAddress, proxyType);
     }
 
-    public enum ProxyType {
-        MOBILE,
-        WEB
-    }
     private BrowserMobProxyServer setServer(InetAddress inetAddress, ProxyType proxyType) {
         try {
 
@@ -78,7 +73,7 @@ public class MobProxyExtension {
             seleniumProxy.setSslProxy(hostIp + ":" + browserMobProxy.getPort());
             return seleniumProxy;
         } catch (Exception exception) {
-            Assertions.fail("init selenium proxy fails ", exception);
+            Assertions.fail("init selenium proxy fails " + exception.getMessage(), exception);
             return null;
         }
     }
@@ -149,7 +144,7 @@ public class MobProxyExtension {
             jsonGenerator.close();
 
         } catch (Exception exception) {
-            Assertions.fail("har json generator error ", exception);
+            Assertions.fail("har json generator error " + exception.getMessage(), exception);
         }
     }
 }

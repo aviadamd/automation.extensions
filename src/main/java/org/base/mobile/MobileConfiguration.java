@@ -12,12 +12,11 @@ public interface MobileConfiguration extends Config {
     @Config.Key("project.node.js")
     String nodeJsExecutable();
 
-    @Config.Key("project.mobile.client")
-    String mobileClient();
     @Config.Key("android.caps.json")
-    String mobileJsonCapabilities();
+    String mobileJsonCapabilitiesLocation();
 
     @Config.Key("project.entry.location")
     String entryFileLocation();
+
     void setProperty(String key, String value);
 }

@@ -6,16 +6,14 @@ import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.web.WebDriverOptions;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.time.Duration;
 
 public class SeleniumWebDriverManager {
+
+    public SeleniumWebDriverManager() {}
+
     public Duration setWebDriverWaitDuration(DurationOf durationOf, int to) {
         Duration duration = Duration.ofSeconds(5);
         switch (durationOf) {
@@ -33,7 +31,7 @@ public class SeleniumWebDriverManager {
         }
     }
 
-    public DesiredCapabilities initProxy(MobProxyExtension mobProxyExtension) {
+    public DesiredCapabilities setProxyCapabilities(MobProxyExtension mobProxyExtension) {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         try {
             capabilities.setCapability(CapabilityType.PROXY, mobProxyExtension.getProxy());
@@ -50,11 +48,10 @@ public class SeleniumWebDriverManager {
      * @param capabilities
      * @return
      */
-    private WebDriver initChromeDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
-        WebDriverManager manager = WebDriverManager.chromedriver();
-        manager.setup();
-        ChromeOptions chromeOptions = options.chromeOptions().merge(capabilities);
-        return manager.capabilities(chromeOptions).create();
+    public WebDriver initChromeDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        return this.chromeDriverManger()
+                .capabilities(options.chromeOptions().merge(capabilities))
+                .create();
     }
 
     /**
@@ -63,10 +60,21 @@ public class SeleniumWebDriverManager {
      * @param capabilities
      * @return
      */
-    private WebDriver initFireFoxDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+    public WebDriver initFireFoxDriver(WebDriverOptions options, DesiredCapabilities capabilities) {
+        return this.fireFoxDriverManager()
+                .capabilities(options.firefoxOptions().merge(capabilities))
+                .create();
+    }
+
+    public WebDriverManager fireFoxDriverManager() {
         WebDriverManager manager = WebDriverManager.firefoxdriver();
         manager.setup();
-        FirefoxOptions firefoxOptions = options.firefoxOptions().merge(capabilities);
-        return manager.capabilities(firefoxOptions).create();
+        return manager;
+    }
+
+    public WebDriverManager chromeDriverManger() {
+        WebDriverManager manager = WebDriverManager.chromedriver();
+        manager.setup();
+        return manager;
     }
 }

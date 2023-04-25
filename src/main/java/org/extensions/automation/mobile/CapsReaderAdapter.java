@@ -31,6 +31,11 @@ public class CapsReaderAdapter {
         }
     }
 
+    public DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        for (int i = 0; i < keys.length; i++) capabilities.setCapability(keys[i], values[i]);
+        return capabilities;
+    }
     private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
         return new UiAutomator2Options()
                 .setNoReset(true)
