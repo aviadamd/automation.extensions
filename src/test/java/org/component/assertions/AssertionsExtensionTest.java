@@ -24,10 +24,18 @@ public class AssertionsExtensionTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
+        assertions.assertWith(
+                assertion -> assertion.assertThat("ttt").as("1").isEqualTo("aaa"),
+                findErrorBy -> findErrorBy.contains("1"),
+                onFail -> {
+                    assertions.setHardAssert(AssertionsLevel.HARD_AFTER_ERROR);
+                    assertions.print(Status.FAIL, onFail.getMessage());
+                });
+
         assertions.setHardAssert(AssertionsLevel.SOFT);
-        assertions.assertThat("aviad").isEqualTo("avi");
         assertions.assertThat("aviad").isEqualTo("aviad");
-        assertions.assertThat("aviad").isEqualTo("aviaaa");
+        assertions.assertThat("aviad").isEqualTo("avi");
+        assertions.assertThat("aviad").isEqualTo("avia");
     }
 
     @Test
