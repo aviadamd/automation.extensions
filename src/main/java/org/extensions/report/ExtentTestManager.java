@@ -10,6 +10,8 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
+import java.util.List;
+
 @Slf4j
 public class ExtentTestManager {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
@@ -201,7 +203,23 @@ public class ExtentTestManager {
                         .log(status.getStatus(), bodyDesc);
             } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
         } catch (Exception ignore) {}
+    }
 
+    /**
+     * @param status
+     * @param expendMessage
+     * @param bodyDesc
+     * @return
+     */
+    public synchronized static void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<AssertionError> bodyDesc) {
+        try {
+            if (asNewNode) {
+                extentTest.get()
+                        .createNode("test error, click for more details... ")
+                        .log(status.getStatus(), expendMessage);
+                bodyDesc.forEach(text -> extentTest.get().log(status.getStatus(), text.getMessage()));
+            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
+        } catch (Exception ignore) {}
     }
 
     private synchronized static void innerLog(Status status, String details) {

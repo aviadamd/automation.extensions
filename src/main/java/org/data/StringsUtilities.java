@@ -5,6 +5,7 @@ import org.apache.commons.validator.GenericValidator;
 import org.hamcrest.Matcher;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -12,13 +13,20 @@ import static org.data.StringsRegexConstants.*;
 
 @Slf4j
 public class StringsUtilities {
-
     public String splitString(String primaryString, String regexSplit, int index) {
         String [] stringSpilt = primaryString.split(regexSplit);
         if (stringSpilt.length == 0) {
             return primaryString;
         }
         return stringSpilt[index];
+    }
+
+    public List<String> stringToList(String text, String splitBy) {
+        try {
+            return new ArrayList<>(Arrays.asList(text.split(splitBy)));
+        } catch (Exception exception) {
+            return new ArrayList<>();
+        }
     }
 
     public String cleanWhiteSpaces(String value) {
