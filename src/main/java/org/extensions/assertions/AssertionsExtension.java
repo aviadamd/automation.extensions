@@ -21,7 +21,7 @@ import java.util.ArrayList;
 @Slf4j
 public class AssertionsExtension extends SoftAssertions implements AfterEachCallback, BeforeTestExecutionCallback, ParameterResolver {
 
-    private final ThreadLocal<AssertionsManager> assertionsHelper = new ThreadLocal<>();
+    private final ThreadLocal<AssertionsManager> assertionsManager = new ThreadLocal<>();
 
     /**
      * beforeTestExecution
@@ -33,9 +33,9 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     @Override
     public void beforeTestExecution(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            this.assertionsHelper.set(new AssertionsManager());
-            this.assertionsHelper.get().setAssertionErrors(new ArrayList<>());
-            this.assertionsHelper.get().setHardAssert(AssertionsLevel.HARD_AFTER_ERROR);
+            this.assertionsManager.set(new AssertionsManager());
+            this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
+            this.assertionsManager.get().setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
         }
     }
 
@@ -51,9 +51,9 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            if (this.assertionsHelper.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
-                this.assertionsHelper.get().failAll(assertionsHelper.get().getAssertionErrors());
-            } else this.assertionsHelper.get().setAssertionErrors(new ArrayList<>());
+            if (this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
+                this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
+            } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
         }
     }
 
@@ -64,6 +64,6 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext context)  {
-        return this.assertionsHelper.get();
+        return this.assertionsManager.get();
     }
 }

@@ -13,22 +13,22 @@ public class WebElementAssertionManager extends AssertionsManager {
         this.seleniumWebDriverProvider = seleniumWebDriverProvider;
     }
 
-    public WebElementAssert assertElement(ExpectedCondition<WebElement> condition) {
+    public synchronized WebElementAssert assertElement(ExpectedCondition<WebElement> condition) {
         WebElement until = this.findWith(condition);
         return proxy(WebElementAssert.class, WebElement.class, until);
     }
 
-    public StringAssert assertElementText(ExpectedCondition<WebElement> condition) {
+    public synchronized StringAssert assertElementText(ExpectedCondition<WebElement> condition) {
         String byText = this.findWith(condition).getText();
         return proxy(StringAssert.class, String.class, byText);
     }
 
-    public StringAssert assertElementText(ExpectedCondition<WebElement> condition, String attribute) {
+    public synchronized StringAssert assertElementText(ExpectedCondition<WebElement> condition, String attribute) {
         String byTextAttribute = this.findWith(condition).getAttribute(attribute);
         return proxy(StringAssert.class, String.class, byTextAttribute);
     }
 
-    private WebElement findWith(ExpectedCondition<WebElement> condition) {
+    private synchronized WebElement findWith(ExpectedCondition<WebElement> condition) {
         WebDriverWaitExtensions waitExtensions = this.seleniumWebDriverProvider.getWaitExtensions();
         if (this.getAssertionsLevel() == AssertionsLevel.HARD_AFTER_ERROR)
             return waitExtensions.getWebDriverWait().until(condition);

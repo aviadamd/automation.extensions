@@ -6,6 +6,9 @@ import org.assertj.core.api.*;
 import org.base.OptionalWrapper;
 import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.report.ExtentTestManager;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -13,16 +16,17 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class AssertionsManager extends SoftAssertions {
-    public AssertionsManager() {}
-    private AssertionsLevel assertionsLevel = AssertionsLevel.HARD_AFTER_ERROR;
+
     private List<AssertionError> assertionErrors;
     private WebElementAssertionManager webElementAssertion;
-    public synchronized void setWebElementAssertionManager(SeleniumWebDriverProvider webDriverProvider) { this.webElementAssertion = new WebElementAssertionManager(webDriverProvider); }
+    private AssertionsLevel assertionsLevel = AssertionsLevel.HARD_AFTER_ERROR;
+
     public synchronized void setAssertionErrors(List<AssertionError> assertionErrors) { this.assertionErrors = assertionErrors; }
-    public synchronized void setHardAssert(AssertionsLevel assertionsLevel) { this.assertionsLevel = assertionsLevel; }
+    public synchronized void setAssertionLevel(AssertionsLevel assertionsLevel) { this.assertionsLevel = assertionsLevel; }
+    public synchronized void setWebElementAssertion(SeleniumWebDriverProvider seleniumWebDriverProvider) { this.webElementAssertion = new WebElementAssertionManager(seleniumWebDriverProvider); }
+
     public List<AssertionError> getAssertionErrors() { return this.assertionErrors; }
     public AssertionsLevel getAssertionsLevel() { return this.assertionsLevel; }
-    public WebElementAssertionManager getWebElementAssertion() { return webElementAssertion; }
 
     /**
      * collectAssertionError
@@ -38,6 +42,7 @@ public class AssertionsManager extends SoftAssertions {
         } else this.print(Status.INFO, "assertion error " + assertionError.getMessage());
     }
 
+
     /**
      * assert with options
      * @param assertion pass as consumer
@@ -47,6 +52,18 @@ public class AssertionsManager extends SoftAssertions {
         AtomicInteger assertionsErrorsNewCounter = new AtomicInteger(this.assertionErrors.size());
         assertion.accept(this);
         this.calculateOnFail(assertionsErrorsNewCounter.get(), onFail, findBy);
+    }
+
+    public WebElementAssert assertElement(ExpectedCondition<WebElement> condition) {
+        return this.webElementAssertion.assertElement(condition);
+    }
+
+    public StringAssert assertElementText(ExpectedCondition<WebElement> condition) {
+        return this.webElementAssertion.assertElementText(condition);
+    }
+
+    public StringAssert assertElementText(ExpectedCondition<WebElement> condition, String attribute) {
+        return this.webElementAssertion.assertElementText(condition, attribute);
     }
 
     /**

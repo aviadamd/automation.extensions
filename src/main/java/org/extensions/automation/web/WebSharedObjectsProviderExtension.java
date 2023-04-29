@@ -8,6 +8,7 @@ import org.base.web.WebConfiguration;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.web.WebDriverType;
+import org.extensions.assertions.AssertionsExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
@@ -16,19 +17,23 @@ import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.WebDriver;
+import org.utils.assertions.AssertionsLevel;
+import org.utils.assertions.AssertionsManager;
 import org.utils.mongo.morphia.MorphiaRepository;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class WebSharedObjectsProviderExtension implements
         ParameterResolver, BeforeAllCallback,
-        BeforeEachCallback, AfterEachCallback, AfterAllCallback,
+        BeforeEachCallback, BeforeTestExecutionCallback, AfterEachCallback, AfterAllCallback,
         JunitReflectionAnnotationHandler.ExtensionContextHandler, TestWatcher {
-    private final ThreadLocal<WebSharedObjects<?>> webSharedObjects = new ThreadLocal<>();
+    private final ThreadLocal<WebSharedObjects> webSharedObjects = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext extension) {
@@ -80,7 +85,7 @@ public class WebSharedObjectsProviderExtension implements
         if (context.getElement().isPresent()) {
             Optional<ProviderConfiguration> provider = this.readAnnotation(context, ProviderConfiguration.class);
             if (provider.isPresent()) {
-                this.webSharedObjects.set(new WebSharedObjects<>());
+                this.webSharedObjects.set(new WebSharedObjects());
                 this.initWebProperties(new PropertiesManager());
                 this.initMongo(provider.get().dbProvider());
                 this.initDriver(provider.get().driverProvider());
@@ -89,9 +94,25 @@ public class WebSharedObjectsProviderExtension implements
     }
 
     @Override
+    public void beforeTestExecution(ExtensionContext context) {
+        if (context.getElement().isPresent()) {
+            Optional<ProviderConfiguration> provider = this.readAnnotation(context, ProviderConfiguration.class);
+            if (provider.isPresent()) {
+                this.initAssertionManager();
+            } else throw new RuntimeException("ProviderConfiguration annotation is missing in test method");
+        }
+    }
+
+    @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
+
+                if (this.webSharedObjects.get().getAssertionsManager().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
+                    List<AssertionError> assertionErrors = this.webSharedObjects.get().getAssertionsManager().getAssertionErrors();
+                    this.webSharedObjects.get().getAssertionsManager().failAll(assertionErrors);
+                } else this.webSharedObjects.get().getAssertionsManager().setAssertionErrors(new ArrayList<>());
+
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
                     String testPath = System.getProperty("user.dir") + "/target/har_files";
                     String testName = context.getRequiredTestMethod().getName();
@@ -99,15 +120,12 @@ public class WebSharedObjectsProviderExtension implements
                     File file = new File(testPath + "/" + testName + ".json");
                     this.webSharedObjects.get().getMobProxyExtension().writeHarFile(file, this.webSharedObjects.get().getMobProxyExtension().getServer().getHar().getLog());
                 }
-                this.closeDriver();
+
+                this.webSharedObjects.get().getDriverManager().close();
             } catch (Exception exception) {
                 Assertions.fail("afterEach error ", exception);
             }
         }
-    }
-
-    private synchronized void closeDriver() {
-        this.webSharedObjects.get().getDriverManager().close();
     }
 
     @Override
@@ -129,6 +147,16 @@ public class WebSharedObjectsProviderExtension implements
             this.webSharedObjects.get().setWebConfiguration(propertiesManager.getOrCreate(WebConfiguration.class));
         } catch (Exception exception) {
             Assertions.fail("initWebProperties error " + exception, exception);
+        }
+    }
+
+    private synchronized void initAssertionManager() {
+        try {
+            this.webSharedObjects.get().setAssertionsManager(new AssertionsManager());
+            this.webSharedObjects.get().getAssertionsManager().setAssertionErrors(new ArrayList<>());
+            this.webSharedObjects.get().getAssertionsManager().setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
+        } catch (Exception exception) {
+            Assertions.fail("initAssertionManager error ", exception);
         }
     }
 

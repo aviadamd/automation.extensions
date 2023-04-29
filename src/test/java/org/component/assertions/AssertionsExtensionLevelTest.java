@@ -24,7 +24,7 @@ public class AssertionsExtensionLevelTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
-        assertions.setHardAssert(AssertionsLevel.SOFT);
+        assertions.setAssertionLevel(AssertionsLevel.SOFT);
         assertions.assertThat("aviad").isEqualTo("aviad");
         assertions.assertThat("aviad").isEqualTo("avi");
         assertions.assertThat("aviad").isEqualTo("avia");
@@ -34,7 +34,7 @@ public class AssertionsExtensionLevelTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertionWithFluentAssertion(AssertionsManager assertions) {
-        assertions.setHardAssert(AssertionsLevel.SOFT);
+        assertions.setAssertionLevel(AssertionsLevel.SOFT);
         assertions.assertWith(
                 assertion -> assertion.assertThat("ttt").as("1").isEqualTo("ttt"),
                 findErrorBy -> findErrorBy.contains("1"),
@@ -45,7 +45,7 @@ public class AssertionsExtensionLevelTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifyHardAssertionAfterSingleAssertionError(AssertionsManager assertions) {
-        assertions.setHardAssert(AssertionsLevel.HARD_AFTER_ERROR);
+        assertions.setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
         assertions.assertThat("aviad").isEqualTo("avi");
         assertions.assertThat("aviad").isEqualTo("aviad");
         assertions.assertThat("aviad").isEqualTo("avi");
@@ -55,7 +55,7 @@ public class AssertionsExtensionLevelTest {
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifyHardAssertionAfterEachTest(AssertionsManager assertions) {
-        assertions.setHardAssert(AssertionsLevel.HARD_AFTER_TEST);
+        assertions.setAssertionLevel(AssertionsLevel.HARD_AFTER_TEST);
         assertions.assertThat("aviad").isEqualTo("avi");
         assertions.assertThat("aviad").isEqualTo("aviad");
         assertions.assertThat("aviad").isEqualTo("aviaaa");
