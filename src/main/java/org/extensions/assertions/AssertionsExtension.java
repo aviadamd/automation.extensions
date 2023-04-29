@@ -13,6 +13,7 @@ package org.extensions.assertions;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.extension.*;
+import org.utils.assertions.AssertionsLevel;
 import org.utils.assertions.AssertionsManager;
 
 import java.util.ArrayList;

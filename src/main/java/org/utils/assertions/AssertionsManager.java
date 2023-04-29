@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.*;
 import org.base.OptionalWrapper;
 import org.base.web.SeleniumWebDriverProvider;
-import org.extensions.assertions.AssertionsLevel;
 import org.extensions.report.ExtentTestManager;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

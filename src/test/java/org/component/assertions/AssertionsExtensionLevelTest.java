@@ -6,7 +6,7 @@ import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.utils.assertions.AssertionsManager;
-import org.extensions.assertions.AssertionsLevel;
+import org.utils.assertions.AssertionsLevel;
 import org.extensions.assertions.AssertionsExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.Test;

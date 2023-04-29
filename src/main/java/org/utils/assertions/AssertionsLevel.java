@@ -1,4 +1,4 @@
-package org.extensions.assertions;
+package org.utils.assertions;
 
 public enum AssertionsLevel {
     HARD_AFTER_TEST,

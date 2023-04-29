@@ -3,7 +3,6 @@ package org.utils.assertions;
 import org.assertj.core.api.StringAssert;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebDriverWaitExtensions;
-import org.extensions.assertions.AssertionsLevel;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
