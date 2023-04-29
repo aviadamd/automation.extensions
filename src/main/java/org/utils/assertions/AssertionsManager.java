@@ -4,38 +4,26 @@ import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.*;
 import org.base.OptionalWrapper;
+import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.assertions.AssertionsLevel;
 import org.extensions.report.ExtentTestManager;
-import org.extensions.report.FailStatus;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class AssertionsManager extends SoftAssertions {
-    private AssertionsLevel assertionsLevel = AssertionsLevel.SOFT;
-    private final List<AssertionError> assertionErrors;
-    public AssertionsManager() { this.assertionErrors = new ArrayList<>(); }
+    public AssertionsManager() {}
+    private AssertionsLevel assertionsLevel = AssertionsLevel.HARD_AFTER_ERROR;
+    private List<AssertionError> assertionErrors;
+    private WebElementAssertionManager webElementAssertion;
+    public synchronized void setWebElementAssertionManager(SeleniumWebDriverProvider webDriverProvider) { this.webElementAssertion = new WebElementAssertionManager(webDriverProvider); }
+    public synchronized void setAssertionErrors(List<AssertionError> assertionErrors) { this.assertionErrors = assertionErrors; }
+    public synchronized void setHardAssert(AssertionsLevel assertionsLevel) { this.assertionsLevel = assertionsLevel; }
     public List<AssertionError> getAssertionErrors() { return this.assertionErrors; }
-    public AssertionsLevel getAssertionsLevel() {
-        return this.assertionsLevel;
-    }
-
-    /**
-     * control the level of the assertion
-     * @param assertionsLevel
-     *   HARD_AFTER_TEST,
-     *   HARD_AFTER_ERROR,
-     *   SOFT
-     */
-    public void setHardAssert(AssertionsLevel assertionsLevel) {
-        this.assertionsLevel = assertionsLevel;
-    }
+    public AssertionsLevel getAssertionsLevel() { return this.assertionsLevel; }
+    public WebElementAssertionManager getWebElementAssertion() { return webElementAssertion; }
 
     /**
      * collectAssertionError
@@ -46,9 +34,9 @@ public class AssertionsManager extends SoftAssertions {
     public void collectAssertionError(AssertionError assertionError) {
         this.assertionErrors.add(assertionError);
         if (this.assertionsLevel.equals(AssertionsLevel.HARD_AFTER_ERROR)) {
-            this.print(Status.FAIL,"assertion error " + assertionError.getMessage());
+            this.print(Status.FAIL, "assertion error " + assertionError.getMessage());
             Assertions.fail("assertion error " + assertionError.getMessage());
-        } else this.print(Status.INFO,"assertion error " + assertionError.getMessage());
+        } else this.print(Status.INFO, "assertion error " + assertionError.getMessage());
     }
 
     /**
@@ -92,8 +80,10 @@ public class AssertionsManager extends SoftAssertions {
     private synchronized void calculateOnFail(int assertionsErrorsNewCounter, Consumer<AssertionError> onFail, Predicate<String> findBy) {
         if (onFail != null && this.assertionErrors.size() > assertionsErrorsNewCounter) {
 
+            List<AssertionError> assertionErrorList = this.assertionErrors;
+
             if (findBy != null) {
-                for (AssertionError error: this.assertionErrors) {
+                for (AssertionError error: assertionErrorList) {
                     if (findBy.test(error.getMessage())) {
                         onFail.accept(error);
                         if (this.assertionsLevel == AssertionsLevel.HARD_AFTER_ERROR) {
@@ -103,9 +93,9 @@ public class AssertionsManager extends SoftAssertions {
                     }
                 }
             } else {
-                new OptionalWrapper<>(this.assertionErrors
+                new OptionalWrapper<>(assertionErrorList
                         .stream()
-                        .skip(this.assertionErrors.size() -1)
+                        .skip(assertionErrorList.size() -1)
                         .findFirst())
                         .ifPresent(error -> {
                             onFail.accept(error);

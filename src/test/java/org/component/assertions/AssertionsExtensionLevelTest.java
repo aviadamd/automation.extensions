@@ -18,24 +18,27 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 @ReportConfiguration
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, AssertionsExtension.class })
-public class AssertionsExtensionTest {
+public class AssertionsExtensionLevelTest {
 
     @Test
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
-        assertions.assertWith(
-                assertion -> assertion.assertThat("ttt").as("1").isEqualTo("aaa"),
-                findErrorBy -> findErrorBy.contains("1"),
-                onFail -> {
-                    assertions.setHardAssert(AssertionsLevel.HARD_AFTER_ERROR);
-                    assertions.print(Status.FAIL, onFail.getMessage());
-                });
-
         assertions.setHardAssert(AssertionsLevel.SOFT);
         assertions.assertThat("aviad").isEqualTo("aviad");
         assertions.assertThat("aviad").isEqualTo("avi");
         assertions.assertThat("aviad").isEqualTo("avia");
+    }
+
+    @Test
+    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
+    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
+    void verifySoftAssertionWithFluentAssertion(AssertionsManager assertions) {
+        assertions.setHardAssert(AssertionsLevel.SOFT);
+        assertions.assertWith(
+                assertion -> assertion.assertThat("ttt").as("1").isEqualTo("ttt"),
+                findErrorBy -> findErrorBy.contains("1"),
+                onFail -> assertions.print(Status.FAIL, onFail.getMessage()));
     }
 
     @Test
