@@ -2,7 +2,6 @@ package org.component.rest;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
-import com.google.gson.JsonObject;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 import lombok.extern.slf4j.Slf4j;
@@ -27,27 +26,21 @@ import static com.aventstack.extentreports.Status.SKIP;
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(value = { ExtentReportExtension.class, RestAssuredBuilderExtension.class })
-@ReportConfiguration(reportPath = "project.report.path", extraReportsBy = { FAIL, SKIP }, reportSettingsPath = "project.report.config", analysisStrategy = AnalysisStrategy.TEST, mongoConnection = "project.mongo.connection")
+@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class RestAssuredExtensionTest {
 
     @Test
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @RestDataProvider(baseUri = "sonplaceholder.typicode.com",
+    @RestDataProvider(basePath = "https://jsonplaceholder.typicode.com",
             restSteps = {
-            @RestStep(
-                    stepId = 1,
-                    contentType = ContentType.ANY,
-                    method = Method.GET,
-                    path = "comments",
-                    paramsKeys = {"postId" },
-                    paramsValues = {"2" },
-                    headersKeys = {"Content-Type" },
-                    headersValues = {"application/json" },
-                    value = JsonObject.class
+            @RestStep(stepId = 1, contentType = ContentType.ANY,
+                    method = Method.GET, urlPath = "comments",
+                    paramsKeys = { "postId" }, paramsValues = { "2" },
+                    headersKeys = { "Content-Type" }, headersValues = { "application/json" }
             )
     })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls")
-    public void testRestCalls(Map<Integer, ResponseObject<JsonObject>> responseObject) {
-        log.info("" + responseObject.get(1).getResponseToObject());
+    public void testRestCalls(Map<Integer, ResponseObject> responseObject) {
+        responseObject.toString();
     }
 }

@@ -17,15 +17,15 @@ import java.util.function.Predicate;
 @Slf4j
 public class AssertionsManager extends SoftAssertions {
 
-    private List<AssertionError> assertionErrors;
+    private static List<AssertionError> assertionErrors;
     private WebElementAssertionManager webElementAssertion;
     private AssertionsLevel assertionsLevel = AssertionsLevel.HARD_AFTER_ERROR;
 
-    public synchronized void setAssertionErrors(List<AssertionError> assertionErrors) { this.assertionErrors = assertionErrors; }
+    public synchronized void setAssertionErrors(List<AssertionError> assertionErrors) { AssertionsManager.assertionErrors = assertionErrors; }
     public synchronized void setAssertionLevel(AssertionsLevel assertionsLevel) { this.assertionsLevel = assertionsLevel; }
     public synchronized void setWebElementAssertion(SeleniumWebDriverProvider seleniumWebDriverProvider) { this.webElementAssertion = new WebElementAssertionManager(seleniumWebDriverProvider); }
 
-    public List<AssertionError> getAssertionErrors() { return this.assertionErrors; }
+    public List<AssertionError> getAssertionErrors() { return assertionErrors; }
     public AssertionsLevel getAssertionsLevel() { return this.assertionsLevel; }
 
     /**
@@ -34,8 +34,8 @@ public class AssertionsManager extends SoftAssertions {
      * @param assertionError single assert error
      */
     @Override
-    public void collectAssertionError(AssertionError assertionError) {
-        this.assertionErrors.add(assertionError);
+    public synchronized void collectAssertionError(AssertionError assertionError) {
+        assertionErrors.add(assertionError);
         if (this.assertionsLevel.equals(AssertionsLevel.HARD_AFTER_ERROR)) {
             this.print(Status.FAIL, "assertion error " + assertionError.getMessage());
             Assertions.fail("assertion error " + assertionError.getMessage());
@@ -49,7 +49,7 @@ public class AssertionsManager extends SoftAssertions {
      * @param onFail by your logic
      */
     public synchronized void assertWith(Consumer<AssertionsManager> assertion, Predicate<String> findBy, Consumer<AssertionError> onFail) {
-        AtomicInteger assertionsErrorsNewCounter = new AtomicInteger(this.assertionErrors.size());
+        AtomicInteger assertionsErrorsNewCounter = new AtomicInteger(assertionErrors.size());
         assertion.accept(this);
         this.calculateOnFail(assertionsErrorsNewCounter.get(), onFail, findBy);
     }
@@ -94,9 +94,9 @@ public class AssertionsManager extends SoftAssertions {
      * @param onFail pass as consumer for fluent the test
      */
     private synchronized void calculateOnFail(int assertionsErrorsNewCounter, Consumer<AssertionError> onFail, Predicate<String> findBy) {
-        if (onFail != null && this.assertionErrors.size() > assertionsErrorsNewCounter) {
+        if (onFail != null && assertionErrors.size() > assertionsErrorsNewCounter) {
 
-            List<AssertionError> assertionErrorList = this.assertionErrors;
+            List<AssertionError> assertionErrorList = assertionErrors;
 
             if (findBy != null) {
                 for (AssertionError error: assertionErrorList) {

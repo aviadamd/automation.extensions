@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class RestAssuredBuilderExtension implements BeforeEachCallback, ParameterResolver {
     private final ThreadLocal<RestAssuredBuilder> restAssuredBuilder = new ThreadLocal<>();
-    private final ThreadLocal<Map<Integer, ResponseObject<?>>> responseMap = new ThreadLocal<>();
+    private final ThreadLocal<Map<Integer, ResponseObject>> responseMap = new ThreadLocal<>();
 
     @Override
     public boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
@@ -37,13 +37,16 @@ public class RestAssuredBuilderExtension implements BeforeEachCallback, Paramete
                 HashMap<String, String> headerParams = this.arrayToMap(stepProvider.headersKeys(), stepProvider.headersValues());
                 HashMap<String, String> bodyParams = this.arrayToMap(stepProvider.bodyKeys(), stepProvider.bodyValues());
 
-                RestAssuredBuilder assuredBuilder = this.restAssuredBuilder.get().setBaseUri(provider.baseUri()).setPath(stepProvider.path());
+                RestAssuredBuilder assuredBuilder = this.restAssuredBuilder.get()
+                        .setBaseUri(provider.basePath())
+                        .setPath(stepProvider.urlPath());
 
                 if (stepProvider.contentType() != null) assuredBuilder.setContentType(stepProvider.contentType());
                 if (queryParams.size() > 0) assuredBuilder.setQueryParams(queryParams);
                 if (headerParams.size() > 0) assuredBuilder.setHeaders(headerParams);
                 if (bodyParams.size() > 0) assuredBuilder.setBody(bodyParams);
-                ResponseObject<?> responseObject = assuredBuilder.build(stepProvider.method(), stepProvider.value());
+
+                ResponseObject responseObject = assuredBuilder.build(stepProvider.method());
                 this.responseMap.set(Map.of(stepProvider.stepId(), responseObject));
             }
         }

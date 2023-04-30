@@ -15,7 +15,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.assertions.AssertionsLevel;
 import org.utils.assertions.AssertionsManager;
-
 import java.util.ArrayList;
 
 @Slf4j
@@ -31,7 +30,7 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
      * @param context provide reflection metadata for the test
      */
     @Override
-    public void beforeTestExecution(ExtensionContext context) {
+    public synchronized void beforeTestExecution(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             this.assertionsManager.set(new AssertionsManager());
             this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
@@ -51,9 +50,11 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            if (this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
-                this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
-            } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
+            try {
+                if (this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
+                    this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
+                } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
+            } catch (Exception ignore) {}
         }
     }
 

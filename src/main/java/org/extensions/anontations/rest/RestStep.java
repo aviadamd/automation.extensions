@@ -14,9 +14,7 @@ public @interface RestStep {
     int stepId();
     ContentType contentType();
     Method method();
-    String path();
-
-    Class<?> value();
+    String urlPath();
     String[] paramsKeys() default "";
     String[] paramsValues() default "";
     String[] headersKeys() default "";
@@ -25,3 +23,4 @@ public @interface RestStep {
     String[] bodyValues() default "";
 
 }
+
