@@ -13,7 +13,7 @@ public class JacksonUtils <T> {
     private final ObjectWriter writer;
     private final ObjectMapper mapper;
 
-    public JacksonUtils(ObjectMapper objectMapper) {
+    public JacksonUtils(final ObjectMapper objectMapper) {
         this.mapper = objectMapper;
         this.writer = this.mapper.writerWithDefaultPrettyPrinter();
     }
