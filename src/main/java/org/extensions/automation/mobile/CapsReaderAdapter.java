@@ -3,7 +3,7 @@ package org.extensions.automation.mobile;
 import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
-import org.data.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -20,7 +20,7 @@ public class CapsReaderAdapter {
     public CapsReaderAdapter(String jsonPath) {
         try {
             String path = System.getProperty("user.dir") + "/" + jsonPath;
-            JacksonExtension<CapabilitiesObject> jacksonHelper = new JacksonExtension<>(path, new File(path), CapabilitiesObject.class);
+            JacksonObjectAdapter<CapabilitiesObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class);
             CapabilitiesObject capsObject = jacksonHelper.readJson();
             if (capsObject.getClient().equals("ANDROID"))
                 this.capabilities.merge(this.androidCapabilities(capsObject));

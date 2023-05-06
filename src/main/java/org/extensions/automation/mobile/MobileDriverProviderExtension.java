@@ -10,7 +10,7 @@ import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
-import org.data.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.logging.LogEntry;
@@ -84,8 +84,8 @@ public class MobileDriverProviderExtension implements
                     List<LogEntryObject> logEntryObjects = new ArrayList<>();
                     logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
                     String path = System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation();
-                    JacksonExtension<LogEntryObject> jacksonHelper = new JacksonExtension<>(path, new File(path + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json"), LogEntryObject.class);
-                    jacksonHelper.writeToJson(logEntryObjects);
+                    JacksonObjectAdapter<LogEntryObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json"), LogEntryObject.class);
+                    jacksonHelper.writeToJson(true, logEntryObjects);
                 }
             } catch (Exception exception) {
                 Assertions.fail("generate har file error ", exception);

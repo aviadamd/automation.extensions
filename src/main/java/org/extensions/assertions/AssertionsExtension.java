@@ -51,9 +51,12 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
-                if (this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
-                    this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
-                } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
+                if (this.assertionsManager.get() != null) {
+                    if (this.assertionsManager.get().getAssertionsLevel() != null &&
+                            this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
+                        this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
+                    } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
+                }
             } catch (Exception ignore) {}
         }
     }

@@ -2,8 +2,11 @@ package org.component.rest;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
+import io.restassured.mapper.ObjectMapperType;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.TestReportInfo;
@@ -16,10 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.utils.rest.assured.ResponseObject;
-
-import java.util.Map;
-
+import org.utils.assertions.AssertionsLevel;
+import org.utils.rest.assured.ResponseCollector;
+import java.io.IOException;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
 
@@ -40,7 +42,16 @@ public class RestAssuredExtensionTest {
             )
     })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls")
-    public void testRestCalls(Map<Integer, ResponseObject> responseObject) {
-        responseObject.toString();
+    void testRestCalls(ResponseCollector responseCollector) throws IOException {
+        responseCollector.with().setAssertionLevel(AssertionsLevel.HARD_AFTER_TEST);
+
+        Response response = responseCollector.responseMap().get(1);
+        responseCollector.with().thatResponse(response).isNotNull();
+        JsonNode jsonNode = responseCollector.with().as(response, JsonNode.class, ObjectMapperType.JACKSON_2);
+
+        responseCollector.with().thatJsonNude(jsonNode).isNotEmpty();
+        responseCollector.with().assertThat(jsonNode.findValue("id").asText()).isNotEmpty();
+        responseCollector.with().thatResponseCode(response).isEqualByComparingTo(200);
+        responseCollector.with().thatJsonNude(jsonNode.findPath("postId")).isNotEmpty();
     }
 }

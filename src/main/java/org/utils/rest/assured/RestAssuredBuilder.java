@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RestAssuredBuilder {
+
     private String baseUri = "";
     private String setPath = "";
     private Map<String,String> setBody = new HashMap<>();
@@ -16,14 +17,17 @@ public class RestAssuredBuilder {
     private Map<String,String> setQueryParams = new HashMap<>();
     private Map<String,String> setHeaders = new HashMap<>();
 
+
     public RestAssuredBuilder setBaseUri(String baseUri) {
         this.baseUri = baseUri;
         return this;
     }
+
     public RestAssuredBuilder setPath(String setPath) {
         this.setPath = setPath;
         return this;
     }
+
     public RestAssuredBuilder setContentType(ContentType setContentType) {
         this.setContentType = setContentType;
         return this;
@@ -33,30 +37,27 @@ public class RestAssuredBuilder {
         this.setHeaders = setHeaders;
         return this;
     }
+
     public RestAssuredBuilder setBody(Map<String,String> setBody) {
         this.setBody = setBody;
         return this;
     }
+
     public RestAssuredBuilder setQueryParams(Map<String,String> setQueryParams) {
         this.setQueryParams = setQueryParams;
         return this;
     }
-    public ResponseObject build(Method method) {
+
+    public Response build(Method method) {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
         try {
-
             requestSpecBuilder.setBaseUri(this.baseUri);
             requestSpecBuilder.setBasePath(this.setPath);
             if (this.setContentType != null) requestSpecBuilder.setContentType(this.setContentType);
             if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
             if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
             if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
-
-            Response response = RestAssured.given().spec(requestSpecBuilder.build()).request(method);
-            ResponseObject responseObject = new ResponseObject(response, response.jsonPath());
-            responseObject.setResponseToObject(String.class);
-            return responseObject;
-
+            return RestAssured.given().spec(requestSpecBuilder.build()).request(method);
         } catch (Exception exception) {
             throw new RuntimeException(exception.getMessage(), exception);
         }

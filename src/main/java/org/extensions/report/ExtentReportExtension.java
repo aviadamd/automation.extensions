@@ -6,8 +6,7 @@ import com.aventstack.extentreports.model.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
 import org.base.configuration.ReportConfigurations;
-import org.data.StringsUtilities;
-import org.data.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
@@ -230,14 +229,14 @@ public class ExtentReportExtension implements TestWatcher,
 
                 if (passTestsCollector.size() > 0) {
                     File passFilePath = new File(testPath + "/" + className + "Pass.json");
-                    JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, passFilePath, TestInformation.class);
-                    testWriter.writeToJson(passTestsCollector);
+                    JacksonObjectAdapter<TestInformation> testWriter = new JacksonObjectAdapter<>(testPath, passFilePath, TestInformation.class);
+                    testWriter.writeToJson(true, passTestsCollector);
                 }
 
                 if (failTestsCollector.size() > 0) {
                     File failFilePath = new File(testPath + "/" + className + "Fail.json");
-                    JacksonExtension<TestInformation> testWriter = new JacksonExtension<>(testPath, failFilePath, TestInformation.class);
-                    testWriter.writeToJson(failTestsCollector);
+                    JacksonObjectAdapter<TestInformation> testWriter = new JacksonObjectAdapter<>(testPath, failFilePath, TestInformation.class);
+                    testWriter.writeToJson(true, failTestsCollector);
                 }
             }
         } catch (Exception exception) {

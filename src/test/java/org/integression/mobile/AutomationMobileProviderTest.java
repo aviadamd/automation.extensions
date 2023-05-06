@@ -1,8 +1,7 @@
 package org.integression.mobile;
 
-import com.aventstack.extentreports.AnalysisStrategy;
 import lombok.extern.slf4j.Slf4j;
-import org.data.files.jsonReader.JacksonExtension;
+import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.mobile.appium.Android;
@@ -38,7 +37,7 @@ public class AutomationMobileProviderTest {
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
     public void a_mobileTest(MobileSharedObjects<CapabilitiesObject> mobileSharedObjects) {
         String path = System.getProperty("user.dir") + "/" + "src/test/resources/androidCaps1.json";
-        mobileSharedObjects.setJacksonExtension(new JacksonExtension<>(path, new File(path), CapabilitiesObject.class));
+        mobileSharedObjects.setJacksonExtension(new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class));
         List<CapabilitiesObject> capabilitiesObjects = mobileSharedObjects.getJacksonExtension().readAllFromJson();
         log.info(capabilitiesObjects.toString());
 

@@ -7,7 +7,6 @@ import org.data.StringsUtilities;
 import org.data.date.DateTimeUtilExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.report.ExtentTestManager;
-import org.data.files.jsonReader.JacksonExtension;
 import org.utils.assertions.AssertionsManager;
 import org.utils.mongo.morphia.MorphiaRepository;
 
