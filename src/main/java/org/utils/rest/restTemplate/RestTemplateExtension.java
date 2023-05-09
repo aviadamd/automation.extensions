@@ -1,32 +1,27 @@
 package org.utils.rest.restTemplate;
 
-import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.springframework.http.client.ClientHttpRequestFactory;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.ssl.TrustStrategy;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
-import javax.net.ssl.SSLContext;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.*;
-import java.security.cert.CertificateException;
+import javax.net.ssl.*;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 
 public class RestTemplateExtension {
-
     private final RestTemplate restTemplate;
 
-    public RestTemplateExtension() {
-        this.restTemplate = new RestTemplate(this.httpRequestFactory(null));
-    }
+    static { disableSSLVerification(); }
 
-    public void setClientHttpRequestFactory(ClientHttpRequestFactory clientHttpRequestFactory) {
-        this.restTemplate.setRequestFactory(clientHttpRequestFactory);
+    public RestTemplateExtension() {
+        this.restTemplate = this.restTemplate();
     }
 
     public UriComponentsBuilder uriBuilder(String scheme, String host) {
@@ -97,40 +92,38 @@ public class RestTemplateExtension {
         return responseAdapter;
     }
 
-    public ClientHttpRequestFactory clientSSLHttpRequestFactory() throws NoSuchAlgorithmException,
-            KeyManagementException, KeyStoreException, IOException, UnrecoverableKeyException, CertificateException {
-        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keyStore.load(new FileInputStream("keystore.jks"), "secret".toCharArray());
-        SSLContext sslContextBuilder = this.sslContext(keyStore);
-        SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContextBuilder);
-        HttpClient httpClient = this.httpClient(socketFactory);
-        return this.httpRequestFactory(httpClient);
+    private RestTemplate restTemplate() {
+        try {
+            TrustStrategy trustStrategy = ((x509Certificates, s) -> true);
+            SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, trustStrategy).build();
+            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
+            requestFactory.setConnectTimeout(5000);
+            requestFactory.setConnectionRequestTimeout(5000);
+            requestFactory.setReadTimeout(5000);
+            return new RestTemplate(requestFactory);
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
-    private SSLContext sslContext(KeyStore keyStore) throws NoSuchAlgorithmException,
-            KeyStoreException, UnrecoverableKeyException, KeyManagementException {
-        return new SSLContextBuilder()
-                .loadTrustMaterial(null, new TrustSelfSignedStrategy())
-                .loadKeyMaterial(keyStore, "password".toCharArray())
-                .build();
-    }
-    private HttpClient httpClient(SSLConnectionSocketFactory socketFactory) {
-        return HttpClients
-                .custom()
-                .setSSLSocketFactory(socketFactory)
-                .build();
-    }
-    private HttpComponentsClientHttpRequestFactory httpRequestFactory(HttpClient httpClient) {
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory;
+    private static void disableSSLVerification() {
+        try {
 
-        if (httpClient != null) {
-            clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        } else clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+            SSLContext sslContexts = SSLContext.getInstance("SSL");
+            sslContexts.init(null, new TrustManager[] { new X509TrustManager() {
+                @Override public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {}
+                @Override public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {}
+                @Override
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }}, new SecureRandom());
 
-        clientHttpRequestFactory.setConnectTimeout(5000);
-        clientHttpRequestFactory.setConnectionRequestTimeout(5000);
-        clientHttpRequestFactory.setReadTimeout(5000);
-        return clientHttpRequestFactory;
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContexts.getSocketFactory());
+            HostnameVerifier hostnameVerifier = (hostName, session) -> true;
+            HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
+
+        } catch (Exception ignore) {}
     }
-
 }
