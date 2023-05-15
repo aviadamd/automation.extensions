@@ -16,7 +16,6 @@ import java.util.function.Predicate;
 
 @Slf4j
 public class AssertionsManager extends SoftAssertions {
-
     private static List<AssertionError> assertionErrors;
     private WebElementAssertionManager webElementAssertion;
     private AssertionsLevel assertionsLevel = AssertionsLevel.HARD_AFTER_ERROR;

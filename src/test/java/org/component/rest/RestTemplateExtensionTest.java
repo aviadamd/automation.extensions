@@ -41,23 +41,10 @@ public class RestTemplateExtensionTest {
         ResponseAdapter<JsonNode> responseAdapter = restTemplateExtension.get(uriComponentsBuilder, httpEntity, JsonNode.class);
         assertionsManager.setAssertionLevel(AssertionsLevel.HARD_AFTER_TEST);
 
-        assertionsManager.assertThat(responseAdapter).is(new Condition<>(ResponseAdapter::isPassResponse,"response fail"));
-        if (responseAdapter.isPassResponse()) {
-            JsonNode body = responseAdapter.getResponse().getBody();
-            if (body != null) {
-                List<JsonNode> postsId = body.findValues("postId");
-                log.info(postsId.toString());
-            }
-
-        } else {
-            if (responseAdapter.getResponseException() != null) {
-                log.error(responseAdapter.getResponseException().getMessage());
-                log.error(responseAdapter.getResponseException().getStatusText());
-                log.error(responseAdapter.getResponseException().getResponseBodyAsString());
-                log.error(Objects.requireNonNull(responseAdapter.getResponseException().getResponseHeaders()).toString());
-            } else {
-                log.error(responseAdapter.getGeneralException().getMessage());
-            }
-        }
+        assertionsManager.assertThat(responseAdapter.getResponseCode())
+                .isNotEqualTo(0)
+                .as("response code error " + responseAdapter.getResponseCode())
+                .isEqualTo(200);
+        restTemplateExtension.printResponseExceptions(responseAdapter);
     }
 }
