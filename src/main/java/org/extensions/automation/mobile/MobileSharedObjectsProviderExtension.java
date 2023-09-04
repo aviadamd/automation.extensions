@@ -3,7 +3,7 @@ package org.extensions.automation.mobile;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
+import org.extensions.anontations.mobile.appium.CapabilitiesExtraInjections;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -17,25 +17,25 @@ import java.util.Optional;
 public class MobileSharedObjectsProviderExtension implements ParameterResolver, BeforeEachCallback {
 
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
-    private final ThreadLocal<MobileSharedObjects<?>> mobileSharedObjects = new ThreadLocal<>();
+    private final ThreadLocal<MobileSharedObjects> mobileSharedObjects = new ThreadLocal<>();
 
     @Override
-    public boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
+    public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
         return parameter.getParameter().getType() == MobileSharedObjects.class;
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameter, ExtensionContext context)  {
+    public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context)  {
         return this.mobileSharedObjects.get();
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public synchronized void beforeEach(ExtensionContext context) {
         this.setMorphia(context);
         this.setDriver(context);
     }
 
-    private void setMorphia(ExtensionContext context) {
+    private synchronized void setMorphia(ExtensionContext context) {
         try {
             if (context.getElement().isPresent()) {
                 Optional<MongoMorphiaConnector> mongoConnectorProvider = Optional.ofNullable(context.getElement().get().getAnnotation(MongoMorphiaConnector.class));
@@ -49,19 +49,19 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver, 
         }
     }
 
-    private void setDriver(ExtensionContext context) {
+    private synchronized void setDriver(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<DriverProvider> driverJsonProvider = Optional.ofNullable(context.getElement().get().getAnnotation(DriverProvider.class));
             if (driverJsonProvider.isPresent()) {
                 String jsonCapsPath = driverJsonProvider.get().jsonCapsPath();
                 this.mobileProperties.get().setProperty("android.caps.json", jsonCapsPath);
-                CapabilitiesInjections argumentsInjections = context.getElement().get().getAnnotation(CapabilitiesInjections.class);
+                CapabilitiesExtraInjections argumentsInjections = context.getElement().get().getAnnotation(CapabilitiesExtraInjections.class);
                 CapsReaderAdapter capsReaderAdapter = this.capsReaderAdapter(argumentsInjections);
                 this.mobileSharedObjects.get().setDriverManager(new MobileDriverProvider(capsReaderAdapter));
             } else throw new RuntimeException("fail resolve driver provider initiation");
         }
     }
-    private CapsReaderAdapter capsReaderAdapter(CapabilitiesInjections serverArguments) {
+    private synchronized CapsReaderAdapter capsReaderAdapter(CapabilitiesExtraInjections serverArguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
         CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
         if (serverArguments != null) desiredCapabilities.merge(this.setCapabilitiesExtra(capsReaderAdapter, serverArguments));
@@ -69,7 +69,7 @@ public class MobileSharedObjectsProviderExtension implements ParameterResolver, 
         return capsReaderAdapter;
     }
 
-    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesInjections arguments) {
+    private synchronized DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesExtraInjections arguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
 
         String clientType = capsAdapter.getJsonObject().getClient();

@@ -40,22 +40,23 @@ public class MobileDriverProvider implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumWebDriverWaitExtensions> appiumWebDriverWait = new ThreadLocal<>();
-    private final ThreadLocal<MobileDriverActions> mobileDriverActions = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverType> mobileDriverType = new ThreadLocal<>();
 
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
     public AppiumWebDriverWaitExtensions getWebDriverWaitExtension() { return this.appiumWebDriverWait.get(); }
-    public MobileDriverActions getMobileDriverActions() { return mobileDriverActions.get(); }
+    public MobileDriverType getDriverType() { return mobileDriverType.get(); }
 
     private boolean isAndroid() {
-        return this.mobileDriverActions.get()
-                .getDriverType()
-                .equals(MobileDriverActions.DriverType.ANDROID);
+        switch (this.mobileDriverType.get().getDriverType()) {
+            case ANDROID -> { return true; }
+            case UNKNOWN, IOS -> { return false; }
+            default -> Assertions.fail();
+        }
+        return false;
     }
     public WebDriver getMobileDriver() {
-        return this.isAndroid()
-                ? this.getAndroidDriver()
-                : this.getIosDriver();
+        return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();
     }
 
     public MobileDriverProvider oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
@@ -71,9 +72,8 @@ public class MobileDriverProvider implements
      */
     public MobileDriverProvider(String type, DesiredCapabilities caps, String appiumBasePath) {
         try {
-            this.mobileDriverActions.set(new MobileDriverActions(type,this));
-            MobileDriverActions.DriverType driverType = this.mobileDriverActions.get().getDriverType();
-            switch (driverType) {
+            this.mobileDriverType.set(new MobileDriverType(type));
+            switch (this.mobileDriverType.get().getDriverType()) {
                 case ANDROID -> {
                     this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));

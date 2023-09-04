@@ -31,11 +31,12 @@ public class CapsReaderAdapter {
         }
     }
 
-    public DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
+    public synchronized DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         for (int i = 0; i < keys.length; i++) capabilities.setCapability(keys[i], values[i]);
         return capabilities;
     }
+
     private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
         return new UiAutomator2Options()
                 .setNoReset(true)
@@ -52,6 +53,11 @@ public class CapsReaderAdapter {
                 .setDeviceName(jsonObject.getAvd())
                 .setPlatformVersion(jsonObject.getPlatformVersion())
                 .setAppWaitDuration(Duration.ofMinutes(1))
+                .setAndroidInstallTimeout(Duration.ofSeconds(30))
+                .setAdbExecTimeout(Duration.ofSeconds(100))
+                .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(1))
+                .setUiautomator2ServerLaunchTimeout(Duration.ofMinutes(1))
+                .setUiautomator2ServerReadTimeout(Duration.ofMinutes(1))
                 .setNewCommandTimeout(Duration.ofMinutes(1));
     }
 
@@ -88,11 +94,6 @@ public class CapsReaderAdapter {
     }
 
     //    // .setAppActivity(jsonObject.getAppBundleId().concat(".features.auth.splash.SplashActivity"))
-    //               // .setAndroidInstallTimeout(Duration.ofSeconds(30))
-    //               // .setAdbExecTimeout(Duration.ofSeconds(100))
-    //  .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(1))
-    //  .setUiautomator2ServerLaunchTimeout(Duration.ofMinutes(1))
-    //  .setUiautomator2ServerReadTimeout(Duration.ofMinutes(1))
     //  .clearDeviceLogsOnStart()
     //  .clearSystemFiles();
     // .setApp(jsonObject.getUdid())

@@ -38,6 +38,7 @@ public class AppiumWebDriverWaitExtensions {
                 .ignoreAll(this.commonExceptions())
                 .until(expectedConditions);
     }
+
     public Collection<Class<? extends Exception>> commonExceptions() {
         return Arrays.asList(
                 Exception.class,

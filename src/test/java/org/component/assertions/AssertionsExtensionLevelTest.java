@@ -33,17 +33,6 @@ public class AssertionsExtensionLevelTest {
     @Test
     @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
-    void verifySoftAssertionWithFluentAssertion(AssertionsManager assertions) {
-        assertions.setAssertionLevel(AssertionsLevel.SOFT);
-        assertions.assertWith(
-                assertion -> assertion.assertThat("ttt").as("1").isEqualTo("ttt"),
-                findErrorBy -> findErrorBy.contains("1"),
-                onFail -> assertions.print(Status.FAIL, onFail.getMessage()));
-    }
-
-    @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
-    @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifyHardAssertionAfterSingleAssertionError(AssertionsManager assertions) {
         assertions.setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
         assertions.assertThat("aviad").isEqualTo("avi");

@@ -5,6 +5,8 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.Assertions;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,10 +15,9 @@ public class RestAssuredBuilder {
     private String baseUri = "";
     private String setPath = "";
     private Map<String,String> setBody = new HashMap<>();
-    private ContentType setContentType = null;
+    private ContentType setContentType = ContentType.ANY;
     private Map<String,String> setQueryParams = new HashMap<>();
     private Map<String,String> setHeaders = new HashMap<>();
-
 
     public RestAssuredBuilder setBaseUri(String baseUri) {
         this.baseUri = baseUri;
@@ -48,18 +49,24 @@ public class RestAssuredBuilder {
         return this;
     }
 
-    public Response build(Method method) {
+    public Response build(Method method, boolean failOnExceptionCatch) {
+        Response response = null;
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
         try {
+
             requestSpecBuilder.setBaseUri(this.baseUri);
             requestSpecBuilder.setBasePath(this.setPath);
-            if (this.setContentType != null) requestSpecBuilder.setContentType(this.setContentType);
+            requestSpecBuilder.setContentType(this.setContentType);
             if (!this.setQueryParams.isEmpty()) requestSpecBuilder.addQueryParams(this.setQueryParams);
             if (!this.setHeaders.isEmpty()) requestSpecBuilder.addHeaders(this.setHeaders);
             if (!this.setBody.isEmpty()) requestSpecBuilder.setBody(this.setBody);
-            return RestAssured.given().spec(requestSpecBuilder.build()).request(method);
+
+            response = RestAssured.given().spec(requestSpecBuilder.build()).request(method);
+
         } catch (Exception exception) {
-            throw new RuntimeException(exception.getMessage(), exception);
+            if (failOnExceptionCatch) Assertions.fail(exception.getMessage(), exception);
         }
+
+        return response;
     }
 }

@@ -5,7 +5,7 @@ import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.extensions.anontations.Repeat;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.mobile.appium.Android;
-import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
+import org.extensions.anontations.mobile.appium.CapabilitiesExtraInjections;
 import org.extensions.anontations.mobile.appium.Ios;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
@@ -33,12 +33,12 @@ public class AutomationMobileProviderTest {
     @Test
     @Repeat(onStatus = { FAIL, SKIP })
     @DriverProvider(proxyPort = 0, jsonCapsPath = "android.caps.json")
-    @CapabilitiesInjections(android = @Android(keys = {""}, values = {""}), ios = @Ios(keys = {""}, values = {""}))
+    @CapabilitiesExtraInjections(android = @Android(keys = {""}, values = {""}), ios = @Ios(keys = {""}, values = {""}))
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MobileBasePocTest")
-    public void a_mobileTest(MobileSharedObjects<CapabilitiesObject> mobileSharedObjects) {
+    public void a_mobileTest(MobileSharedObjects mobileSharedObjects) {
         String path = System.getProperty("user.dir") + "/" + "src/test/resources/androidCaps1.json";
-        mobileSharedObjects.setJacksonExtension(new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class));
-        List<CapabilitiesObject> capabilitiesObjects = mobileSharedObjects.getJacksonExtension().readAllFromJson();
+        JacksonObjectAdapter<CapabilitiesObject> jacksonObjectAdapter = new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class);
+        List<CapabilitiesObject> capabilitiesObjects = jacksonObjectAdapter.readAllFromJson();
         log.info(capabilitiesObjects.toString());
 
         final String packageId = "com.ideomobile.hapoalim:id/";

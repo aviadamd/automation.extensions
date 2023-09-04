@@ -3,14 +3,13 @@ package org.utils.assertions;
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.*;
+import org.assertj.core.description.Description;
 import org.base.OptionalWrapper;
 import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.report.ExtentTestManager;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
-
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -41,16 +40,10 @@ public class AssertionsManager extends SoftAssertions {
         } else this.print(Status.INFO, "assertion error " + assertionError.getMessage());
     }
 
-
-    /**
-     * assert with options
-     * @param assertion pass as consumer
-     * @param onFail by your logic
-     */
-    public synchronized void assertWith(Consumer<AssertionsManager> assertion, Predicate<String> findBy, Consumer<AssertionError> onFail) {
-        AtomicInteger assertionsErrorsNewCounter = new AtomicInteger(assertionErrors.size());
-        assertion.accept(this);
-        this.calculateOnFail(assertionsErrorsNewCounter.get(), onFail, findBy);
+    public <E> void is(E expected, AssertCondition<E> assertCondition) {
+        super.assertThat(expected).is(assertCondition.getCondition());
+        Description description = assertCondition.getCondition().description();
+        this.print(Status.PASS, "expected " + expected + " with condition " + description + " is true");
     }
 
     public WebElementAssert assertElement(ExpectedCondition<WebElement> condition) {
@@ -81,9 +74,9 @@ public class AssertionsManager extends SoftAssertions {
      */
     public synchronized void print(Status status, String description) {
         try {
-            ExtentTestManager.log(status, "assertion fails " + description);
+            ExtentTestManager.log(status,description);
         } catch (Exception ignore) {
-            log.info("assertion fails");
+            log.info(description);
         }
     }
 

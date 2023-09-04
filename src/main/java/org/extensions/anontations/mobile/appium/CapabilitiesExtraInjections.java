@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD })
-public @interface CapabilitiesInjections {
+public @interface CapabilitiesExtraInjections {
     Android android();
     Ios ios();
 }

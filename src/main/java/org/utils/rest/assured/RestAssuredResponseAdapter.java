@@ -1,10 +1,11 @@
 package org.utils.rest.assured;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Condition;
 import org.assertj.core.api.IntegerAssert;
 import org.assertj.core.api.IterableAssert;
 import org.assertj.core.api.ObjectAssert;
@@ -16,9 +17,10 @@ import java.lang.reflect.Type;
 public class RestAssuredResponseAdapter extends AssertionsManager {
 
     public IntegerAssert thatResponseCode(@NotNull Response response) { return super.assertThat(response.statusCode()); }
-    public ObjectAssert<Response> thatResponse(@NotNull Response response) { return super.assertThat(response); }
-    public IterableAssert<JsonNode> thatJsonNude(@NotNull JsonNode jsonNode) { return super.assertThat(jsonNode); }
+    public void thatJsonPath(@NotNull Response response, Condition<JsonPath> jsonPathCondition) {
+        super.assertThat(new JsonPath(response.asString())).is(jsonPathCondition);
 
+    }
 
     public <T> T as(@NotNull Response response, Class<T> tClass) {
         try {
@@ -51,7 +53,6 @@ public class RestAssuredResponseAdapter extends AssertionsManager {
             throw this.handleException(exception, type);
         }
     }
-
     private RuntimeException handleException(Exception exception, Type type) {
         final String error = exception.getMessage();
         final String className = type.getTypeName();

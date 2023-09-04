@@ -5,7 +5,7 @@ import org.base.configuration.PropertiesManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.CapabilitiesInjections;
+import org.extensions.anontations.mobile.appium.CapabilitiesExtraInjections;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
@@ -60,7 +60,7 @@ public class MobileDriverProviderExtension implements
                     this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
-                    CapabilitiesInjections serverArguments = context.getElement().get().getAnnotation(CapabilitiesInjections.class);
+                    CapabilitiesExtraInjections serverArguments = context.getElement().get().getAnnotation(CapabilitiesExtraInjections.class);
                     CapsReaderAdapter capsReaderAdapter = this.capsReaderAdapter(serverArguments);
                     this.driverManager.set(new MobileDriverProvider(capsReaderAdapter));
                     this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
@@ -102,7 +102,7 @@ public class MobileDriverProviderExtension implements
         }
     }
 
-    private CapsReaderAdapter capsReaderAdapter(CapabilitiesInjections serverArguments) {
+    private CapsReaderAdapter capsReaderAdapter(CapabilitiesExtraInjections serverArguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
         CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
         if (serverArguments != null) desiredCapabilities.merge(this.setCapabilitiesExtra(capsReaderAdapter, serverArguments));
@@ -110,7 +110,7 @@ public class MobileDriverProviderExtension implements
         return capsReaderAdapter;
     }
 
-    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesInjections arguments) {
+    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesExtraInjections arguments) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
 
         String clientType = capsAdapter.getJsonObject().getClient();
