@@ -30,7 +30,6 @@ public class WebSharedObjects {
     }
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
     public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }
-    public DateTimeUtilExtension getDateTimeUtilExtension() { return new DateTimeUtilExtension(); }
     public StringsUtilities getStringsUtilities() { return new StringsUtilities(); }
     public AssertionsManager getAssertionsManager() { return this.assertionsManager; }
 }

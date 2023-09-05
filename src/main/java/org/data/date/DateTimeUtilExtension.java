@@ -6,61 +6,35 @@ import java.time.temporal.*;
 import java.util.Locale;
 import java.util.function.Predicate;
 
-public class DateTimeUtilExtension extends DateTimeUtil {
+import static java.time.LocalDate.now;
 
-    public DateTimeUtilExtension withFutureDate(boolean isFuture) {
-        this.isFuture = isFuture;
-        return this;
-    }
+public class DateTimeUtilExtension  {
 
-    public DateTimeUtilExtension withStringFormat(String format) {
-        this.format = format;
-        return this;
-    }
-
-    public DateTimeUtilExtension withStartDateAs(Period period) {
-        this.period = period;
-        return this;
-    }
-
-    public DateTimeUtilExtension withStartDateAs(TemporalAdjuster startDate) {
-        this.startDate = startDate;
-        return this;
-    }
-
-    public LocalDate buildDate() {
+    public LocalDate buildDate(LocalDate localDate, LocalTime time, ZoneOffset offset) {
         try {
-            LocalDate localDate = this.setLocalDate(this.startDate, this.isFuture, this.period);
-            this.offsetDateTime = OffsetDateTime.of(localDate, LocalTime.now(), ZoneOffset.UTC);
-            return this.offsetDateTime.toLocalDate();
+            OffsetDateTime offsetDateTime = OffsetDateTime.of(localDate, time, offset);
+            return offsetDateTime.toLocalDate();
         } catch (Exception exception) {
             throw new RuntimeException("generate date error", exception);
         }
     }
 
     /**
-     * toDateString
-     * @param format of the date
-     * @param date from generated date
-     * @param locale for time local option
-     * @return String fix date
-     */
-    public String dateString(String format, LocalDate date, Locale locale) {
-        return date.format(DateTimeFormatter.ofPattern(format, locale));
-    }
-
-    /**
-     * toDateString
+     * dateToString
      * @param format of the date
      * @param date from generated date
      * @param backUp your increment decrement date option
      * @param locale for time local option
-     * @param predicate if this will return true then it will return another date
+     * @param predicateBackUp if this will return true then it will return another date
      * @return String fix date
      */
-    public String dateString(String format, LocalDate date, LocalDate backUp, Locale locale, Predicate<DayOfWeek> predicate) {
-        if (predicate.test(date.getDayOfWeek())) {
-            return date.with(backUp).format(DateTimeFormatter.ofPattern(format, locale));
-        } else return date.format(DateTimeFormatter.ofPattern(format, locale));
+    public String dateToString(String format, LocalDate date, Locale locale, Predicate<DayOfWeek> predicateBackUp, LocalDate backUp) {
+        try {
+            if (predicateBackUp != null && backUp != null && predicateBackUp.test(date.getDayOfWeek())) {
+                return date.with(backUp).format(DateTimeFormatter.ofPattern(format, locale));
+            } else return date.format(DateTimeFormatter.ofPattern(format, locale));
+        } catch (Exception exception) {
+            throw new RuntimeException("generate date error", exception);
+        }
     }
 }
