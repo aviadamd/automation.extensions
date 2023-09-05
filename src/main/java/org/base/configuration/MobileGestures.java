@@ -1,4 +1,4 @@
-package org.base.mobile;
+package org.base.configuration;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.base.mobile.data.ElementsAttributes;
