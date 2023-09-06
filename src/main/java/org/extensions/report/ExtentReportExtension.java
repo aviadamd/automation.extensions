@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
 import org.base.configuration.ReportConfigurations;
 import org.data.files.jsonReader.JacksonObjectAdapter;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
@@ -125,8 +124,11 @@ public class ExtentReportExtension implements TestWatcher,
                 TestMetaData testMetaData = this.getTestMetaData(reportTest, logs);
 
                 TestInformation testInformation = new TestInformation(testClass, testMetaData);
-                Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
-                repeat.ifPresent(value -> testInformation.setStatus(value.onStatus()));
+                Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+                reportConfiguration.ifPresent(configuration -> {
+                    Status [] repeatOnStatus = configuration.repeatOnStatus();
+                    testInformation.setStatus(repeatOnStatus);
+                });
 
                 failTestsCollector.add(testInformation);
                 failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
@@ -148,8 +150,11 @@ public class ExtentReportExtension implements TestWatcher,
                 TestMetaData testMetaData = this.getTestMetaData(reportTest, logs);
 
                 TestInformation testInformation = new TestInformation(testClass, testMetaData);
-                Optional<Repeat> repeat = this.readAnnotation(context, Repeat.class);
-                repeat.ifPresent(value -> testInformation.setStatus(value.onStatus()));
+                Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+                reportConfiguration.ifPresent(configuration -> {
+                    Status [] repeatOnStatus = configuration.repeatOnStatus();
+                    testInformation.setStatus(repeatOnStatus);
+                });
 
                 failTestsCollector.add(testInformation);
                 failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
@@ -224,8 +229,10 @@ public class ExtentReportExtension implements TestWatcher,
     private synchronized void createJsonReport(ExtensionContext context) {
         try {
             if (context.getElement().isPresent()) {
+
                 final String className = context.getRequiredTestClass().getSimpleName();
                 final String testPath = System.getProperty("user.dir") + "/target/test-results";
+                this.createJsonDir(testPath);
 
                 if (passTestsCollector.size() > 0) {
                     File passFilePath = new File(testPath + "/" + className + "Pass.json");
@@ -242,6 +249,15 @@ public class ExtentReportExtension implements TestWatcher,
         } catch (Exception exception) {
             Assertions.fail("Fail create create json test report ", exception);
         }
+    }
+
+    private synchronized void createJsonDir(String testPath) {
+        try {
+            File dir = new File(testPath);
+            if (!dir.exists() && dir.mkdirs()) {
+                log.info("create test path dir at " + testPath);
+            }
+        } catch (Exception ignore) {}
     }
 
     private synchronized List<Log> getExtentLogs() {

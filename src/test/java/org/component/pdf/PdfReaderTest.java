@@ -1,11 +1,9 @@
 package org.component.pdf;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.pdf.PdfReaderExtension;
 import org.extensions.report.ExtentReportExtension;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.pdf.PdfConnector;
 import org.extensions.anontations.pdf.PdfFileConfig;
 import org.data.files.pdfReader.PdfReader;
@@ -34,7 +32,6 @@ public class PdfReaderTest {
 
     @Test
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void testPdfReader1() {
         PdfReader.Actions action = new PdfReaderExtension()
                 .getPdfReader()
@@ -49,7 +46,6 @@ public class PdfReaderTest {
 
     @Test
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     public void testPdfReader2() {
         PdfReader.Actions action = new PdfReaderExtension()
                 .getPdfReader()

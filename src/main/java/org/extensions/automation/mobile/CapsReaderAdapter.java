@@ -13,19 +13,29 @@ import java.time.temporal.ChronoUnit;
 
 public class CapsReaderAdapter {
     private CapabilitiesObject jsonObject;
+    private void setJsonObject(CapabilitiesObject jsonObject) { this.jsonObject = jsonObject; }
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
     public synchronized CapabilitiesObject getJsonObject() { return this.jsonObject; }
     public synchronized DesiredCapabilities getCapabilities() { return this.capabilities; }
 
+    public CapsReaderAdapter(CapabilitiesObject capabilitiesObject) {
+        this.setJsonObject(capabilitiesObject);
+    }
+
     public CapsReaderAdapter(String jsonPath) {
         try {
+
             String path = System.getProperty("user.dir") + "/" + jsonPath;
             JacksonObjectAdapter<CapabilitiesObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class);
             CapabilitiesObject capsObject = jacksonHelper.readJson();
-            if (capsObject.getClient().equals("ANDROID"))
-                this.capabilities.merge(this.androidCapabilities(capsObject));
-            else this.capabilities.merge(this.iosCapabilities(capsObject));
-            this.jsonObject = capsObject;
+
+            switch (capsObject.getClient()) {
+                case "ANDROID" -> this.capabilities.merge(this.androidCapabilities(capsObject));
+                case "IOS" -> this.capabilities.merge(this.iosCapabilities(capsObject));
+                default -> throw new RuntimeException("no android or ios driver name was provided");
+            }
+
+            this.setJsonObject(capsObject);
         } catch (Exception exception) {
             Assertions.fail("fail load capabilities from json " + jsonPath ,exception);
         }
@@ -38,10 +48,19 @@ public class CapsReaderAdapter {
     }
 
     private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
+        AndroidInstallApplicationOptions androidInstallApplicationOptions = new AndroidInstallApplicationOptions()
+                .withUseSdcardEnabled()
+                .withReplaceEnabled()
+                .withAllowTestPackagesEnabled()
+                .withGrantPermissionsEnabled()
+                .withTimeout(Duration.of(100, ChronoUnit.SECONDS));
+        DesiredCapabilities androidCaps = new DesiredCapabilities();
+        androidInstallApplicationOptions.build().forEach(androidCaps::setCapability);
+
         return new UiAutomator2Options()
                 .setNoReset(true)
                 .ignoreHiddenApiPolicyError()
-                .merge(this.installAndroid())
+                .merge(androidCaps)
                 .setAvdLaunchTimeout(Duration.ofMinutes(1))
                 .setAutoGrantPermissions(true)
                 .setClearSystemFiles(true)
@@ -73,18 +92,6 @@ public class CapsReaderAdapter {
                 .clearSystemFiles();
     }
 
-    private synchronized DesiredCapabilities installAndroid() {
-        AndroidInstallApplicationOptions androidInstall = new AndroidInstallApplicationOptions()
-                .withUseSdcardEnabled()
-                .withReplaceEnabled()
-                .withAllowTestPackagesEnabled()
-                .withGrantPermissionsEnabled()
-                .withUseSdcardEnabled()
-                .withTimeout(Duration.of(100, ChronoUnit.SECONDS));
-        DesiredCapabilities caps = new DesiredCapabilities();
-        androidInstall.build().forEach(caps::setCapability);
-        return caps;
-    }
     @Override
     public String toString() {
         return "CapsReader{" +
@@ -92,9 +99,4 @@ public class CapsReaderAdapter {
                 ", capabilitiesObject=" + jsonObject +
                 '}';
     }
-
-    //    // .setAppActivity(jsonObject.getAppBundleId().concat(".features.auth.splash.SplashActivity"))
-    //  .clearDeviceLogsOnStart()
-    //  .clearSystemFiles();
-    // .setApp(jsonObject.getUdid())
 }

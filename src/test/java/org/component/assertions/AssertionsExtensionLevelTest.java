@@ -1,8 +1,6 @@
 package org.component.assertions;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.utils.assertions.AssertionsManager;
@@ -21,7 +19,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 public class AssertionsExtensionLevelTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
         assertions.setAssertionLevel(AssertionsLevel.SOFT);
@@ -31,7 +28,6 @@ public class AssertionsExtensionLevelTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifyHardAssertionAfterSingleAssertionError(AssertionsManager assertions) {
         assertions.setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
@@ -41,7 +37,6 @@ public class AssertionsExtensionLevelTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifyHardAssertionAfterEachTest(AssertionsManager assertions) {
         assertions.setAssertionLevel(AssertionsLevel.HARD_AFTER_TEST);

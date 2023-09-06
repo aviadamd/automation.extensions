@@ -2,10 +2,10 @@ package org.extensions.automation.mobile;
 
 import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
+import org.base.mobile.AppiumServiceManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.mobile.appium.CapabilitiesExtraInjections;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
@@ -46,7 +46,7 @@ public class MobileDriverProviderExtension implements
             Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
             if (provider.isPresent()) {
                 return this.driverManager.get();
-            }
+            } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
         }
         throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
     }
@@ -60,16 +60,28 @@ public class MobileDriverProviderExtension implements
                     this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
-                    CapabilitiesExtraInjections serverArguments = context.getElement().get().getAnnotation(CapabilitiesExtraInjections.class);
-                    CapsReaderAdapter capsReaderAdapter = this.capsReaderAdapter(serverArguments);
-                    this.driverManager.set(new MobileDriverProvider(capsReaderAdapter));
+
+                    CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
+                    DesiredCapabilities desiredCapabilities = new DesiredCapabilities(capsReaderAdapter.getCapabilities());
+                    DesiredCapabilities setCapabilitiesExtra = this.setCapabilitiesExtra(capsReaderAdapter, provider.get());
+                    desiredCapabilities.merge(setCapabilitiesExtra);
+
+                    AppiumServiceManager appiumServiceManager = new AppiumServiceManager(
+                            "C:/Program Files/nodejs/node.exe",
+                            "C:/Users/Lenovo/AppData/Roaming/npm/node_modules/appium/build/lib/main.js",
+                            "0.0.0.0",
+                            4723);
+                    appiumServiceManager.initService();
+
+                    this.driverManager.set(new MobileDriverProvider(capsReaderAdapter.getJsonObject().getClient(), capsReaderAdapter.getCapabilities(), capsReaderAdapter.getJsonObject().getDriverUrl()));
                     this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
                 }
-            }
+            } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
         } catch (Exception exception) {
             Assertions.fail(exception);
         }
     }
+
     @Override
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -102,27 +114,24 @@ public class MobileDriverProviderExtension implements
         }
     }
 
-    private CapsReaderAdapter capsReaderAdapter(CapabilitiesExtraInjections serverArguments) {
+    private synchronized DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsReaderAdapter, DriverProvider driverJsonProvider) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-        CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
-        if (serverArguments != null) desiredCapabilities.merge(this.setCapabilitiesExtra(capsReaderAdapter, serverArguments));
-        desiredCapabilities.merge(capsReaderAdapter.getCapabilities());
-        return capsReaderAdapter;
-    }
-
-    private DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsAdapter, CapabilitiesExtraInjections arguments) {
-        DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-
-        String clientType = capsAdapter.getJsonObject().getClient();
+        String clientType = capsReaderAdapter.getJsonObject().getClient();
         switch (clientType) {
             case "ANDROID" -> {
-                if (arguments.android() != null && arguments.android().keys().length > 0) {
-                    desiredCapabilities.merge(capsAdapter.setDesiredCapabilities(arguments.android().keys(), arguments.android().values()));
+                if (driverJsonProvider.androidExtraCapsKeys() != null && driverJsonProvider.androidExtraCapsKeys().length > 0
+                        && driverJsonProvider.androidExtraValuesValues() != null && driverJsonProvider.androidExtraValuesValues().length > 0
+                        && driverJsonProvider.androidExtraCapsKeys().length == driverJsonProvider.androidExtraValuesValues().length) {
+                    DesiredCapabilities extra = capsReaderAdapter.setDesiredCapabilities(driverJsonProvider.androidExtraCapsKeys(), driverJsonProvider.androidExtraValuesValues());
+                    desiredCapabilities.merge(extra);
                 }
             }
             case "IOS" -> {
-                if (arguments.ios() != null && arguments.ios().keys().length > 0) {
-                    desiredCapabilities.merge(capsAdapter.setDesiredCapabilities(arguments.ios().keys(), arguments.ios().values()));
+                if (driverJsonProvider.iosExtraCapsKeys() != null && driverJsonProvider.iosExtraCapsKeys().length > 0
+                        && driverJsonProvider.iosExtraCapsValues() != null && driverJsonProvider.iosExtraCapsValues().length > 0
+                        && driverJsonProvider.iosExtraCapsKeys().length == driverJsonProvider.iosExtraCapsValues().length) {
+                    DesiredCapabilities extra = capsReaderAdapter.setDesiredCapabilities(driverJsonProvider.iosExtraCapsKeys(), driverJsonProvider.iosExtraCapsValues());
+                    desiredCapabilities.merge(extra);
                 }
             }
             default -> throw new RuntimeException("no android or ios driver name was provided");

@@ -3,7 +3,6 @@ package org.component.mongo.morphia;
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.bson.types.ObjectId;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.mongo.morphia.MongoMorphiaDbExtension;
@@ -29,7 +28,6 @@ import static com.aventstack.extentreports.Status.SKIP;
 public class MongoMorphiaDbTest {
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void a_mobileTest(MorphiaRepository morphiaRepository) {
@@ -38,7 +36,6 @@ public class MongoMorphiaDbTest {
     }
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void b_mobileTest(MorphiaRepository morphiaRepository) {
@@ -47,7 +44,6 @@ public class MongoMorphiaDbTest {
     }
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void c_mobileTest(MorphiaRepository morphiaRepository) {
@@ -56,7 +52,6 @@ public class MongoMorphiaDbTest {
     }
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 4, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void d_mobileTest(MorphiaRepository morphiaRepository) {
@@ -65,7 +60,6 @@ public class MongoMorphiaDbTest {
     }
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 5, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void e_mobileTest(MorphiaRepository morphiaRepository) {
@@ -74,7 +68,6 @@ public class MongoMorphiaDbTest {
     }
 
     @Test
-    @Repeat(onStatus = { FAIL, SKIP })
     @MongoMorphiaConnector(host = "mongodb://localhost:27017", dbName = "ingredientsDbNew")
     @TestReportInfo(testId = 6, assignCategory = "poc", assignAuthor = "aviad", info = "MongoMorphiaDbTest")
     public void f_mobileTest(MorphiaRepository morphiaRepository) {

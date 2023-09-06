@@ -1,19 +1,19 @@
 package org.extensions.automation.mobile;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-@JsonPropertyOrder({"client","appiumBasePath","appPath", "platformVersion","avd","udid","appBundleId"})
+@JsonPropertyOrder({"client","driverUrl","appPath", "platformVersion","avd","udid","appBundleId"})
 public class CapabilitiesObject {
     private String client;
-    private String appiumBasePath;
+    private String driverUrl;
     private String appPath;
     private String platformVersion;
     private String avd;
     private String udid;
     private String appBundleId;
     public CapabilitiesObject() {}
-    public CapabilitiesObject(String client, String appiumBasePath, String appPath, String platformVersion, String avd, String udid, String appBundleId) {
+    public CapabilitiesObject(String client, String driverUrl, String appPath, String platformVersion, String avd, String udid, String appBundleId) {
         this.client = client;
-        this.appiumBasePath = appiumBasePath;
+        this.driverUrl = driverUrl;
         this.appPath = appPath;
         this.platformVersion = platformVersion;
         this.avd = avd;
@@ -29,12 +29,12 @@ public class CapabilitiesObject {
         this.client = client;
     }
 
-    public String getAppiumBasePath() {
-        return appiumBasePath;
+    public String getDriverUrl() {
+        return driverUrl;
     }
 
-    public void setAppiumBasePath(String appiumBasePath) {
-        this.appiumBasePath = appiumBasePath;
+    public void setDriverUrl(String driverUrl) {
+        this.driverUrl = driverUrl;
     }
 
     public String getAppPath() {
@@ -81,7 +81,7 @@ public class CapabilitiesObject {
     public String toString() {
         return "CapabilitiesObject{" +
                 "client='" + client + '\'' +
-                ", appiumBasePath='" + appiumBasePath + '\'' +
+                ", driverUrl='" + driverUrl + '\'' +
                 ", appPath='" + appPath + '\'' +
                 ", platformVersion='" + platformVersion + '\'' +
                 ", avd='" + avd + '\'' +

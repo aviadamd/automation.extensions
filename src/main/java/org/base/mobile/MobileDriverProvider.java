@@ -91,14 +91,6 @@ public class MobileDriverProvider implements
     }
 
     /**
-     * MobileDriverManager
-     * @param capsReader
-     */
-    public MobileDriverProvider(CapsReaderAdapter capsReader) {
-        this(capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
-    }
-
-    /**
      *
      * @param connectionState
      * @return
@@ -134,7 +126,7 @@ public class MobileDriverProvider implements
      *  .setOptionalIntentArguments("");
      * @return setAndroidActivity options
      */
-    public Activity setAndroidActivity(String appPackage, String appActivity) {
+    public Activity getAndroidActivity(String appPackage, String appActivity) {
         try {
             return new Activity(appPackage, appActivity);
         } catch (Exception exception) {

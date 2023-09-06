@@ -1,10 +1,8 @@
 package org.component.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import com.aventstack.extentreports.Status;
 import org.base.DurationOf;
 import org.base.web.SeleniumWebDriverProvider;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.web.WebDriverType;
@@ -25,7 +23,6 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 public class SeleniumWebProviderBasePocTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30, durationOf = DurationOf.MINUTES)
     void openPageFirstTest(SeleniumWebDriverProvider webDriverExtension) {
@@ -36,7 +33,6 @@ public class SeleniumWebProviderBasePocTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
     void openPageSecondTest(SeleniumWebDriverProvider webDriverExtension) {
@@ -47,7 +43,6 @@ public class SeleniumWebProviderBasePocTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "SeleniumWebProviderBasePocTest")
     @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30)
     void openPageThirdTest(SeleniumWebDriverProvider webDriverExtension) {

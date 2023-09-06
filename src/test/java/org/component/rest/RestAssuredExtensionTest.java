@@ -1,7 +1,6 @@
 package org.component.rest;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.restassured.http.ContentType;
 import io.restassured.http.Method;
@@ -10,7 +9,6 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Condition;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -37,7 +35,6 @@ import static com.aventstack.extentreports.Status.SKIP;
 public class RestAssuredExtensionTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @RestDataProvider(basePath = "https://jsonplaceholder.typicode.com",
             restSteps = {
                     @RestStep(

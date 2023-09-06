@@ -1,10 +1,8 @@
 package org.component.sql;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.component.sql.pojo.Country;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,6 @@ import java.util.List;
 public class MySqlDbTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     public void a_mySqlConnectionTest() {
         MySqlSharedConnector mySqlSharedConnector =

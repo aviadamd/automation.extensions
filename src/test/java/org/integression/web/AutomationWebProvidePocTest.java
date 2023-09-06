@@ -1,10 +1,6 @@
 package org.integression.web;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Condition;
-import org.component.web.BoniGrciaWelcomePage;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.report.ReportConfiguration;
@@ -18,8 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.component.web.BoniGrciaWelcomePageShared;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.utils.assertions.AssertionsLevel;
 
 @Slf4j
@@ -32,7 +26,6 @@ import org.utils.assertions.AssertionsLevel;
 public class AutomationWebProvidePocTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestOne")
     void boniGrciaWelcomePageTestOne(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePageShared boniGrciaShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());
@@ -49,7 +42,6 @@ public class AutomationWebProvidePocTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestTwo")
     void boniGrciaWelcomePageTestTwo(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());
@@ -61,7 +53,6 @@ public class AutomationWebProvidePocTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestThree")
     void boniGrciaWelcomePageTestThree(WebSharedObjects webSharedObjects) {
         BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());

@@ -1,6 +1,6 @@
 {
   "client": "ANDROID",
-  "appiumBasePath" : "http://127.0.0.2:4724/wd/hub",
+  "driverUrl" : "http://127.0.0.1:4723",
   "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
   "platformVersion" : "11",
   "avd" : "Google Nexus 5",

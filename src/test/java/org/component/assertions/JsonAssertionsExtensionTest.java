@@ -1,6 +1,5 @@
 package org.component.assertions;
 
-import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +8,6 @@ import net.javacrumbs.jsonunit.core.ConfigurationWhen;
 import net.javacrumbs.jsonunit.fluent.JsonFluentAssert;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.report.ExtentReportExtension;
 import org.hamcrest.Matchers;
@@ -42,7 +40,6 @@ public class JsonAssertionsExtensionTest {
     }
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void jsonAssertionsExtensionTest() {
         JsonFluentAssert.assertThatJson(jsonTreeNode("{\"test\":1.00}")).node("test").withTolerance(0).isEqualTo(1);

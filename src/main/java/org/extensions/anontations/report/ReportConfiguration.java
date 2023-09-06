@@ -18,6 +18,7 @@ public @interface ReportConfiguration {
     String reportPath() default "project.report.path";
     String reportSettingsPath() default "project.report.config";
     Status[] extraReportsBy() default { Status.FAIL, Status.SKIP };
+    Status [] repeatOnStatus()  default { Status.FAIL, Status.SKIP };
     AnalysisStrategy analysisStrategy() default AnalysisStrategy.TEST;
     String mongoConnection() default "project.mongo.connection";
 }

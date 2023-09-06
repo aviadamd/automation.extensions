@@ -7,4 +7,11 @@ import java.lang.annotation.*;
 public @interface DriverProvider {
     String jsonCapsPath();
     int proxyPort();
+    String [] iosExtraCapsKeys() default {};
+    String [] iosExtraCapsValues() default {};
+
+    String [] androidExtraCapsKeys() default {};
+    String [] androidExtraValuesValues() default {};
+
+
 }

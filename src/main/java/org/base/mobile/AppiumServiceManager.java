@@ -1,38 +1,19 @@
 package org.base.mobile;
 
-import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
 import io.appium.java_client.service.local.flags.ServerArgument;
+
 import java.io.File;
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 public class AppiumServiceManager {
     private final String ip;
     private final int port;
-    private String appiumBasePath = "/wd/hub";
     private final String nodeJs;
     private final String appiumExecutable;
-    private List<ServerArgument> serverArgumentList = new ArrayList<>();
-    private HashMap<ServerArgument, String> serverArgumentsMap = new HashMap<>();
-
-
-    public AppiumServiceManager addAppiumBasePath(String appiumBasePath) {
-        this.appiumBasePath = appiumBasePath;
-        return this;
-    }
-
-    public AppiumServiceManager addServerArgsList(List<ServerArgument> serverArgumentList) {
-        this.serverArgumentList = serverArgumentList;
-        return this;
-    }
-
-    public AppiumServiceManager addServerArgsMap(HashMap<ServerArgument, String> serverArgumentsMap) {
-        this.serverArgumentsMap = serverArgumentsMap;
-        return this;
-    }
 
     public AppiumServiceManager(String nodeJs, String appiumExecutable, String ip, int port) {
         this.nodeJs = nodeJs;
@@ -41,19 +22,16 @@ public class AppiumServiceManager {
         this.port = port;
     }
 
-    public AppiumDriverLocalService initService() {
-        AppiumServiceBuilder serviceBuilder = new AppiumServiceBuilder();
-
-        if (!this.serverArgumentsMap.isEmpty()) this.serverArgumentsMap.forEach(serviceBuilder::withArgument);
-        if (!this.serverArgumentList.isEmpty()) this.serverArgumentList.forEach(serviceBuilder::withArgument);
-
-        return serviceBuilder
+    public void initService() {
+        new AppiumServiceBuilder()
                 .usingDriverExecutable(new File(this.nodeJs))
                 .withAppiumJS(new File(this.appiumExecutable))
-                .withIPAddress(this.ip).usingPort(this.port)
-                .withArgument(GeneralServerFlag.BASEPATH, this.appiumBasePath)
-                .withArgument(GeneralServerFlag.ALLOW_INSECURE)
-                .withArgument(GeneralServerFlag.ASYNC_TRACE)
-                .build();
+                .withIPAddress(this.ip)
+                .usingPort(this.port)
+                .withArgument(GeneralServerFlag.RELAXED_SECURITY)
+                .withTimeout(Duration.ofMinutes(2))
+                .withEnvironment(Map.of("ANDROID_HOME", "C:\\Users\\Lenovo\\OneDrive\\Desktop\\Android\\Sdk"))
+                .build()
+                .start();
     }
 }

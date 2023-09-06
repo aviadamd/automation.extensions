@@ -1,10 +1,8 @@
 package org.component.assertions;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Condition;
 import org.base.web.SeleniumWebDriverProvider;
-import org.extensions.anontations.Repeat;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.assertions.AssertionsExtension;
@@ -17,7 +15,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.utils.assertions.AssertionsManager;
-import org.utils.assertions.WebElementAssertionManager;
 
 import java.time.Duration;
 
@@ -31,7 +28,6 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfNested
 public class WebElementAssertionsExtensionTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
         assertions.setWebElementAssertion(new SeleniumWebDriverProvider("", Duration.ofSeconds(3), new ChromeDriver()));

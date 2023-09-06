@@ -80,6 +80,6 @@ public class JacksonObjectAdapterReaderTest {
         log.info(jacksonHelper.readJson().getClient());
         log.info(jacksonHelper.readJson().getAppPath());
         log.info(jacksonHelper.readJson().getAppBundleId());
-        log.info(jacksonHelper.readJson().getAppiumBasePath());
+        log.info(jacksonHelper.readJson().getDriverUrl());
     }
 }
