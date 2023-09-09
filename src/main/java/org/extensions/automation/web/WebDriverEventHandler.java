@@ -1,4 +1,4 @@
-package org.extensions.automation;
+package org.extensions.automation.web;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
@@ -6,6 +6,8 @@ import org.extensions.report.ExtentTestManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.events.WebDriverListener;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 @Slf4j
@@ -17,13 +19,21 @@ public class WebDriverEventHandler implements WebDriverListener {
     }
 
     @Override
+    public void onError(Object target, Method method, Object[] args, InvocationTargetException error) {
+        if(driver.get() != null) {
+            this.print("target " + target + " error, from method " + method.getName()
+                    + ", with args " + Arrays.asList(args) + " with error " + error.getMessage());
+        }
+    }
+
+    @Override
     public void afterGet(WebDriver driver, String url) {
         if(driver != null) this.screenShot(driver,"navigate to " + url);
     }
 
     @Override
     public void afterFindElement(WebElement element, By locator, WebElement result) {
-        if (locator != null) this.screenShot(this.driver.get(),"find element " + locator.toString());
+        if (locator != null) this.screenShot(this.driver.get(),"find element " + locator);
 
     }
 

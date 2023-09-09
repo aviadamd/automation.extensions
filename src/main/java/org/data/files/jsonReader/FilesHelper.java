@@ -1,9 +1,18 @@
 package org.data.files.jsonReader;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FilesHelper {
+
+    public boolean isFileExists(File file) {
+        try {
+            return file.exists();
+        } catch (Exception exception) {
+            return false;
+        }
+    }
 
     public void createDirectory(String path) {
         try {

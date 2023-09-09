@@ -4,7 +4,10 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
+import java.util.Arrays;
+
 public class WebDriverOptions {
+
     public ChromeOptions chromeOptions() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-extensions");
@@ -17,6 +20,8 @@ public class WebDriverOptions {
         chromeOptions.addArguments("--allow-running-insecure-content");
         chromeOptions.addArguments("enable-automation");
         chromeOptions.addArguments("start-maximized");
+        chromeOptions.addArguments(Arrays.asList("--no-sandbox","--ignore-certificate-errors","--homepage=about:blank","--no-first-run"));
+        chromeOptions.addArguments("disable-infobars");
         return chromeOptions;
     }
     public FirefoxOptions firefoxOptions() {

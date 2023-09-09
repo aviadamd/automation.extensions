@@ -2,7 +2,9 @@ package org.base.configuration;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.base.mobile.data.ElementsAttributes;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 public interface MobileGestures {
 

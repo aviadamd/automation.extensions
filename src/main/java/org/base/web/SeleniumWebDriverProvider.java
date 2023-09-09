@@ -2,7 +2,7 @@ package org.base.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.base.anontations.WebElementGestures;
-import org.extensions.automation.WebDriverEventHandler;
+import org.extensions.automation.web.WebDriverEventHandler;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.events.EventFiringDecorator;
@@ -25,7 +25,7 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
 
     public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
-        WebDriverEventHandler eventHandler = new WebDriverEventHandler(webDriver);
+        new EventFiringDecorator<>(new WebDriverEventHandler(webDriver));
         this.driver.set(webDriver);
 
         this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
@@ -207,6 +207,16 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElement(by));
+    }
+
+    @Override
+    public WebElement findElement(ExpectedCondition<WebElement> expectedConditions) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedConditions);
     }
 
     @Override

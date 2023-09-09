@@ -131,6 +131,7 @@ public class ExtentReportExtension implements TestWatcher,
                     TestMetaData testMetaData = this.getTestMetaData(reportInfo, logs);
                     TestInformation testInformation = new TestInformation(testClass, testMetaData);
                     Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+
                     reportConfiguration.ifPresent(configuration -> {
                         Status [] repeatOnStatus = configuration.repeatOnStatus();
                         testInformation.setStatus(repeatOnStatus);
@@ -159,6 +160,7 @@ public class ExtentReportExtension implements TestWatcher,
                     TestMetaData testMetaData = this.getTestMetaData(reportInfo, logs);
                     TestInformation testInformation = new TestInformation(testClass, testMetaData);
                     Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+
                     reportConfiguration.ifPresent(configuration -> {
                         Status [] repeatOnStatus = configuration.repeatOnStatus();
                         testInformation.setStatus(repeatOnStatus);
@@ -230,7 +232,7 @@ public class ExtentReportExtension implements TestWatcher,
                 }
             }
         } catch (Exception exception) {
-           // Assertions.fail("Fail create create mongo db report ", exception);
+            Assertions.fail("Fail create create mongo db report ", exception);
         }
     }
 
@@ -241,7 +243,6 @@ public class ExtentReportExtension implements TestWatcher,
 
                 final String className = context.getRequiredTestClass().getSimpleName();
                 final String testPath = System.getProperty("user.dir") + "/target/test-results";
-                this.createJsonDir(testPath);
 
                 if (passTestsCollector.size() > 0) {
                     File passFilePath = new File(testPath + "/" + className + "Pass.json");
@@ -256,17 +257,8 @@ public class ExtentReportExtension implements TestWatcher,
                 }
             }
         } catch (Exception exception) {
-           // Assertions.fail("Fail create create json test report ", exception);
+            Assertions.fail("Fail create create json test report ", exception);
         }
-    }
-
-    private synchronized void createJsonDir(String testPath) {
-        try {
-            File dir = new File(testPath);
-            if (!dir.exists() && dir.mkdirs()) {
-                log.info("create test path dir at " + testPath);
-            }
-        } catch (Exception ignore) {}
     }
 
     private synchronized List<Log> getExtentLogs() {

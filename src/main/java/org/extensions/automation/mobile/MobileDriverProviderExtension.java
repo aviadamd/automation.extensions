@@ -2,13 +2,9 @@ package org.extensions.automation.mobile;
 
 import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
-import org.base.mobile.AppiumServiceManager;
-import org.base.mobile.MobileConfiguration;
-import org.base.mobile.MobileDriverProvider;
-import org.base.mobile.MobileDriverType;
+import org.base.mobile.*;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
-import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.data.files.jsonReader.JacksonObjectAdapter;
@@ -18,7 +14,6 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,18 +34,17 @@ public class MobileDriverProviderExtension implements
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
-        Class<?> clazz = parameterContext.getParameter().getType();
-        return clazz == MobileDriverProvider.class && parameterContext.isAnnotated(DriverProvider.class);
+        return parameterContext.getParameter().getType() == MobileDriverProvider.class;
     }
 
     @Override
     public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
-            if (provider.isPresent()) {
-                return this.driverManager.get();
-            } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
-        } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
+            if (provider.isPresent()) return this.driverManager.get();
+            throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
+        }
+        throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
     }
 
     @Override
@@ -61,29 +55,17 @@ public class MobileDriverProviderExtension implements
                 Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
                 if (provider.isPresent()) {
 
-                    this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
 
-                    CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
-                    String client = capsReaderAdapter.getJsonObject().getClient();
+                    CapsReaderAdapter capsReader = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
+                    String client = capsReader.getJsonObject().getClient();
                     DesiredCapabilities extra = this.setCapabilitiesExtra(client, provider.get());
-                    capsReaderAdapter.getCapabilities().merge(extra);
+                    capsReader.getCapabilities().merge(extra);
 
-                    this.appiumServiceManager.set(new AppiumServiceManager(
-                            capsReaderAdapter.getJsonObject().getNodeJs(),
-                            capsReaderAdapter.getJsonObject().getAppiumExe(),
-                            capsReaderAdapter.getJsonObject().getAppiumIp(),
-                            Integer.parseInt(capsReaderAdapter.getJsonObject().getAppiumPort()),
-                            capsReaderAdapter.getJsonObject().getAndroidHome()
-                    ));
-
-                    this.driverManager.set(new MobileDriverProvider(
-                            capsReaderAdapter.getJsonObject().getClient(),
-                            capsReaderAdapter.getCapabilities(),
-                            capsReaderAdapter.getJsonObject().getDriverUrl())
-                    );
-                    //this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
+                    this.appiumServiceManager.set(new AppiumServiceManager(capsReader.getJsonObject().getNodeJs(), capsReader.getJsonObject().getAppiumExe(), capsReader.getJsonObject().getAppiumIp(), Integer.parseInt(capsReader.getJsonObject().getAppiumPort()), capsReader.getJsonObject().getAndroidHome()));
+                    DriverType driverType = this.getDriverType(client);
+                    this.driverManager.set(new MobileDriverProvider(driverType, capsReader.getCapabilities(), capsReader.getJsonObject().getDriverUrl()));
 
                 } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
 
@@ -97,6 +79,7 @@ public class MobileDriverProviderExtension implements
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
+                this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
                 if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
                     String testName = context.getRequiredTestMethod().getName();
                     String dir = System.getProperty("user.dir") + "/" + "target/harFiles";
@@ -152,10 +135,20 @@ public class MobileDriverProviderExtension implements
         return desiredCapabilities;
     }
 
-    public synchronized DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
+    private synchronized DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
         DesiredCapabilities capabilities = new DesiredCapabilities();
         for (int i = 0; i < keys.length; i++) capabilities.setCapability(keys[i], values[i]);
         return capabilities;
+    }
+
+    private synchronized DriverType getDriverType(String client) {
+        DriverType driverType;
+        if (client.equalsIgnoreCase(DriverType.ANDROID.getDriverName())) {
+            driverType = DriverType.ANDROID;
+        } else if (client.equalsIgnoreCase(DriverType.IOS.getDriverName())) {
+            driverType = DriverType.IOS;
+        } else driverType = DriverType.UNKNOWN;
+        return driverType;
     }
 
     @Override

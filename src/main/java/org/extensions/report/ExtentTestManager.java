@@ -5,7 +5,6 @@ import com.aventstack.extentreports.markuputils.Markup;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -95,8 +94,8 @@ public class ExtentTestManager {
      * @param details
      */
     public synchronized static void log(Status status, String details) {
-        extentTest.get().log(status, details);
         innerLog(status, details);
+        extentTest.get().log(status, details);
     }
 
     /**
@@ -105,8 +104,8 @@ public class ExtentTestManager {
      * @param markup
      */
     public synchronized static void log(Status status, Markup markup) {
-        extentTest.get().log(status, markup);
         innerLog(status," " + markup.getMarkup());
+        extentTest.get().log(status, markup);
     }
 
     /**
@@ -115,8 +114,8 @@ public class ExtentTestManager {
      * @param throwable
      */
     public synchronized static void log(Status status, Throwable throwable) {
-        extentTest.get().log(status, throwable);
         innerLog(status, throwable.getMessage());
+        extentTest.get().log(status, throwable);
     }
 
     /**
@@ -126,8 +125,8 @@ public class ExtentTestManager {
      * @param media
      */
     public synchronized static void log(Status status, String details, Media media) {
-        extentTest.get().log(status, details, media);
         innerLog(status, details);
+        extentTest.get().log(status, details, media);
     }
 
     /**
@@ -137,8 +136,8 @@ public class ExtentTestManager {
      * @param media
      */
     public synchronized static void log(Status status, Throwable throwable, Media media) {
-        extentTest.get().log(status, throwable, media);
         innerLog(status, throwable.getMessage());
+        extentTest.get().log(status, throwable, media);
     }
 
     /**
@@ -149,8 +148,8 @@ public class ExtentTestManager {
      * @param media
      */
     public synchronized static void log(Status status, String details, Throwable throwable, Media media) {
-        extentTest.get().log(status, details, throwable, media);
         innerLog(status, details + " " + throwable.getMessage());
+        extentTest.get().log(status, details, throwable, media);
     }
 
     /**
@@ -163,29 +162,14 @@ public class ExtentTestManager {
         if (extentTest.get() != null && driver != null) {
             String base64ScreenShot = base64ScreenShot(driver);
             if (!base64ScreenShot.isEmpty()) {
+                innerLog(status, message);
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
                 if (createNode) extentTest.get()
                         .createNode("click for more details... ")
                         .log(status, message, media);
                 else extentTest.get().log(status, message, media);
-                innerLog(status, message);
             }
         }
-    }
-
-    /**
-     * @param expendMessage
-     * @param bodyDesc
-     */
-    public synchronized static void onPass(boolean asNewNode,String expendMessage, String bodyDesc) {
-        try {
-            if (asNewNode) {
-                extentTest.get()
-                        .createNode("test pass, click for more details... ")
-                        .log(Status.PASS, expendMessage)
-                        .log(Status.PASS, bodyDesc);
-            } else extentTest.get().log(Status.PASS, expendMessage + " " + bodyDesc);
-        } catch (Exception ignore) {}
     }
 
     /**

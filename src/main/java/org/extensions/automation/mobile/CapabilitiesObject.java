@@ -7,9 +7,7 @@ public class CapabilitiesObject {
     private String androidHome;
     private String appiumExe;
     private String nodeJs;
-
     private String appiumPort;
-
     private String appiumIp;
     private String client;
     private String driverUrl;

@@ -13,6 +13,7 @@ public class JacksonObjectAdapter<T> {
     private final Class<T> object;
     private final JacksonUtils<T> jacksonUtils;
 
+    private FilesHelper filesHelper;
 
     /**
      * JacksonExtensions
@@ -20,7 +21,8 @@ public class JacksonObjectAdapter<T> {
      * @param object your class object
      */
     public JacksonObjectAdapter(String dir, File file, Class<T> object) {
-        new FilesHelper().createDirectory(dir);
+        this.filesHelper = new FilesHelper();
+        this.filesHelper.createDirectory(dir);
         this.object = object;
         this.file = file;
         this.jacksonUtils = new JacksonUtils<>(new ObjectMapper());
@@ -48,7 +50,10 @@ public class JacksonObjectAdapter<T> {
      */
     public void writeToJson(boolean readAndWrite, T insertList) {
         List<T> collectData = new ArrayList<>();
-        if (readAndWrite) collectData.addAll(this.readAllFromJson());
+        if (readAndWrite && this.filesHelper.isFileExists(this.file)) {
+            List<T> newData = this.readAllFromJson();
+            collectData.addAll(newData);
+        }
         collectData.add(insertList);
         this.jacksonUtils.writeToJson(collectData, this.file);
     }
@@ -59,7 +64,10 @@ public class JacksonObjectAdapter<T> {
      */
     public void writeToJson(boolean readAndWrite, List<T> insertList) {
         List<T> collectData = new ArrayList<>();
-        if (readAndWrite) collectData.addAll(this.readAllFromJson());
+        if (readAndWrite && this.filesHelper.isFileExists(this.file)) {
+            List<T> newData = this.readAllFromJson();
+            collectData.addAll(newData);
+        }
         collectData.addAll(insertList);
         this.jacksonUtils.writeToJson(collectData, this.file);
     }

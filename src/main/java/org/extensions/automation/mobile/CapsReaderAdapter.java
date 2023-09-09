@@ -30,8 +30,14 @@ public class CapsReaderAdapter {
             CapabilitiesObject capsObject = jacksonHelper.readJson();
 
             switch (capsObject.getClient()) {
-                case "ANDROID" -> this.capabilities.merge(this.androidCapabilities(capsObject));
-                case "IOS" -> this.capabilities.merge(this.iosCapabilities(capsObject));
+                case "ANDROID" -> {
+                    UiAutomator2Options uiAutomator2Options = this.androidCapabilities(capsObject);
+                    this.capabilities.merge(uiAutomator2Options);
+                }
+                case "IOS" -> {
+                    XCUITestOptions xcuiTestOptions = this.iosCapabilities(capsObject);
+                    this.capabilities.merge(xcuiTestOptions);
+                }
                 default -> throw new RuntimeException("no android or ios driver name was provided");
             }
 

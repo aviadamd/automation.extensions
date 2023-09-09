@@ -17,7 +17,6 @@
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
 
-        <appium.version>8.3.0</appium.version>
         <selenium.version>4.8.1</selenium.version>
         <bonigarcia.version>5.3.1</bonigarcia.version>
         <streamex.version>0.8.1</streamex.version>
@@ -359,7 +358,7 @@
         <dependency>
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
-            <version>8.3.0</version>
+            <version>8.5.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.seleniumhq.selenium</groupId>

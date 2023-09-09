@@ -16,10 +16,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.base.anontations.WebElementGestures;
 import org.base.configuration.MobileGestures;
 import org.base.mobile.data.ElementsAttributes;
-import org.extensions.automation.mobile.CapsReaderAdapter;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
@@ -45,17 +45,23 @@ public class MobileDriverProvider implements
 
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
-    public AppiumWebDriverWaitExtensions getWebDriverWaitExtension() { return this.appiumWebDriverWait.get(); }
+    public AppiumWebDriverWaitExtensions getWebDriverWait() { return this.appiumWebDriverWait.get(); }
     public MobileDriverType getDriverType() { return mobileDriverType.get(); }
 
     private boolean isAndroid() {
-        switch (this.mobileDriverType.get().getDriverType()) {
-            case ANDROID -> { return true; }
-            case UNKNOWN, IOS -> { return false; }
-            default -> Assertions.fail();
-        }
-        return false;
+        return this.mobileDriverType.get()
+                .getDriverType()
+                .getDriverName()
+                .equalsIgnoreCase(DriverType.ANDROID.getDriverName());
     }
+
+    private boolean isIos() {
+        return this.mobileDriverType.get()
+                .getDriverType()
+                .getDriverName()
+                .equalsIgnoreCase(DriverType.IOS.getDriverName());
+    }
+
     public WebDriver getMobileDriver() {
         return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();
     }
@@ -67,20 +73,23 @@ public class MobileDriverProvider implements
     }
 
     /**
-     * @param type
+     * @param driverType
+     *    ANDROID("ANDROID"),
+     *    IOS("IOS"),
+     *    UNKNOWN("UNKNOWN");
      * @param caps
-     * @param appiumBasePath appium url connection
+     * @param driverPath appium url connection
      */
-    public MobileDriverProvider(String type, DesiredCapabilities caps, String appiumBasePath) {
+    public MobileDriverProvider(DriverType driverType, DesiredCapabilities caps, String driverPath) {
         try {
-            this.mobileDriverType.set(new MobileDriverType(type));
+            this.mobileDriverType.set(new MobileDriverType(driverType));
             switch (this.mobileDriverType.get().getDriverType()) {
                 case ANDROID -> {
-                    this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
+                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), caps));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
                 }
                 case IOS -> {
-                    this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
+                    this.iosDriver.set(new IOSDriver(new URL(driverPath), caps));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
                 }
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
@@ -88,6 +97,14 @@ public class MobileDriverProvider implements
         } catch (Exception exception) {
             Assertions.fail("init driver fail " + exception.getMessage(), exception);
         }
+    }
+    public Collection<Class<? extends Exception>> sessionExceptions() {
+        return Arrays.asList(
+                Exception.class,
+                WebDriverException.class,
+                NoSuchElementException.class,
+                StaleElementReferenceException.class
+        );
     }
 
     /**
@@ -230,7 +247,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(WebElement element) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(3))
                 .pollingEvery(Duration.ofSeconds(1))
@@ -240,7 +257,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -249,7 +266,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition, Duration generalTimeOut, Duration pollingEvery) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(generalTimeOut)
                 .pollingEvery(pollingEvery)
@@ -259,7 +276,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -269,7 +286,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void sendKeys(WebElement element, CharSequence... keysToSend) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -279,7 +296,7 @@ public class MobileDriverProvider implements
 
     @Override
     public String getAttribute(WebElement element, String name) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -288,7 +305,7 @@ public class MobileDriverProvider implements
     @Override
     public String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair) {
         String setAttribute = isAndroid() ? attributesPair.getLeft().getTag() : attributesPair.getRight().getTag();
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -297,7 +314,7 @@ public class MobileDriverProvider implements
 
     @Override
     public String getText(WebElement element) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -305,7 +322,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public List<WebElement> findElements(By by) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -313,7 +330,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public WebElement findElement(By by) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -321,8 +338,17 @@ public class MobileDriverProvider implements
     }
 
     @Override
+    public WebElement findElement(ExpectedCondition<WebElement> expectedConditions) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedConditions);
+    }
+
+    @Override
     public String getPageSource() {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(2))
                 .pollingEvery(Duration.ofSeconds(1))

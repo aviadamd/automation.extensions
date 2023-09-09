@@ -6,12 +6,14 @@ import com.goebl.david.WebbException;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.time.Duration;
 import java.util.Map;
 
+@Slf4j
 public class AppiumServiceManager {
     private AppiumDriverLocalService localService;
     private final int port;
@@ -61,15 +63,10 @@ public class AppiumServiceManager {
     public boolean isServerRunning(String ip, String port) {
         try {
             Response<JSONObject> appiumResponse = Webb.create()
-                    .get("http://"+ip+":"+port+"/wd/hub/status")
+                    .get("http://"+ip+":"+port+"/status")
                     .asJsonObject();
             return appiumResponse.isSuccess() && !appiumResponse.getResponseMessage().isEmpty();
-        } catch (WebbException webbException) {
-            if (webbException.getResponse() != null) {
-                webbException.getResponse().getResponseMessage();
-            }
-            return false;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return false;
         }
     }

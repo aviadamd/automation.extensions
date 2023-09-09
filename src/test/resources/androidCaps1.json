@@ -6,8 +6,8 @@
   "client": "ANDROID",
   "driverUrl" : "http://127.0.0.1:4723",
   "appPath" : "C:/Users/Lenovo/IdeaProjects/com.automation.mobile/src/test/resources/app/application.apk",
-  "platformVersion" : "11",
-  "avd" : "Pixel_API_30",
+  "platformVersion" : "15",
+  "avd" : "Pixel_2_API_34",
   "udid" : "emulator-5554",
   "appBundleId": "com.ideomobile.hapoalim",
   "androidHome" : "C:/Users/Lenovo/OneDrive/Desktop/Android/Sdk"
