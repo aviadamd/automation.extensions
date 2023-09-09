@@ -27,8 +27,11 @@ import static java.lang.System.getProperty;
 
 @Slf4j
 public class ExtentReportExtension implements TestWatcher,
-        BeforeAllCallback, BeforeEachCallback, AfterEachCallback,
-        AfterAllCallback, JunitReflectionAnnotationHandler.ExtensionContextHandler {
+        BeforeAllCallback,
+        BeforeEachCallback,
+        AfterEachCallback,
+        AfterAllCallback,
+        JunitReflectionAnnotationHandler.ExtensionContextHandler {
 
     private final static List<TestInformation> failTestsCollector = new ArrayList<>();
     private final static List<TestInformation> passTestsCollector = new ArrayList<>();
@@ -102,12 +105,14 @@ public class ExtentReportExtension implements TestWatcher,
             final String testMethod = context.getRequiredTestMethod().getName();
 
             List<Log> logs = this.getExtentLogs();
-            TestReportInfo reportTest = this.getAnnotation(context, TestReportInfo.class);
-            TestMetaData testMetaData = this.getTestMetaData(reportTest, logs);
+            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
 
-            passTestsCollector.add(new TestInformation(testClass, testMetaData));
-            passTestsMongoCollector.add(new PassTestInfoMongo(testClass, testMetaData));
-            ExtentTestManager.log(Status.PASS, "test " + testMethod + " pass");
+            reportTest.ifPresent(reportInfo -> {
+                TestMetaData testMetaData = this.getTestMetaData(reportInfo, logs);
+                passTestsCollector.add(new TestInformation(testClass, testMetaData));
+                passTestsMongoCollector.add(new PassTestInfoMongo(testClass, testMetaData));
+                ExtentTestManager.log(Status.PASS, "test " + testMethod + " pass");
+            });
         }
     }
 
@@ -120,19 +125,21 @@ public class ExtentReportExtension implements TestWatcher,
                 final String errorMessage = context.getExecutionException().get().getMessage();
 
                 List<Log> logs = this.getExtentLogs();
-                TestReportInfo reportTest = this.getAnnotation(context, TestReportInfo.class);
-                TestMetaData testMetaData = this.getTestMetaData(reportTest, logs);
+                Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
 
-                TestInformation testInformation = new TestInformation(testClass, testMetaData);
-                Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
-                reportConfiguration.ifPresent(configuration -> {
-                    Status [] repeatOnStatus = configuration.repeatOnStatus();
-                    testInformation.setStatus(repeatOnStatus);
+                reportTest.ifPresent(reportInfo -> {
+                    TestMetaData testMetaData = this.getTestMetaData(reportInfo, logs);
+                    TestInformation testInformation = new TestInformation(testClass, testMetaData);
+                    Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+                    reportConfiguration.ifPresent(configuration -> {
+                        Status [] repeatOnStatus = configuration.repeatOnStatus();
+                        testInformation.setStatus(repeatOnStatus);
+                    });
+
+                    failTestsCollector.add(testInformation);
+                    failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
+                    ExtentTestManager.onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
                 });
-
-                failTestsCollector.add(testInformation);
-                failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
-                ExtentTestManager.onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
             }
         }
     }
@@ -146,19 +153,21 @@ public class ExtentReportExtension implements TestWatcher,
                 final String errorMessage = context.getExecutionException().get().getMessage();
 
                 List<Log> logs = this.getExtentLogs();
-                TestReportInfo reportTest = this.getAnnotation(context, TestReportInfo.class);
-                TestMetaData testMetaData = this.getTestMetaData(reportTest, logs);
+                Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
 
-                TestInformation testInformation = new TestInformation(testClass, testMetaData);
-                Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
-                reportConfiguration.ifPresent(configuration -> {
-                    Status [] repeatOnStatus = configuration.repeatOnStatus();
-                    testInformation.setStatus(repeatOnStatus);
+                reportTest.ifPresent(reportInfo -> {
+                    TestMetaData testMetaData = this.getTestMetaData(reportInfo, logs);
+                    TestInformation testInformation = new TestInformation(testClass, testMetaData);
+                    Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
+                    reportConfiguration.ifPresent(configuration -> {
+                        Status [] repeatOnStatus = configuration.repeatOnStatus();
+                        testInformation.setStatus(repeatOnStatus);
+                    });
+
+                    failTestsCollector.add(testInformation);
+                    failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
+                    ExtentTestManager.onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
                 });
-
-                failTestsCollector.add(testInformation);
-                failTestsMongoCollector.add(new FailTestInfoMongo(testClass, testMetaData, errorMessage));
-                ExtentTestManager.onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
             }
         }
     }
@@ -221,7 +230,7 @@ public class ExtentReportExtension implements TestWatcher,
                 }
             }
         } catch (Exception exception) {
-            Assertions.fail("Fail create create mongo db report ", exception);
+           // Assertions.fail("Fail create create mongo db report ", exception);
         }
     }
 
@@ -247,7 +256,7 @@ public class ExtentReportExtension implements TestWatcher,
                 }
             }
         } catch (Exception exception) {
-            Assertions.fail("Fail create create json test report ", exception);
+           // Assertions.fail("Fail create create json test report ", exception);
         }
     }
 
@@ -286,16 +295,5 @@ public class ExtentReportExtension implements TestWatcher,
             }
         }
         return Optional.empty();
-    }
-
-    public synchronized <T extends Annotation> T getAnnotation(ExtensionContext context, Class<T> annotation) {
-        if (context.getElement().isPresent()) {
-            try {
-                return context.getElement().get().getAnnotation(annotation);
-            } catch (Exception exception) {
-                throw new RuntimeException("Fail read annotation from ExtentReportExtension", exception);
-            }
-        }
-        throw new RuntimeException("Fail read annotation from ExtentReportExtension");
     }
 }

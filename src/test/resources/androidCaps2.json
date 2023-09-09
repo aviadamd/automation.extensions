@@ -1,9 +1,0 @@
-{
-  "client": "ANDROID",
-  "driverUrl" : "http://127.0.0.1:4723",
-  "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
-  "platformVersion" : "11",
-  "avd" : "Google Nexus 5",
-  "udid" : "192.168.192.105:5555",
-  "appBundleId": "com.ideomobile.hapoalim"
-}

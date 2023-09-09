@@ -86,7 +86,7 @@ public class MobileDriverProvider implements
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
             }
         } catch (Exception exception) {
-            Assertions.fail("init driver fail ", exception);
+            Assertions.fail("init driver fail " + exception.getMessage(), exception);
         }
     }
 

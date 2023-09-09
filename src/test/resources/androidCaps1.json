@@ -1,9 +1,14 @@
 {
+  "appiumExe": "C:/Users/Lenovo/AppData/Roaming/npm/node_modules/appium/build/lib/main.js",
+  "nodeJs" : "C:/Program Files/nodejs/node.exe",
+  "appiumPort" : "4723",
+  "appiumIp" : "0.0.0.0",
   "client": "ANDROID",
   "driverUrl" : "http://127.0.0.1:4723",
-  "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
+  "appPath" : "C:/Users/Lenovo/IdeaProjects/com.automation.mobile/src/test/resources/app/application.apk",
   "platformVersion" : "11",
   "avd" : "Pixel_API_30",
   "udid" : "emulator-5554",
-  "appBundleId": "com.ideomobile.hapoalim"
+  "appBundleId": "com.ideomobile.hapoalim",
+  "androidHome" : "C:/Users/Lenovo/OneDrive/Desktop/Android/Sdk"
 }

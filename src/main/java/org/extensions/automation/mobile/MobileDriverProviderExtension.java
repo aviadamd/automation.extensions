@@ -5,6 +5,7 @@ import org.base.configuration.PropertiesManager;
 import org.base.mobile.AppiumServiceManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
+import org.base.mobile.MobileDriverType;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
@@ -29,9 +30,11 @@ public class MobileDriverProviderExtension implements
         AfterEachCallback,
         AfterAllCallback,
         JunitReflectionAnnotationHandler.ExtensionContextHandler {
+
     private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
     private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
+    private final ThreadLocal<AppiumServiceManager> appiumServiceManager = new ThreadLocal<>();
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
 
     @Override
@@ -47,35 +50,43 @@ public class MobileDriverProviderExtension implements
             if (provider.isPresent()) {
                 return this.driverManager.get();
             } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
-        }
-        throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
+        } else throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public synchronized void beforeEach(ExtensionContext context) {
         try {
             if (context.getElement().isPresent()) {
+
                 Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
                 if (provider.isPresent()) {
+
                     this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
 
                     CapsReaderAdapter capsReaderAdapter = new CapsReaderAdapter(this.mobileProperties.get().mobileJsonCapabilitiesLocation());
-                    DesiredCapabilities desiredCapabilities = new DesiredCapabilities(capsReaderAdapter.getCapabilities());
-                    DesiredCapabilities setCapabilitiesExtra = this.setCapabilitiesExtra(capsReaderAdapter, provider.get());
-                    desiredCapabilities.merge(setCapabilitiesExtra);
+                    String client = capsReaderAdapter.getJsonObject().getClient();
+                    DesiredCapabilities extra = this.setCapabilitiesExtra(client, provider.get());
+                    capsReaderAdapter.getCapabilities().merge(extra);
 
-                    AppiumServiceManager appiumServiceManager = new AppiumServiceManager(
-                            "C:/Program Files/nodejs/node.exe",
-                            "C:/Users/Lenovo/AppData/Roaming/npm/node_modules/appium/build/lib/main.js",
-                            "0.0.0.0",
-                            4723);
-                    appiumServiceManager.initService();
+                    this.appiumServiceManager.set(new AppiumServiceManager(
+                            capsReaderAdapter.getJsonObject().getNodeJs(),
+                            capsReaderAdapter.getJsonObject().getAppiumExe(),
+                            capsReaderAdapter.getJsonObject().getAppiumIp(),
+                            Integer.parseInt(capsReaderAdapter.getJsonObject().getAppiumPort()),
+                            capsReaderAdapter.getJsonObject().getAndroidHome()
+                    ));
 
-                    this.driverManager.set(new MobileDriverProvider(capsReaderAdapter.getJsonObject().getClient(), capsReaderAdapter.getCapabilities(), capsReaderAdapter.getJsonObject().getDriverUrl()));
-                    this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
-                }
+                    this.driverManager.set(new MobileDriverProvider(
+                            capsReaderAdapter.getJsonObject().getClient(),
+                            capsReaderAdapter.getCapabilities(),
+                            capsReaderAdapter.getJsonObject().getDriverUrl())
+                    );
+                    //this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
+
+                } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
+
             } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
         } catch (Exception exception) {
             Assertions.fail(exception);
@@ -106,7 +117,8 @@ public class MobileDriverProviderExtension implements
     }
 
     @Override
-    public void afterAll(ExtensionContext extensionContext)  {
+    public synchronized void afterAll(ExtensionContext extensionContext)  {
+        this.appiumServiceManager.get().close();
         if (this.mobProxyExtension.get() != null
                 && this.mobProxyExtension.get().getProxy() != null
                 && this.mobProxyExtension.get().getServer().isStarted()) {
@@ -114,15 +126,15 @@ public class MobileDriverProviderExtension implements
         }
     }
 
-    private synchronized DesiredCapabilities setCapabilitiesExtra(CapsReaderAdapter capsReaderAdapter, DriverProvider driverJsonProvider) {
+    private synchronized DesiredCapabilities setCapabilitiesExtra(String clientType, DriverProvider driverJsonProvider) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
-        String clientType = capsReaderAdapter.getJsonObject().getClient();
+
         switch (clientType) {
             case "ANDROID" -> {
                 if (driverJsonProvider.androidExtraCapsKeys() != null && driverJsonProvider.androidExtraCapsKeys().length > 0
                         && driverJsonProvider.androidExtraValuesValues() != null && driverJsonProvider.androidExtraValuesValues().length > 0
                         && driverJsonProvider.androidExtraCapsKeys().length == driverJsonProvider.androidExtraValuesValues().length) {
-                    DesiredCapabilities extra = capsReaderAdapter.setDesiredCapabilities(driverJsonProvider.androidExtraCapsKeys(), driverJsonProvider.androidExtraValuesValues());
+                    DesiredCapabilities extra = this.setDesiredCapabilities(driverJsonProvider.androidExtraCapsKeys(), driverJsonProvider.androidExtraValuesValues());
                     desiredCapabilities.merge(extra);
                 }
             }
@@ -130,7 +142,7 @@ public class MobileDriverProviderExtension implements
                 if (driverJsonProvider.iosExtraCapsKeys() != null && driverJsonProvider.iosExtraCapsKeys().length > 0
                         && driverJsonProvider.iosExtraCapsValues() != null && driverJsonProvider.iosExtraCapsValues().length > 0
                         && driverJsonProvider.iosExtraCapsKeys().length == driverJsonProvider.iosExtraCapsValues().length) {
-                    DesiredCapabilities extra = capsReaderAdapter.setDesiredCapabilities(driverJsonProvider.iosExtraCapsKeys(), driverJsonProvider.iosExtraCapsValues());
+                    DesiredCapabilities extra = this.setDesiredCapabilities(driverJsonProvider.iosExtraCapsKeys(), driverJsonProvider.iosExtraCapsValues());
                     desiredCapabilities.merge(extra);
                 }
             }
@@ -138,6 +150,12 @@ public class MobileDriverProviderExtension implements
         }
 
         return desiredCapabilities;
+    }
+
+    public synchronized DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        for (int i = 0; i < keys.length; i++) capabilities.setCapability(keys[i], values[i]);
+        return capabilities;
     }
 
     @Override

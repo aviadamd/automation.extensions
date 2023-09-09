@@ -26,7 +26,8 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
 
     public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
         WebDriverEventHandler eventHandler = new WebDriverEventHandler(webDriver);
-        this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(webDriver));
+        this.driver.set(webDriver);
+
         this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
         if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));

@@ -1,37 +1,76 @@
 package org.base.mobile;
 
+import com.goebl.david.Response;
+import com.goebl.david.Webb;
+import com.goebl.david.WebbException;
+import io.appium.java_client.service.local.AppiumDriverLocalService;
 import io.appium.java_client.service.local.AppiumServiceBuilder;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
-import io.appium.java_client.service.local.flags.ServerArgument;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 
 public class AppiumServiceManager {
-    private final String ip;
+    private AppiumDriverLocalService localService;
     private final int port;
-    private final String nodeJs;
-    private final String appiumExecutable;
+    public String ip;
 
-    public AppiumServiceManager(String nodeJs, String appiumExecutable, String ip, int port) {
-        this.nodeJs = nodeJs;
-        this.appiumExecutable = appiumExecutable;
-        this.ip = ip;
-        this.port = port;
+    public AppiumDriverLocalService getLocalService() {
+        return localService;
     }
 
-    public void initService() {
-        new AppiumServiceBuilder()
-                .usingDriverExecutable(new File(this.nodeJs))
-                .withAppiumJS(new File(this.appiumExecutable))
-                .withIPAddress(this.ip)
-                .usingPort(this.port)
+    /**
+     *
+     * @param nodeJs
+     * @param appiumExecutable
+     * @param ip
+     * @param port
+     * @param androidHome
+     */
+    public AppiumServiceManager(
+            String nodeJs, String appiumExecutable,
+            String ip, int port, String androidHome) {
+
+        this.ip = ip;
+        this.port = port;
+
+        if (this.isServerRunning(ip, String.valueOf(port))) {
+            return;
+        }
+
+        localService = new AppiumServiceBuilder()
+                .usingDriverExecutable(new File(nodeJs))
+                .withAppiumJS(new File(appiumExecutable))
+                .withIPAddress(ip)
+                .usingPort(port)
                 .withArgument(GeneralServerFlag.RELAXED_SECURITY)
                 .withTimeout(Duration.ofMinutes(2))
-                .withEnvironment(Map.of("ANDROID_HOME", "C:\\Users\\Lenovo\\OneDrive\\Desktop\\Android\\Sdk"))
-                .build()
-                .start();
+                .withEnvironment(Map.of("ANDROID_HOME", androidHome))
+                .build();
+        localService.start();
+    }
+
+    public void close() {
+        if (this.isServerRunning(this.ip, String.valueOf(this.port))) {
+            this.localService.close();
+        }
+    }
+
+    public boolean isServerRunning(String ip, String port) {
+        try {
+            Response<JSONObject> appiumResponse = Webb.create()
+                    .get("http://"+ip+":"+port+"/wd/hub/status")
+                    .asJsonObject();
+            return appiumResponse.isSuccess() && !appiumResponse.getResponseMessage().isEmpty();
+        } catch (WebbException webbException) {
+            if (webbException.getResponse() != null) {
+                webbException.getResponse().getResponseMessage();
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
