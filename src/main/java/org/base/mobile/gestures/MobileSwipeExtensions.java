@@ -1,7 +1,8 @@
-package org.base.mobile;
+package org.base.mobile.gestures;
 
 import io.appium.java_client.AppiumBy;
 import org.assertj.core.api.Assertions;
+import org.base.mobile.MobileDriverProvider;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;

@@ -1,4 +1,4 @@
-package org.base.mobile;
+package org.base.mobile.gestures;
 
 public enum ScrollDirection {
     UP, DOWN,

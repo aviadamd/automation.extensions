@@ -1,5 +1,7 @@
 package org.extensions.anontations.mobile;
 
+import org.extensions.automation.mobile.ApplicationLaunchOption;
+
 import java.lang.annotation.*;
 
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
@@ -11,6 +13,6 @@ public @interface DriverProvider {
     String [] iosExtraCapsValues() default {};
     String [] androidExtraCapsKeys() default {};
     String [] androidExtraValuesValues() default {};
-
+    ApplicationLaunchOption appLaunchOption() default ApplicationLaunchOption.IGNORE;
 
 }

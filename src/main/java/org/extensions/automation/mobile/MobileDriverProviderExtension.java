@@ -77,6 +77,9 @@ public class MobileDriverProviderExtension implements
                     DriverType driverType = this.getDriverType(client);
                     this.driverManager.set(new MobileDriverProvider(driverType, capsReader.getCapabilities(), capsReader.getJsonObject().getDriverUrl()));
 
+                    ApplicationLaunchOption applicationLaunchOption = provider.get().appLaunchOption();
+                    this.driverManager.get().getAppLauncherExtensions().applicationLaunchOptions(applicationLaunchOption, capsReader.getJsonObject().getAppBundleId());
+
                 } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
 
             } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");

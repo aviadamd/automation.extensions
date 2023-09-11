@@ -1,6 +1,5 @@
 package org.base.mobile;
 
-import com.google.common.collect.ImmutableList;
 import io.appium.java_client.*;
 import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
@@ -17,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.base.anontations.WebElementGestures;
 import org.base.configuration.MobileGestures;
 import org.base.mobile.data.ElementsAttributes;
+import org.base.mobile.gestures.MobileSwipeExtensions;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
@@ -43,13 +43,18 @@ public class MobileDriverProvider implements
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumWebDriverWaitExtensions> appiumWebDriverWait = new ThreadLocal<>();
     private final ThreadLocal<MobileSwipeExtensions> mobileSwipeExtensions = new ThreadLocal<>();
+
+    private final ThreadLocal<AppLauncherExtensions> appLauncherExtensions = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverType> mobileDriverType = new ThreadLocal<>();
+
 
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
     public AppiumWebDriverWaitExtensions getWebDriverWait() { return this.appiumWebDriverWait.get(); }
-    public MobileSwipeExtensions getSwipeExtensions() { return mobileSwipeExtensions.get(); }
-    public MobileDriverType getDriverType() { return mobileDriverType.get(); }
+    public MobileSwipeExtensions getSwipeExtensions() { return this.mobileSwipeExtensions.get(); }
+    public AppLauncherExtensions getAppLauncherExtensions() { return this.appLauncherExtensions.get(); }
+    public MobileDriverType getDriverType() { return this.mobileDriverType.get(); }
+
 
     public boolean isAndroid() {
         return this.mobileDriverType.get()
@@ -109,6 +114,7 @@ public class MobileDriverProvider implements
             }
 
             this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
+            this.appLauncherExtensions.set(new AppLauncherExtensions(this));
         } catch (Exception exception) {
             Assertions.fail("init driver fail " + exception.getMessage(), exception);
         }
@@ -386,11 +392,17 @@ public class MobileDriverProvider implements
 
     @Override
     public void close() {
-        if (this.getMobileDriver() != null) this.getMobileDriver().close();
+        if (this.isAndroid()) {
+            this.getAndroidDriver().closeApp();
+        } else this.getIosDriver().closeApp();
     }
 
     @Override
     public void quit() {
-        if (this.getMobileDriver() != null)  this.getMobileDriver().quit();
+        if (this.isAndroid()) {
+            this.getAndroidDriver().closeApp();
+        } else this.getIosDriver().closeApp();
     }
+
+
 }
