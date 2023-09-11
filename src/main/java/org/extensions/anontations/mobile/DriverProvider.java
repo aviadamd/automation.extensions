@@ -9,7 +9,6 @@ public @interface DriverProvider {
     int proxyPort();
     String [] iosExtraCapsKeys() default {};
     String [] iosExtraCapsValues() default {};
-
     String [] androidExtraCapsKeys() default {};
     String [] androidExtraValuesValues() default {};
 

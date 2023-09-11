@@ -48,6 +48,7 @@ public class AppiumServiceManager {
                 .withIPAddress(ip)
                 .usingPort(port)
                 .withArgument(GeneralServerFlag.RELAXED_SECURITY)
+                .withArgument(GeneralServerFlag.ALLOW_INSECURE,"ALLOW_INSECURE")
                 .withTimeout(Duration.ofMinutes(2))
                 .withEnvironment(Map.of("ANDROID_HOME", androidHome))
                 .build();
@@ -55,9 +56,12 @@ public class AppiumServiceManager {
     }
 
     public void close() {
-        if (this.isServerRunning(this.ip, String.valueOf(this.port))) {
-            this.localService.close();
-        }
+        try {
+            if (this.isServerRunning(this.ip, String.valueOf(this.port))) {
+                this.localService.close();
+            }
+        } catch (Exception ignore) {}
+
     }
 
     public boolean isServerRunning(String ip, String port) {

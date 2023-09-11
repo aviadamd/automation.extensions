@@ -63,11 +63,14 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
 
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
-        return parameterContext.getParameter().getType() == AssertionsManager.class;
+        Class<?> getType = parameterContext.getParameter().getType();
+        return getType == AssertionsManager.class;
     }
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext context)  {
-        return this.assertionsManager.get();
+        if (context.getElement().isPresent())
+            return this.assertionsManager.get();
+        throw new RuntimeException("Assertions manager instance is not initiated ");
     }
 }

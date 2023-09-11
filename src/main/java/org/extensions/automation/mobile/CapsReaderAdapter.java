@@ -4,6 +4,7 @@ import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOpti
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.data.files.jsonReader.JacksonObjectAdapter;
+import org.extensions.anontations.mobile.DriverProvider;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -47,30 +48,21 @@ public class CapsReaderAdapter {
         }
     }
 
-    public synchronized DesiredCapabilities setDesiredCapabilities(String[] keys, String[] values) {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        for (int i = 0; i < keys.length; i++) capabilities.setCapability(keys[i], values[i]);
-        return capabilities;
-    }
-
     private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
         AndroidInstallApplicationOptions androidInstallApplicationOptions = new AndroidInstallApplicationOptions()
                 .withUseSdcardEnabled()
-                .withReplaceEnabled()
                 .withAllowTestPackagesEnabled()
-                .withGrantPermissionsEnabled()
                 .withTimeout(Duration.of(100, ChronoUnit.SECONDS));
         DesiredCapabilities androidCaps = new DesiredCapabilities();
         androidInstallApplicationOptions.build().forEach(androidCaps::setCapability);
 
         return new UiAutomator2Options()
                 .setNoReset(true)
-                .ignoreHiddenApiPolicyError()
                 .merge(androidCaps)
+                .setIgnoreHiddenApiPolicyError(true)
                 .setAvdLaunchTimeout(Duration.ofMinutes(1))
                 .setAutoGrantPermissions(true)
                 .setClearSystemFiles(true)
-                .setClearDeviceLogsOnStart(true)
                 .setAppWaitForLaunch(true)
                 .setUdid(jsonObject.getUdid())
                 .setAppPackage(jsonObject.getAppBundleId())
@@ -89,13 +81,10 @@ public class CapsReaderAdapter {
     private synchronized XCUITestOptions iosCapabilities(CapabilitiesObject jsonObject) {
         return new XCUITestOptions()
                 .setNoReset(true)
-                .setNoReset(true)
-                .setClearSystemFiles(true)
                 .setApp(jsonObject.getAppPath())
                 .setBundleId(jsonObject.getAppBundleId())
                 .setCommandTimeouts(Duration.ofMinutes(1))
-                .setPlatformVersion(jsonObject.getPlatformVersion())
-                .clearSystemFiles();
+                .setPlatformVersion(jsonObject.getPlatformVersion());
     }
 
     @Override

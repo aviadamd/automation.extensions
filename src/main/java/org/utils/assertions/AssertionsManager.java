@@ -79,40 +79,4 @@ public class AssertionsManager extends SoftAssertions {
             log.info(description);
         }
     }
-
-    /**
-     * calculateOnFail
-     * @param assertionsErrorsNewCounter indication if there is a new error
-     * @param onFail pass as consumer for fluent the test
-     */
-    private synchronized void calculateOnFail(int assertionsErrorsNewCounter, Consumer<AssertionError> onFail, Predicate<String> findBy) {
-        if (onFail != null && assertionErrors.size() > assertionsErrorsNewCounter) {
-
-            List<AssertionError> assertionErrorList = assertionErrors;
-
-            if (findBy != null) {
-                for (AssertionError error: assertionErrorList) {
-                    if (findBy.test(error.getMessage())) {
-                        onFail.accept(error);
-                        if (this.assertionsLevel == AssertionsLevel.HARD_AFTER_ERROR) {
-                            Assertions.fail(error.getMessage(), error);
-                        }
-                        break;
-                    }
-                }
-            } else {
-                new OptionalWrapper<>(assertionErrorList
-                        .stream()
-                        .skip(assertionErrorList.size() -1)
-                        .findFirst())
-                        .ifPresent(error -> {
-                            onFail.accept(error);
-                            if (this.assertionsLevel == AssertionsLevel.HARD_AFTER_ERROR) {
-                                Assertions.fail(error.getMessage(), error);
-                            }
-                        })
-                        .ifNotPresent(() -> log.info("no fail appear from assertion"));
-            }
-        }
-    }
 }

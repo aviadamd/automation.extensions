@@ -1,5 +1,6 @@
 package org.base.mobile;
 
+import com.google.common.collect.ImmutableList;
 import io.appium.java_client.*;
 import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
@@ -41,21 +42,23 @@ public class MobileDriverProvider implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumWebDriverWaitExtensions> appiumWebDriverWait = new ThreadLocal<>();
+    private final ThreadLocal<MobileSwipeExtensions> mobileSwipeExtensions = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverType> mobileDriverType = new ThreadLocal<>();
 
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
     public AppiumWebDriverWaitExtensions getWebDriverWait() { return this.appiumWebDriverWait.get(); }
+    public MobileSwipeExtensions getSwipeExtensions() { return mobileSwipeExtensions.get(); }
     public MobileDriverType getDriverType() { return mobileDriverType.get(); }
 
-    private boolean isAndroid() {
+    public boolean isAndroid() {
         return this.mobileDriverType.get()
                 .getDriverType()
                 .getDriverName()
                 .equalsIgnoreCase(DriverType.ANDROID.getDriverName());
     }
 
-    private boolean isIos() {
+    public boolean isIos() {
         return this.mobileDriverType.get()
                 .getDriverType()
                 .getDriverName()
@@ -63,7 +66,15 @@ public class MobileDriverProvider implements
     }
 
     public WebDriver getMobileDriver() {
-        return this.isAndroid() ? this.getAndroidDriver() : this.getIosDriver();
+        return switch (this.getDriverType().getDriverType()) {
+            case ANDROID -> this.getAndroidDriver();
+            case IOS -> this.getIosDriver();
+            default -> throw new RuntimeException("unable to identify driver instance");
+        };
+    }
+
+    public AppiumDriver getAppiumDriver() {
+        return  (AppiumDriver) this.getMobileDriver();
     }
 
     public MobileDriverProvider oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
@@ -87,13 +98,17 @@ public class MobileDriverProvider implements
                 case ANDROID -> {
                     this.androidDriver.set(new AndroidDriver(new URL(driverPath), caps));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    this.androidDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                 }
                 case IOS -> {
                     this.iosDriver.set(new IOSDriver(new URL(driverPath), caps));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    this.iosDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                 }
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
             }
+
+            this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
         } catch (Exception exception) {
             Assertions.fail("init driver fail " + exception.getMessage(), exception);
         }
@@ -328,6 +343,15 @@ public class MobileDriverProvider implements
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElements(by));
     }
+
+    public WebElement findElement(WebElement webElement, By child) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> webElement.findElement(child));
+    }
+
     @Override
     public WebElement findElement(By by) {
         return this.getWebDriverWait()

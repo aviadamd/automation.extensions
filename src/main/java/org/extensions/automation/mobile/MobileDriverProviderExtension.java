@@ -5,6 +5,7 @@ import org.base.configuration.PropertiesManager;
 import org.base.mobile.*;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.automation.proxy.MobProxyExtension;
+import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.data.files.jsonReader.FilesHelper;
 import org.data.files.jsonReader.JacksonObjectAdapter;
@@ -14,6 +15,7 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,11 +26,12 @@ public class MobileDriverProviderExtension implements
         BeforeEachCallback,
         AfterEachCallback,
         AfterAllCallback,
+        LifecycleMethodExecutionExceptionHandler,
         JunitReflectionAnnotationHandler.ExtensionContextHandler {
 
-    private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
+    //private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
-    private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
+   // private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
     private final ThreadLocal<AppiumServiceManager> appiumServiceManager = new ThreadLocal<>();
     private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
 
@@ -55,6 +58,7 @@ public class MobileDriverProviderExtension implements
                 Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
                 if (provider.isPresent()) {
 
+                   // this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
                     this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
                     this.mobileProperties.get().setProperty("android.caps.json", provider.get().jsonCapsPath());
 
@@ -63,7 +67,13 @@ public class MobileDriverProviderExtension implements
                     DesiredCapabilities extra = this.setCapabilitiesExtra(client, provider.get());
                     capsReader.getCapabilities().merge(extra);
 
-                    this.appiumServiceManager.set(new AppiumServiceManager(capsReader.getJsonObject().getNodeJs(), capsReader.getJsonObject().getAppiumExe(), capsReader.getJsonObject().getAppiumIp(), Integer.parseInt(capsReader.getJsonObject().getAppiumPort()), capsReader.getJsonObject().getAndroidHome()));
+                    this.appiumServiceManager.set(new AppiumServiceManager(
+                            capsReader.getJsonObject().getNodeJs(),
+                            capsReader.getJsonObject().getAppiumExe(),
+                            capsReader.getJsonObject().getAppiumIp(),
+                            Integer.parseInt(capsReader.getJsonObject().getAppiumPort()),
+                            capsReader.getJsonObject().getAndroidHome()));
+
                     DriverType driverType = this.getDriverType(client);
                     this.driverManager.set(new MobileDriverProvider(driverType, capsReader.getCapabilities(), capsReader.getJsonObject().getDriverUrl()));
 
@@ -79,20 +89,20 @@ public class MobileDriverProviderExtension implements
     public synchronized void afterEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             try {
-                this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
-                if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
-                    String testName = context.getRequiredTestMethod().getName();
-                    String dir = System.getProperty("user.dir") + "/" + "target/harFiles";
-                    String testPath = dir + "/" + testName + ".json";
-                    FilesHelper filesHelper = new FilesHelper();
-                    filesHelper.createDirectory(dir);
-                    this.mobProxyExtension.get().writeHarFile(new File(testPath), this.mobProxyExtension.get().getServer().getHar().getLog());
-                    List<LogEntryObject> logEntryObjects = new ArrayList<>();
-                    logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
-                    String path = System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation();
-                    JacksonObjectAdapter<LogEntryObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json"), LogEntryObject.class);
-                    jacksonHelper.writeToJson(true, logEntryObjects);
-                }
+                //this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
+//                if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
+//                    String testName = context.getRequiredTestMethod().getName();
+//                    String dir = System.getProperty("user.dir") + "/" + "target/harFiles";
+//                    String testPath = dir + "/" + testName + ".json";
+//                    FilesHelper filesHelper = new FilesHelper();
+//                    filesHelper.createDirectory(dir);
+//                    this.mobProxyExtension.get().writeHarFile(new File(testPath), this.mobProxyExtension.get().getServer().getHar().getLog());
+//                    List<LogEntryObject> logEntryObjects = new ArrayList<>();
+//                    logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
+//                    String path = System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation();
+//                    JacksonObjectAdapter<LogEntryObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json"), LogEntryObject.class);
+//                    jacksonHelper.writeToJson(true, logEntryObjects);
+//                }
             } catch (Exception exception) {
                 Assertions.fail("generate har file error ", exception);
             }
@@ -101,12 +111,34 @@ public class MobileDriverProviderExtension implements
 
     @Override
     public synchronized void afterAll(ExtensionContext extensionContext)  {
-        this.appiumServiceManager.get().close();
-        if (this.mobProxyExtension.get() != null
-                && this.mobProxyExtension.get().getProxy() != null
-                && this.mobProxyExtension.get().getServer().isStarted()) {
-            this.mobProxyExtension.get().getServer().stop();
+        if (extensionContext.getElement().isPresent()) {
+            this.appiumServiceManager.get().close();
         }
+//        if (this.mobProxyExtension.get() != null
+//                && this.mobProxyExtension.get().getProxy() != null
+//                && this.mobProxyExtension.get().getServer().isStarted()) {
+//            this.mobProxyExtension.get().getServer().stop();
+//        }
+    }
+
+    @Override
+    public void handleBeforeAllMethodExecutionException(ExtensionContext context, Throwable throwable)  {
+
+    }
+
+    @Override
+    public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable) {
+
+    }
+
+    @Override
+    public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable) {
+
+    }
+
+    @Override
+    public void handleAfterAllMethodExecutionException(ExtensionContext context, Throwable throwable)  {
+
     }
 
     private synchronized DesiredCapabilities setCapabilitiesExtra(String clientType, DriverProvider driverJsonProvider) {

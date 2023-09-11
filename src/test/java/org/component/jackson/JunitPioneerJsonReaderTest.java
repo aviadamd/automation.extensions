@@ -11,7 +11,7 @@ public class JunitPioneerJsonReaderTest {
 
     @ParameterizedTest
     @RetryingTest()
-    @JsonClasspathSource(value = "androidCaps1.json")
+    @JsonClasspathSource(value = "androidCapabilities.json")
     void simpleReader(CapabilitiesObject capabilitiesObject) {
         log.info(capabilitiesObject.getAvd());
         log.info(capabilitiesObject.getClient());
