@@ -4,23 +4,26 @@ import io.appium.java_client.*;
 import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
+import io.appium.java_client.android.appmanagement.AndroidRemoveApplicationOptions;
+import io.appium.java_client.android.appmanagement.AndroidTerminateApplicationOptions;
 import io.appium.java_client.android.connection.ConnectionState;
 import io.appium.java_client.android.connection.ConnectionStateBuilder;
+import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.driverscripts.ScriptOptions;
 import io.appium.java_client.driverscripts.ScriptValue;
 import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.options.XCUITestOptions;
 import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.base.anontations.WebElementGestures;
-import org.base.configuration.MobileGestures;
+import org.base.anontations.MobileGestures;
 import org.base.mobile.data.ElementsAttributes;
 import org.base.mobile.gestures.MobileSwipeExtensions;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
@@ -43,7 +46,6 @@ public class MobileDriverProvider implements
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumWebDriverWaitExtensions> appiumWebDriverWait = new ThreadLocal<>();
     private final ThreadLocal<MobileSwipeExtensions> mobileSwipeExtensions = new ThreadLocal<>();
-
     private final ThreadLocal<AppLauncherExtensions> appLauncherExtensions = new ThreadLocal<>();
     private final ThreadLocal<MobileDriverType> mobileDriverType = new ThreadLocal<>();
 
@@ -54,7 +56,6 @@ public class MobileDriverProvider implements
     public MobileSwipeExtensions getSwipeExtensions() { return this.mobileSwipeExtensions.get(); }
     public AppLauncherExtensions getAppLauncherExtensions() { return this.appLauncherExtensions.get(); }
     public MobileDriverType getDriverType() { return this.mobileDriverType.get(); }
-
 
     public boolean isAndroid() {
         return this.mobileDriverType.get()
@@ -89,25 +90,26 @@ public class MobileDriverProvider implements
     }
 
     /**
+     *
      * @param driverType
-     *    ANDROID("ANDROID"),
-     *    IOS("IOS"),
-     *    UNKNOWN("UNKNOWN");
-     * @param caps
-     * @param driverPath appium url connection
+     * @param uiAutomator2Options
+     * @param xcuiTestOptions
+     * @param driverPath
      */
-    public MobileDriverProvider(DriverType driverType, DesiredCapabilities caps, String driverPath) {
+    public MobileDriverProvider(
+            DriverType driverType, UiAutomator2Options uiAutomator2Options,
+            XCUITestOptions xcuiTestOptions, String driverPath) {
         try {
             this.mobileDriverType.set(new MobileDriverType(driverType));
             switch (this.mobileDriverType.get().getDriverType()) {
                 case ANDROID -> {
-                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), caps));
-                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), uiAutomator2Options));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.androidDriver.get()));
                     this.androidDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                 }
                 case IOS -> {
-                    this.iosDriver.set(new IOSDriver(new URL(driverPath), caps));
-                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    this.iosDriver.set(new IOSDriver(new URL(driverPath), xcuiTestOptions));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.iosDriver.get()));
                     this.iosDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
                 }
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
@@ -119,13 +121,29 @@ public class MobileDriverProvider implements
             Assertions.fail("init driver fail " + exception.getMessage(), exception);
         }
     }
-    public Collection<Class<? extends Exception>> sessionExceptions() {
-        return Arrays.asList(
-                Exception.class,
-                WebDriverException.class,
-                NoSuchElementException.class,
-                StaleElementReferenceException.class
-        );
+
+    public MobileDriverProvider(DriverType driverType, DesiredCapabilities caps, String driverPath, int implicitlyWait) {
+        try {
+            this.mobileDriverType.set(new MobileDriverType(driverType));
+            switch (this.mobileDriverType.get().getDriverType()) {
+                case ANDROID -> {
+                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), caps));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.androidDriver.get()));
+                    this.androidDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitlyWait));
+                }
+                case IOS -> {
+                    this.iosDriver.set(new IOSDriver(new URL(driverPath), caps));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.iosDriver.get()));
+                    this.iosDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitlyWait));
+                }
+                case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
+            }
+
+            this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
+            this.appLauncherExtensions.set(new AppLauncherExtensions(this));
+        } catch (Exception exception) {
+            Assertions.fail("init driver fail " + exception.getMessage(), exception);
+        }
     }
 
     /**
@@ -150,6 +168,14 @@ public class MobileDriverProvider implements
      */
     public void setAndroidInstallOptions(String appPath, AndroidInstallApplicationOptions options) {
         this.androidDriver.get().installApp(appPath, options);
+    }
+
+    public void setAndroidRemoveOptions(String appPath, AndroidRemoveApplicationOptions options) {
+        this.androidDriver.get().removeApp(appPath, options);
+    }
+
+    public void setAndroidTerminateAppOptions(String appPath, AndroidTerminateApplicationOptions options) {
+        this.androidDriver.get().terminateApp(appPath, options);
     }
 
     /**
@@ -341,6 +367,7 @@ public class MobileDriverProvider implements
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getText());
     }
+
     @Override
     public List<WebElement> findElements(By by) {
         return this.getWebDriverWait()

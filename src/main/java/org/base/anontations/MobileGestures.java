@@ -1,4 +1,4 @@
-package org.base.configuration;
+package org.base.anontations;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.base.mobile.data.ElementsAttributes;
@@ -11,5 +11,7 @@ public interface MobileGestures {
     void get(String url);
     void close();
     void quit();
-    String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair);
+    String getAttribute(WebElement element,
+                        Pair<ElementsAttributes.AndroidElementsAttributes,
+                                ElementsAttributes.IosElementsAttributes> attributesPair);
 }

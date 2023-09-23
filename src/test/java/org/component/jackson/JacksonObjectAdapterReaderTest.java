@@ -6,7 +6,7 @@ import org.extensions.jackson.JacksonProviderExtension;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;
-import org.extensions.automation.mobile.CapabilitiesObject;
+import org.extensions.automation.mobile.MobileCapabilitiesObject;
 import org.extensions.report.ExtentReportExtension;
 import org.data.files.jsonReader.JacksonObjectAdapter;
 import org.junit.jupiter.api.DisplayName;
@@ -74,8 +74,8 @@ public class JacksonObjectAdapterReaderTest {
     @Test
     @DisplayName("readJsonTestD")
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "JacksonReaderTest")
-    @JacksonProvider(dir = "/src/test/resources", fileName = "androidCapabilities.json", classObject = CapabilitiesObject.class)
-    public void readJsonTestD(JacksonObjectAdapter<CapabilitiesObject> jacksonHelper) {
+    @JacksonProvider(dir = "/src/test/resources", fileName = "devicesCapabilities1.json", classObject = MobileCapabilitiesObject.class)
+    public void readJsonTestD(JacksonObjectAdapter<MobileCapabilitiesObject> jacksonHelper) {
         log.info(jacksonHelper.readJson().getAvd());
         log.info(jacksonHelper.readJson().getClient());
         log.info(jacksonHelper.readJson().getAppPath());

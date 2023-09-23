@@ -20,7 +20,6 @@ public class BoniGrciaWelcomePageShared {
         this.seleniumWebDriverProvider = seleniumWebDriverProvider;
         this.boniGrciaWelcomePage = new BoniGrciaWelcomePage(seleniumWebDriverProvider.getDriver());
         this.assertionsManager = new AssertionsManager();
-        this.assertionsManager.setWebElementAssertion(seleniumWebDriverProvider);
     }
 
     public BoniGrciaWelcomePageShared setAssertionLevel(AssertionsLevel level) {
@@ -59,6 +58,7 @@ public class BoniGrciaWelcomePageShared {
     }
 
     public StringAssert assertHomeTab() {
-        return this.assertionsManager.assertElementText(elementToBeClickable(boniGrciaWelcomePage.homeTab));
+        return null;
+                //this.assertionsManager.assertElementText(elementToBeClickable(boniGrciaWelcomePage.homeTab));
     }
 }

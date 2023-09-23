@@ -1,8 +1,9 @@
 package org.extensions.automation.mobile;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 @JsonPropertyOrder({"appiumExe","nodeJs","appiumPort","appiumIp","client","driverUrl","appPath", "platformVersion","avd","udid","appBundleId","androidHome"})
-public class CapabilitiesObject {
+public class MobileCapabilitiesObject {
 
     private String androidHome;
     private String appiumExe;
@@ -17,7 +18,7 @@ public class CapabilitiesObject {
     private String udid;
     private String appBundleId;
 
-    public CapabilitiesObject() {}
+    public MobileCapabilitiesObject() {}
 
     /**
      *
@@ -33,7 +34,7 @@ public class CapabilitiesObject {
      * @param udid
      * @param appBundleId
      */
-    public CapabilitiesObject(
+    public MobileCapabilitiesObject(
             String appiumExe, String nodeJs, String appiumPort,
             String appiumIp, String client, String driverUrl,
             String appPath, String platformVersion, String avd,
@@ -148,20 +149,5 @@ public class CapabilitiesObject {
         return androidHome;
     }
 
-    @Override
-    public String toString() {
-        return "CapabilitiesObject{" +
-                "appiumExe='" + appiumExe + '\'' +
-                ", nodeJs='" + nodeJs + '\'' +
-                ", appiumPort='" + appiumPort + '\'' +
-                ", appiumIp='" + appiumIp + '\'' +
-                ", client='" + client + '\'' +
-                ", driverUrl='" + driverUrl + '\'' +
-                ", appPath='" + appPath + '\'' +
-                ", platformVersion='" + platformVersion + '\'' +
-                ", avd='" + avd + '\'' +
-                ", udid='" + udid + '\'' +
-                ", appBundleId='" + appBundleId + '\'' +
-                '}';
-    }
+
 }

@@ -1,4 +1,4 @@
-package org.base.configuration;
+package org.base.anontations;
 
 import org.aeonbits.owner.Config;
 

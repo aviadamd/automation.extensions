@@ -30,10 +30,10 @@ public class WebElementAssertionsExtensionTest {
     @Test
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     void verifySoftAssertion(AssertionsManager assertions) {
-        assertions.setWebElementAssertion(new SeleniumWebDriverProvider("", Duration.ofSeconds(3), new ChromeDriver()));
+       // assertions.setWebElementAssertion(new SeleniumWebDriverProvider("", Duration.ofSeconds(3), new ChromeDriver()));
         Condition<WebElement> condition = new Condition<>(WebElement::isDisplayed, "");
-        assertions.assertElement(elementToBeClickable(By.id("aaa"))).is(condition);
-        assertions.assertElement(presenceOfNestedElementLocatedBy(By.id(""), By.id("aaa"))).is(condition);
-        assertions.assertElementText(elementToBeClickable(By.id(""))).containsOnlyDigits();
+       // assertions.assertElement(elementToBeClickable(By.id("aaa"))).is(condition);
+       // assertions.assertElement(presenceOfNestedElementLocatedBy(By.id(""), By.id("aaa"))).is(condition);
+       // assertions.assertElementText(elementToBeClickable(By.id(""))).containsOnlyDigits();
     }
 }

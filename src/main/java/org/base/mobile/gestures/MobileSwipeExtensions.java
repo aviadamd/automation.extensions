@@ -100,7 +100,7 @@ public class MobileSwipeExtensions {
                 WebElement element = this.mobileDriverProvider
                         .getWebDriverWait()
                         .getWebDriverWait()
-                        .ignoreAll(this.mobileDriverProvider.sessionExceptions())
+                        .ignoreAll(this.mobileDriverProvider.getWebDriverWait().sessionExceptions())
                         .until(expectedCondition);
 
                 if (element != null) {
@@ -129,7 +129,7 @@ public class MobileSwipeExtensions {
                 By by = this.mobileDriverProvider
                         .getWebDriverWait()
                         .getWebDriverWait()
-                        .ignoreAll(this.mobileDriverProvider.sessionExceptions())
+                        .ignoreAll(this.mobileDriverProvider.getWebDriverWait().sessionExceptions())
                         .until(expectedCondition);
 
                 if (by != null) {

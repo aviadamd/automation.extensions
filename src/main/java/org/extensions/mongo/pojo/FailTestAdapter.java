@@ -6,7 +6,7 @@ import org.bson.Document;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FailTestAdapter {
+public final class FailTestAdapter {
 
     public static Document toDocument(final FailTestInfoMongo failTest) {
         BasicDBObject append = failTest

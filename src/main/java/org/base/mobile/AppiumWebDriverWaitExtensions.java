@@ -9,10 +9,18 @@ import java.util.Collection;
 
 public class AppiumWebDriverWaitExtensions {
     private final ThreadLocal<AppiumFluentWait<WebDriver>> webDriverWait = new ThreadLocal<>();
-    public AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
+    public final AppiumFluentWait<WebDriver> getWebDriverWait() { return this.webDriverWait.get(); }
 
-    public AppiumWebDriverWaitExtensions(MobileDriverProvider mobileDriverProvider) {
-        this.webDriverWait.set(new AppiumFluentWait<>(mobileDriverProvider.getMobileDriver()));
+    public AppiumWebDriverWaitExtensions(WebDriver webDriver) {
+        this.webDriverWait.set(new AppiumFluentWait<>(webDriver));
     }
 
+    public Collection<Class<? extends Exception>> sessionExceptions() {
+        return Arrays.asList(
+                Exception.class,
+                WebDriverException.class,
+                NoSuchElementException.class,
+                StaleElementReferenceException.class
+        );
+    }
 }

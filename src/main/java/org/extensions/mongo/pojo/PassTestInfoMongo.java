@@ -16,12 +16,6 @@ public class PassTestInfoMongo extends BasicDBObject {
     private TestMetaData testInfo;
     public PassTestInfoMongo() {}
 
-    public PassTestInfoMongo(String className, TestMetaData testInfo) {
-        this.id = new ObjectId(new Date());
-        this.className = className;
-        this.testInfo = testInfo;
-    }
-
     public PassTestInfoMongo(ObjectId id, String className, TestMetaData testInfo) {
         this.id = id;
         this.className = className;

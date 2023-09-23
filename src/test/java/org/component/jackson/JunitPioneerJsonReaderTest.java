@@ -1,7 +1,7 @@
 package org.component.jackson;
 
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.automation.mobile.CapabilitiesObject;
+import org.extensions.automation.mobile.MobileCapabilitiesObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junitpioneer.jupiter.RetryingTest;
 import org.junitpioneer.jupiter.json.JsonClasspathSource;
@@ -11,9 +11,9 @@ public class JunitPioneerJsonReaderTest {
 
     @ParameterizedTest
     @RetryingTest()
-    @JsonClasspathSource(value = "androidCapabilities.json")
-    void simpleReader(CapabilitiesObject capabilitiesObject) {
-        log.info(capabilitiesObject.getAvd());
-        log.info(capabilitiesObject.getClient());
+    @JsonClasspathSource(value = "devicesCapabilities1.json")
+    void simpleReader(MobileCapabilitiesObject mobileCapabilitiesObject) {
+        log.info(mobileCapabilitiesObject.getAvd());
+        log.info(mobileCapabilitiesObject.getClient());
     }
 }

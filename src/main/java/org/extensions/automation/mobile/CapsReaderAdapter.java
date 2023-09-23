@@ -4,31 +4,47 @@ import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOpti
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.data.files.jsonReader.JacksonObjectAdapter;
-import org.extensions.anontations.mobile.DriverProvider;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
 import java.io.File;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 public class CapsReaderAdapter {
-    private CapabilitiesObject jsonObject;
-    private void setJsonObject(CapabilitiesObject jsonObject) { this.jsonObject = jsonObject; }
+    private MobileCapabilitiesObject jsonObject;
+    private void setJsonObject(MobileCapabilitiesObject jsonObject) { this.jsonObject = jsonObject; }
     private final DesiredCapabilities capabilities = new DesiredCapabilities();
-    public synchronized CapabilitiesObject getJsonObject() { return this.jsonObject; }
+    public synchronized MobileCapabilitiesObject getJsonObject() { return this.jsonObject; }
     public synchronized DesiredCapabilities getCapabilities() { return this.capabilities; }
 
-    public CapsReaderAdapter(CapabilitiesObject capabilitiesObject) {
-        this.setJsonObject(capabilitiesObject);
+    public CapsReaderAdapter(MobileCapabilitiesObject mobileCapabilitiesObject, UiAutomator2Options uiAutomator2Options, XCUITestOptions xcuiTestOptions) {
+        Assertions.assertNotNull(mobileCapabilitiesObject);
+
+        switch (mobileCapabilitiesObject.getClient()) {
+            case "ANDROID" -> {
+                if (uiAutomator2Options != null) {
+                    this.capabilities.merge(uiAutomator2Options);
+                }
+            }
+            case "IOS" -> {
+                if (xcuiTestOptions != null) {
+                    this.capabilities.merge(xcuiTestOptions);
+                }
+            }
+            default -> throw new RuntimeException("no android or ios driver name was provided");
+        }
+
+        this.setJsonObject(mobileCapabilitiesObject);
     }
 
     public CapsReaderAdapter(String jsonPath) {
         try {
 
-            String path = System.getProperty("user.dir") + "/" + jsonPath;
-            JacksonObjectAdapter<CapabilitiesObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path), CapabilitiesObject.class);
-            CapabilitiesObject capsObject = jacksonHelper.readJson();
+            Assertions.assertTrue(jsonPath != null && !jsonPath.isEmpty());
+
+            String path = ClassLoader.getSystemResource(jsonPath).getPath();
+            JacksonObjectAdapter<MobileCapabilitiesObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path), MobileCapabilitiesObject.class);
+            MobileCapabilitiesObject capsObject = jacksonHelper.readJson();
 
             switch (capsObject.getClient()) {
                 case "ANDROID" -> {
@@ -48,7 +64,7 @@ public class CapsReaderAdapter {
         }
     }
 
-    private synchronized UiAutomator2Options androidCapabilities(CapabilitiesObject jsonObject) {
+    private synchronized UiAutomator2Options androidCapabilities(MobileCapabilitiesObject jsonObject) {
         AndroidInstallApplicationOptions androidInstallApplicationOptions = new AndroidInstallApplicationOptions()
                 .withUseSdcardEnabled()
                 .withAllowTestPackagesEnabled()
@@ -78,7 +94,7 @@ public class CapsReaderAdapter {
                 .setNewCommandTimeout(Duration.ofMinutes(1));
     }
 
-    private synchronized XCUITestOptions iosCapabilities(CapabilitiesObject jsonObject) {
+    private synchronized XCUITestOptions iosCapabilities(MobileCapabilitiesObject jsonObject) {
         return new XCUITestOptions()
                 .setNoReset(true)
                 .setApp(jsonObject.getAppPath())

@@ -16,4 +16,5 @@ public @interface ReportConfiguration {
     Status [] repeatOnStatus()  default { Status.FAIL, Status.SKIP };
     AnalysisStrategy analysisStrategy() default AnalysisStrategy.TEST;
     String mongoConnection() default "project.mongo.connection";
+    String mongoDbName() default "automationTests";
 }

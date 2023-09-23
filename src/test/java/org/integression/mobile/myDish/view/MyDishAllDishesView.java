@@ -6,8 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 public class MyDishAllDishesView extends InitElementsBasePage {
-
-    private final String APP_PACKAGE_ID = "com.example.mydish:id/";
+    public static final String APP_PACKAGE_ID = "com.example.mydish:id/";
     @AndroidFindBy(id = APP_PACKAGE_ID + "navigation_favorite_dishes")
     public WebElement navigation_favorite_dishes;
     @AndroidFindBy(id = APP_PACKAGE_ID + "navigation_random_dish")

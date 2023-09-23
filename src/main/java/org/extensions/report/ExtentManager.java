@@ -13,18 +13,19 @@ public class ExtentManager {
     protected synchronized static ExtentReports getReportsInstance() { return extentInstance; }
 
     /**
-     * createInstance
+     * setExtentManager
      * @param file
      * @param jsonSettingsPath
      * @param reportName
      */
-    protected static synchronized void createInstance(String file, String jsonSettingsPath, String reportName) {
+    protected static synchronized void setExtentManager(String file, String jsonSettingsPath, String reportName) {
         try {
             extentInstance = new ExtentReports();
             ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(file);
+            ViewName[] viewNames = { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG };
             extentSparkReporter.viewConfigurer()
                     .viewOrder()
-                    .as(new ViewName[] { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG})
+                    .as(viewNames)
                     .apply();
             extentInstance.attachReporter(extentSparkReporter);
             extentSparkReporter.loadJSONConfig(new File(jsonSettingsPath));
@@ -36,9 +37,9 @@ public class ExtentManager {
 
     protected static synchronized void flush() {
         try {
-            getReportsInstance().flush();
+            extentInstance.flush();
         } catch (Exception exception) {
-            Assertions.fail("fail to flush report", exception);
+            Assertions.fail("fail to flush report " + exception.getMessage(), exception);
         }
     }
 }

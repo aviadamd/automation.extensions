@@ -19,33 +19,9 @@ public class TestMetaData {
 
     public TestMetaData() {}
 
-    public TestMetaData(String assignCategory, String assignAuthor) {
-        this.assignCategory = assignCategory;
-        this.assignAuthor = assignAuthor;
-    }
-
-    public TestMetaData(String assignCategory, String assignAuthor, List<Log> testLogs) {
-        this.assignCategory = assignCategory;
-        this.assignAuthor = assignAuthor;
-        this.testLogs = testLogs;
-    }
-
-    public TestMetaData(TestReportInfo testInfo, List<Log> testLogs) {
-        this.assignCategory = testInfo.assignCategory();
-        this.assignAuthor = testInfo.assignAuthor();
-        this.testLogs = testLogs;
-    }
-
     public TestMetaData(TestReportInfo testInfo, List<Log> testLogs, String error) {
         this.assignCategory = testInfo.assignCategory();
         this.assignAuthor = testInfo.assignAuthor();
-        this.testLogs = testLogs;
-        this.error = error;
-    }
-
-    public TestMetaData(String assignCategory, String assignAuthor, List<Log> testLogs, String error) {
-        this.assignCategory = assignCategory;
-        this.assignAuthor = assignAuthor;
         this.testLogs = testLogs;
         this.error = error;
     }

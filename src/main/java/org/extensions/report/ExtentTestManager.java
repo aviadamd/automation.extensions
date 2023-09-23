@@ -9,13 +9,16 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
-import java.util.List;
-
 @Slf4j
 public class ExtentTestManager {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
-    protected static ExtentReports getReportsInstance = ExtentManager.getReportsInstance();
+    protected static ExtentReports reportsInstance = ExtentManager.getReportsInstance();
     protected synchronized static ExtentTest getExtentTest() { return extentTest.get(); }
+
+
+    protected static void remove() {
+        extentTest.remove();
+    }
 
     /**
      * createTest
@@ -24,12 +27,12 @@ public class ExtentTestManager {
      * @param author
      */
     protected synchronized static void createTest(String testMethod, String category, String author) {
-        extentTest.set(getReportsInstance.createTest(testMethod)
+        extentTest.set(reportsInstance.createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
-                .assignAuthor(author)
-        );
+                .assignAuthor(author));
     }
+
 
     /**
      * attachExtraReports
@@ -40,7 +43,7 @@ public class ExtentTestManager {
         for (Status status : extraReportsBy) {
             String reportPath = path + "/" + status.toString() + ".html";
             ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath);
-            getReportsInstance.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
+            reportsInstance.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
         }
     }
 
@@ -168,6 +171,8 @@ public class ExtentTestManager {
                         .createNode("click for more details... ")
                         .log(status, message, media);
                 else extentTest.get().log(status, message, media);
+            } else {
+                extentTest.get().log(status, message);
             }
         }
     }
@@ -185,23 +190,6 @@ public class ExtentTestManager {
                         .createNode("test error, click for more details... ")
                         .log(status.getStatus(), expendMessage)
                         .log(status.getStatus(), bodyDesc);
-            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
-        } catch (Exception ignore) {}
-    }
-
-    /**
-     * @param status
-     * @param expendMessage
-     * @param bodyDesc
-     * @return
-     */
-    public synchronized static void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<AssertionError> bodyDesc) {
-        try {
-            if (asNewNode) {
-                extentTest.get()
-                        .createNode("test error, click for more details... ")
-                        .log(status.getStatus(), expendMessage);
-                bodyDesc.forEach(text -> extentTest.get().log(status.getStatus(), text.getMessage()));
             } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
         } catch (Exception ignore) {}
     }
