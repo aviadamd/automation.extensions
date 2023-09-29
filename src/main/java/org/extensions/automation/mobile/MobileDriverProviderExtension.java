@@ -1,40 +1,34 @@
 package org.extensions.automation.mobile;
 
-import lombok.extern.slf4j.Slf4j;
 import org.base.configuration.PropertiesManager;
 import org.base.mobile.*;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.factory.JunitReflectionAnnotationHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.utils.assertions.AssertJHandler;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
-@Slf4j
-public class MobileDriverProviderExtension implements
-        ParameterResolver, BeforeEachCallback,
-        AfterEachCallback, AfterAllCallback,
-        JunitReflectionAnnotationHandler.ExtensionContextHandler {
+public class MobileDriverProviderExtension implements ParameterResolver, BeforeEachCallback, AfterAllCallback {
 
-    private final ThreadLocal<MobileDriverProvider> driverManager = new ThreadLocal<>();
-    private final AtomicReference<AppiumServiceManager> appiumServiceManager = new AtomicReference<>();
-    private final ThreadLocal<MobileConfiguration> mobileProperties = new ThreadLocal<>();
+    private final ThreadLocal<MobileProvider> mobileProvider = new ThreadLocal<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
-        return parameterContext.getParameter().getType() == MobileDriverProvider.class;
+        boolean isSupportsParameter = parameterContext.getParameter().getType() == MobileProvider.class;
+        if (isSupportsParameter) {
+            return true;
+        } else throw new RuntimeException("MobileDriverProviderExtension error MobileProvider is not visible in test parameter");
     }
 
     @Override
     public synchronized Object resolveParameter(ParameterContext parameterContext, ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
-            if (provider.isPresent()) return this.driverManager.get();
-            throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
-        }
-        throw new RuntimeException("MobileDriverProviderExtension error DriverJsonProvider");
+            if (provider.isPresent()) return this.mobileProvider.get();
+            else throw new RuntimeException("MobileDriverProviderExtension error MobileProvider is not visible");
+        } else throw new RuntimeException("MobileProvider error");
     }
 
     @Override
@@ -44,27 +38,15 @@ public class MobileDriverProviderExtension implements
 
                 Optional<DriverProvider> provider = this.readAnnotation(context, DriverProvider.class);
                 if (provider.isPresent()) {
-
-                    this.mobileProperties.set(new PropertiesManager().getOrCreate(MobileConfiguration.class));
-                    CapsReaderAdapter capsReader = new CapsReaderAdapter(provider.get().jsonCapabilitiesFile());
-                    String client = capsReader.getJsonObject().getClient();
-                    DesiredCapabilities extra = this.setCapabilitiesExtra(client, provider.get());
-                    capsReader.getCapabilities().merge(extra);
-
-                    this.appiumServiceManager.set(new AppiumServiceManager(
-                            capsReader.getJsonObject().getNodeJs(),
-                            capsReader.getJsonObject().getAppiumExe(),
-                            capsReader.getJsonObject().getAppiumIp(),
-                            Integer.parseInt(capsReader.getJsonObject().getAppiumPort()),
-                            capsReader.getJsonObject().getAndroidHome()
-                    ));
-                    
-                    DriverType driverType = this.getDriverType(client);
-                    this.driverManager.set(new MobileDriverProvider(driverType, capsReader.getCapabilities(), capsReader.getJsonObject().getDriverUrl(), provider.get().implicitlyWait()));
-
+                    this.mobileProvider.set(new MobileProvider());
+                    this.mobileProvider.get().setMobileConfiguration(new PropertiesManager().getOrCreate(MobileConfiguration.class));
+                    this.mobileProvider.get().setAssertionsExtension(new AssertJHandler());
+                    CapsReaderAdapter capsReader = this.capsReaderAdapter(provider.get());
+                    this.mobileProvider.get().setAppiumServiceManager(new AppiumServiceManager(capsReader.getJsonObject().getNodeJs(), capsReader.getJsonObject().getAppiumExe(), capsReader.getJsonObject().getAppiumIp(), Integer.parseInt(capsReader.getJsonObject().getAppiumPort()), capsReader.getJsonObject().getAndroidHome()));
+                    DriverType driverType = this.getDriverType(capsReader.getJsonObject().getClient());
+                    this.mobileProvider.get().setDriverManager(new MobileDriverProvider(driverType, capsReader.getCapabilities(), capsReader.getJsonObject().getDriverUrl(), provider.get().implicitlyWait()));
                     ApplicationLaunchOption applicationLaunchOption = provider.get().appLaunchOption();
-                    this.driverManager.get().getAppLauncherExtensions().applicationLaunchOptions(applicationLaunchOption, capsReader.getJsonObject().getAppBundleId());
-
+                    this.mobileProvider.get().getDriverManager().getAppLauncherExtensions().applicationLaunchOptions(applicationLaunchOption, capsReader.getJsonObject().getAppBundleId());
                 } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
 
             } else throw new RuntimeException("MobileDriverProviderExtension error DriverProvider is not visible");
@@ -74,27 +56,22 @@ public class MobileDriverProviderExtension implements
     }
 
     @Override
-    public synchronized void afterEach(ExtensionContext context) {
-        if (context.getElement().isPresent()) {
-            try {
-
-            } catch (Exception exception) {
-                Assertions.fail("generate har file error ", exception);
-            }
-        }
-    }
-
-    @Override
     public synchronized void afterAll(ExtensionContext extensionContext)  {
         if (extensionContext.getElement().isPresent()) {
             try {
-                if (this.appiumServiceManager.get() != null) {
-                    this.appiumServiceManager.get().close();
+                if (this.mobileProvider.get().getAppiumServiceManager() != null) {
+                    this.mobileProvider.get().getAppiumServiceManager().close();
                 }
             } catch (Exception ignore) {}
         }
     }
 
+    private synchronized CapsReaderAdapter capsReaderAdapter(DriverProvider driverProvider) {
+        CapsReaderAdapter capsReader = new CapsReaderAdapter(driverProvider.jsonCapabilitiesFile());
+        DesiredCapabilities extra = this.setCapabilitiesExtra(capsReader.getJsonObject().getClient(), driverProvider);
+        capsReader.getCapabilities().merge(extra);
+        return capsReader;
+    }
 
     private synchronized DesiredCapabilities setCapabilitiesExtra(String clientType, DriverProvider jsonProvider) {
         DesiredCapabilities desiredCapabilities = new DesiredCapabilities();
@@ -140,43 +117,15 @@ public class MobileDriverProviderExtension implements
         };
     }
 
-    @Override
-    public synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
+    private synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
         if (context.getElement().isPresent()) {
             try {
                 return Optional.ofNullable(context.getElement().get().getAnnotation(annotation));
             } catch (Exception exception) {
-                Assertions.fail("Fail read annotation from ExtentReportExtension", exception);
                 return Optional.empty();
             }
         }
         return Optional.empty();
     }
-
-    // private final ThreadLocal<MobProxyExtension> mobProxyExtension = new ThreadLocal<>();
-
-    //private final ThreadLocal<List<LogEntry>> logEntries = new ThreadLocal<>();
-    // this.mobProxyExtension.set(new MobProxyExtension(ProxyType.MOBILE, Inet4Address.getLocalHost()));
-
-    //this.logEntries.set(this.driverManager.get().getMobileDriver().manage().logs().get("logcat").getAll());
-//                if (this.mobProxyExtension.get().getServer() != null && this.mobProxyExtension.get().getServer().getHar() != null) {
-//                    String testName = context.getRequiredTestMethod().getName();
-//                    String dir = System.getProperty("user.dir") + "/" + "target/harFiles";
-//                    String testPath = dir + "/" + testName + ".json";
-//                    FilesHelper filesHelper = new FilesHelper();
-//                    filesHelper.createDirectory(dir);
-//                    this.mobProxyExtension.get().writeHarFile(new File(testPath), this.mobProxyExtension.get().getServer().getHar().getLog());
-//                    List<LogEntryObject> logEntryObjects = new ArrayList<>();
-//                    logEntryObjects.add(new LogEntryObject(this.logEntries.get()));
-//                    String path = System.getProperty("user.dir") + "/" + this.mobileProperties.get().entryFileLocation();
-//                    JacksonObjectAdapter<LogEntryObject> jacksonHelper = new JacksonObjectAdapter<>(path, new File(path + "/" + this.mobileProperties.get().entryFileLocation() + "/" + testName + ".json"), LogEntryObject.class);
-//                    jacksonHelper.writeToJson(true, logEntryObjects);
-//                }
-
-    //        if (this.mobProxyExtension.get() != null
-//                && this.mobProxyExtension.get().getProxy() != null
-//                && this.mobProxyExtension.get().getServer().isStarted()) {
-//            this.mobProxyExtension.get().getServer().stop();
-//        }
 
 }

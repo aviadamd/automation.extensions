@@ -22,7 +22,6 @@ public @interface RestStep {
     String[] headersValues() default "";
     String[] bodyKeys() default "";
     String[] bodyValues() default "";
-
     String[] receiveHeadersKeys() default "";
 
 }

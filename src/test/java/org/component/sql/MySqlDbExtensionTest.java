@@ -25,9 +25,10 @@ public class MySqlDbExtensionTest {
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
     public void a_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
-        List<Country> countriesList = mySqlSharedConnector
-                .setQuery(new SQL() {{ SELECT("*").FROM("world.city");}})
-                .findsBy(Country.class);
+        List<Country> countriesList = mySqlSharedConnector.findsBy(
+                new SQL() {{ SELECT("*").FROM("world.city");}},
+                Country.class
+        );
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());
@@ -43,9 +44,10 @@ public class MySqlDbExtensionTest {
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
     public void b_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
-        List<Country> countriesList = mySqlSharedConnector
-                .setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }})
-                .findsBy(Country.class);
+        List<Country> countriesList = mySqlSharedConnector.findsBy(
+                new SQL() {{ SELECT("*").FROM("world.city");}},
+                Country.class
+        );
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());
@@ -61,9 +63,10 @@ public class MySqlDbExtensionTest {
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     @MySqlConnector(connection = "jdbc:mysql://127.0.0.1:3306", userName = "root", userPassword = "5311072BsAviad")
     public void c_mySqlConnectionTest(MySqlSharedConnector mySqlSharedConnector) {
-        List<Country> countriesList = mySqlSharedConnector
-                .setQuery(new SQL() {{ SELECT("*").FROM("world.city"); }})
-                .findsBy(Country.class);
+        List<Country> countriesList = mySqlSharedConnector.findsBy(
+                new SQL() {{ SELECT("*").FROM("world.city");}},
+                Country.class
+        );
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());

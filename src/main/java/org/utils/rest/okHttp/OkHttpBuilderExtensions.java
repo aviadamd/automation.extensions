@@ -2,9 +2,6 @@ package org.utils.rest.okHttp;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.junit.jupiter.api.Assertions;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -38,9 +35,6 @@ public class OkHttpBuilderExtensions {
         try {
             responseCollector.setResponseData(this.okHttpClient(isWithInterceptor).newCall(this.requestBuilder.build()).execute());
             responseCollector.setPassRequest(true);
-        } catch (HttpClientErrorException | HttpServerErrorException httpStatusCodeException) {
-            responseCollector.setPassRequest(false);
-            responseCollector.setException(httpStatusCodeException.getResponseBodyAsString());
         } catch (Exception exception) {
             responseCollector.setPassRequest(false);
             responseCollector.setException(exception.getMessage());

@@ -1,14 +1,12 @@
 package org.extensions.automation.mobile;
 
-import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.data.files.jsonReader.JacksonObjectAdapter;
+import org.extensions.automation.UiAutomator2OptionsHandler;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 
 public class CapsReaderAdapter {
     private MobileCapabilitiesObject jsonObject;
@@ -17,18 +15,25 @@ public class CapsReaderAdapter {
     public synchronized MobileCapabilitiesObject getJsonObject() { return this.jsonObject; }
     public synchronized DesiredCapabilities getCapabilities() { return this.capabilities; }
 
-    public CapsReaderAdapter(MobileCapabilitiesObject mobileCapabilitiesObject, UiAutomator2Options uiAutomator2Options, XCUITestOptions xcuiTestOptions) {
+    public CapsReaderAdapter(MobileCapabilitiesObject mobileCapabilitiesObject,
+                             UiAutomator2Options uiAutomator2OptionsExtra,
+                             XCUITestOptions xcuiTestOptionsExtra) {
+
         Assertions.assertNotNull(mobileCapabilitiesObject);
 
         switch (mobileCapabilitiesObject.getClient()) {
             case "ANDROID" -> {
-                if (uiAutomator2Options != null) {
-                    this.capabilities.merge(uiAutomator2Options);
+                UiAutomator2OptionsHandler uiAutomator2OptionsHandler = new UiAutomator2OptionsHandler();
+                this.capabilities.merge(uiAutomator2OptionsHandler.uiAutomator2Options(mobileCapabilitiesObject));
+                if (uiAutomator2OptionsExtra != null) {
+                    this.capabilities.merge(uiAutomator2OptionsExtra);
                 }
             }
             case "IOS" -> {
-                if (xcuiTestOptions != null) {
-                    this.capabilities.merge(xcuiTestOptions);
+                XCUITestOptionsHandler xcuiTestOptionsHandler = new XCUITestOptionsHandler();
+                this.capabilities.merge(xcuiTestOptionsHandler.xcuiTestOptions(mobileCapabilitiesObject));
+                if (xcuiTestOptionsExtra != null) {
+                    this.capabilities.merge(xcuiTestOptionsExtra);
                 }
             }
             default -> throw new RuntimeException("no android or ios driver name was provided");
@@ -48,11 +53,13 @@ public class CapsReaderAdapter {
 
             switch (capsObject.getClient()) {
                 case "ANDROID" -> {
-                    UiAutomator2Options uiAutomator2Options = this.androidCapabilities(capsObject);
+                    UiAutomator2OptionsHandler uiAutomator2OptionsHandler = new UiAutomator2OptionsHandler();
+                    UiAutomator2Options uiAutomator2Options = uiAutomator2OptionsHandler.uiAutomator2Options(capsObject);
                     this.capabilities.merge(uiAutomator2Options);
                 }
                 case "IOS" -> {
-                    XCUITestOptions xcuiTestOptions = this.iosCapabilities(capsObject);
+                    XCUITestOptionsHandler xcuiTestOptionsHandler = new XCUITestOptionsHandler();
+                    XCUITestOptions xcuiTestOptions = xcuiTestOptionsHandler.xcuiTestOptions(capsObject);
                     this.capabilities.merge(xcuiTestOptions);
                 }
                 default -> throw new RuntimeException("no android or ios driver name was provided");
@@ -64,50 +71,11 @@ public class CapsReaderAdapter {
         }
     }
 
-    private synchronized UiAutomator2Options androidCapabilities(MobileCapabilitiesObject jsonObject) {
-        AndroidInstallApplicationOptions androidInstallApplicationOptions = new AndroidInstallApplicationOptions()
-                .withUseSdcardEnabled()
-                .withAllowTestPackagesEnabled()
-                .withTimeout(Duration.of(100, ChronoUnit.SECONDS));
-        DesiredCapabilities androidCaps = new DesiredCapabilities();
-        androidInstallApplicationOptions.build().forEach(androidCaps::setCapability);
-
-        return new UiAutomator2Options()
-                .setNoReset(true)
-                .merge(androidCaps)
-                .setIgnoreHiddenApiPolicyError(true)
-                .setAvdLaunchTimeout(Duration.ofMinutes(1))
-                .setAutoGrantPermissions(true)
-                .setClearSystemFiles(true)
-                .setAppWaitForLaunch(true)
-                .setUdid(jsonObject.getUdid())
-                .setAppPackage(jsonObject.getAppBundleId())
-                .setApp(jsonObject.getAppPath())
-                .setDeviceName(jsonObject.getAvd())
-                .setPlatformVersion(jsonObject.getPlatformVersion())
-                .setAppWaitDuration(Duration.ofMinutes(1))
-                .setAndroidInstallTimeout(Duration.ofSeconds(30))
-                .setAdbExecTimeout(Duration.ofSeconds(100))
-                .setUiautomator2ServerInstallTimeout(Duration.ofMinutes(1))
-                .setUiautomator2ServerLaunchTimeout(Duration.ofMinutes(1))
-                .setUiautomator2ServerReadTimeout(Duration.ofMinutes(1))
-                .setNewCommandTimeout(Duration.ofMinutes(1));
-    }
-
-    private synchronized XCUITestOptions iosCapabilities(MobileCapabilitiesObject jsonObject) {
-        return new XCUITestOptions()
-                .setNoReset(true)
-                .setApp(jsonObject.getAppPath())
-                .setBundleId(jsonObject.getAppBundleId())
-                .setCommandTimeouts(Duration.ofMinutes(1))
-                .setPlatformVersion(jsonObject.getPlatformVersion());
-    }
-
     @Override
     public String toString() {
-        return "CapsReader{" +
-                "capabilities=" + capabilities +
-                ", capabilitiesObject=" + jsonObject +
+        return "CapsReaderAdapter{" +
+                "jsonObject=" + jsonObject +
+                ", capabilities=" + capabilities +
                 '}';
     }
 }

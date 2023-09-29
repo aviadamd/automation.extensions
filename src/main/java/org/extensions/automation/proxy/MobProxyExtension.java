@@ -15,7 +15,6 @@ import net.lightbody.bmp.mitm.util.TrustUtil;
 import net.lightbody.bmp.proxy.CaptureType;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.Proxy;
-import org.springframework.util.SocketUtils;
 import java.io.File;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -53,8 +52,7 @@ public class MobProxyExtension {
             trustSource.add(TrustUtil.getDefaultJavaTrustManager().getAcceptedIssuers());
             mobProxyServer.setTrustSource(trustSource);
 
-            int port = SocketUtils.findAvailableTcpPort(SocketUtils.PORT_RANGE_MIN, SocketUtils.PORT_RANGE_MAX);
-            mobProxyServer.start(port, inetAddress);
+            mobProxyServer.start(1000, inetAddress);
 
             if (proxyType == ProxyType.WEB) this.proxy = this.setSeleniumProxy(mobProxyServer);
             return mobProxyServer;

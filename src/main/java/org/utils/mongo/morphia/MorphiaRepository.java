@@ -1,9 +1,8 @@
 package org.utils.mongo.morphia;
 
 import dev.morphia.DeleteOptions;
-import dev.morphia.mapping.Mapper;
 import dev.morphia.query.FindOptions;
-import dev.morphia.query.experimental.filters.Filter;
+import dev.morphia.query.filters.Filter;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import java.util.List;
@@ -14,8 +13,6 @@ import java.util.stream.Collectors;
 public class MorphiaRepository {
     private final MorphiaMongoConnection repository;
     public synchronized MorphiaMongoConnection getRepository() { return this.repository; }
-    public synchronized Mapper getMapper() { return this.repository.getMapper(); }
-
     public MorphiaRepository(String uri, String dbName) {
         this.repository = new MorphiaMongoConnection(uri, dbName);
     }

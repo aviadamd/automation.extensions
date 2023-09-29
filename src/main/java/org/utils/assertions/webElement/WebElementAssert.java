@@ -1,4 +1,4 @@
-package org.utils.assertions;
+package org.utils.assertions.webElement;
 
 import org.assertj.core.api.AbstractAssert;
 import org.openqa.selenium.WebElement;

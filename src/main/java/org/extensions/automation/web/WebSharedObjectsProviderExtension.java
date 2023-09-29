@@ -8,7 +8,6 @@ import org.base.web.WebConfiguration;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.extensions.anontations.web.WebDriverType;
-import org.extensions.assertions.AssertionsExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.WebDriver;
 import org.utils.assertions.AssertionsLevel;
-import org.utils.assertions.AssertionsManager;
+import org.utils.assertions.AssertJHandler;
 import org.utils.mongo.morphia.MorphiaRepository;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.io.File;
@@ -109,8 +108,7 @@ public class WebSharedObjectsProviderExtension implements
             try {
 
                 if (this.webSharedObjects.get().getAssertionsManager().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
-                    List<AssertionError> assertionErrors = this.webSharedObjects.get().getAssertionsManager().getAssertionErrors();
-                    this.webSharedObjects.get().getAssertionsManager().failAll(assertionErrors);
+                    this.webSharedObjects.get().getAssertionsManager().failAll();
                 } else this.webSharedObjects.get().getAssertionsManager().setAssertionErrors(new ArrayList<>());
 
                 if (this.webSharedObjects.get().getMobProxyExtension() != null && this.webSharedObjects.get().getMobProxyExtension().getServer().getHar() != null) {
@@ -152,7 +150,7 @@ public class WebSharedObjectsProviderExtension implements
 
     private synchronized void initAssertionManager() {
         try {
-            this.webSharedObjects.get().setAssertionsManager(new AssertionsManager());
+            this.webSharedObjects.get().setAssertionsManager(new AssertJHandler());
             this.webSharedObjects.get().getAssertionsManager().setAssertionErrors(new ArrayList<>());
             this.webSharedObjects.get().getAssertionsManager().setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
         } catch (Exception exception) {

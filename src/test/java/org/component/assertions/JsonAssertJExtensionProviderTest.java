@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.entry;
 
 @Slf4j
 @ExtendWith(value = { ExtentReportExtension.class })
-public class JsonAssertionsExtensionTest {
+public class JsonAssertJExtensionProviderTest {
 
     @Test
     void objectDoesContainComplexValueError() {

@@ -14,13 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.assertions.AssertionsLevel;
-import org.utils.assertions.AssertionsManager;
+import org.utils.assertions.AssertJHandler;
 import java.util.ArrayList;
 
 @Slf4j
-public class AssertionsExtension extends SoftAssertions implements AfterEachCallback, BeforeTestExecutionCallback, ParameterResolver {
+public class AssertJExtensionProvider extends SoftAssertions implements AfterEachCallback, BeforeTestExecutionCallback, ParameterResolver {
 
-    private final ThreadLocal<AssertionsManager> assertionsManager = new ThreadLocal<>();
+    private final ThreadLocal<AssertJHandler> assertionsManager = new ThreadLocal<>();
 
     /**
      * beforeTestExecution
@@ -32,7 +32,7 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     @Override
     public synchronized void beforeTestExecution(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            this.assertionsManager.set(new AssertionsManager());
+            this.assertionsManager.set(new AssertJHandler());
             this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
             this.assertionsManager.get().setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
         }
@@ -54,7 +54,7 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
                 if (this.assertionsManager.get() != null) {
                     if (this.assertionsManager.get().getAssertionsLevel() != null &&
                             this.assertionsManager.get().getAssertionsLevel().equals(AssertionsLevel.HARD_AFTER_TEST)) {
-                        this.assertionsManager.get().failAll(assertionsManager.get().getAssertionErrors());
+                        this.assertionsManager.get().failAll();
                     } else this.assertionsManager.get().setAssertionErrors(new ArrayList<>());
                 }
             } catch (Exception ignore) {}
@@ -64,7 +64,7 @@ public class AssertionsExtension extends SoftAssertions implements AfterEachCall
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext context) {
         Class<?> getType = parameterContext.getParameter().getType();
-        return getType == AssertionsManager.class;
+        return getType == AssertJHandler.class;
     }
 
     @Override

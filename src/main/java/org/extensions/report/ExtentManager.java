@@ -10,7 +10,7 @@ import static com.aventstack.extentreports.reporter.configuration.ViewName.LOG;
 
 public class ExtentManager {
     private static ExtentReports extentInstance;
-    protected synchronized static ExtentReports getReportsInstance() { return extentInstance; }
+    protected synchronized static ExtentReports extentReportInstance() { return extentInstance; }
 
     /**
      * setExtentManager

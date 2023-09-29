@@ -2,20 +2,21 @@ package org.extensions.report;
 
 import com.aventstack.extentreports.*;
 import com.aventstack.extentreports.markuputils.Markup;
+import com.aventstack.extentreports.model.Log;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
-import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Slf4j
 public class ExtentTestManager {
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
-    protected static ExtentReports reportsInstance = ExtentManager.getReportsInstance();
-    protected synchronized static ExtentTest getExtentTest() { return extentTest.get(); }
-
-
+    private static final Logger log = LoggerFactory.getLogger(ExtentTestManager.class);
     protected static void remove() {
         extentTest.remove();
     }
@@ -27,12 +28,29 @@ public class ExtentTestManager {
      * @param author
      */
     protected synchronized static void createTest(String testMethod, String category, String author) {
-        extentTest.set(reportsInstance.createTest(testMethod)
+        extentTest.set(ExtentManager.extentReportInstance()
+                .createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
                 .assignAuthor(author));
     }
 
+    /**
+     * setAnalysisStrategy
+     * @param analysisStrategy
+     */
+    protected synchronized static void setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
+        ExtentManager.extentReportInstance().setAnalysisStrategy(analysisStrategy);
+    }
+
+    /**
+     * setSystemInfo
+     * @param osName
+     * @param osArch
+     */
+    protected synchronized static void setSystemInfo(String osName, String osArch) {
+        ExtentManager.extentReportInstance().setSystemInfo(osName, osArch);
+    }
 
     /**
      * attachExtraReports
@@ -43,7 +61,25 @@ public class ExtentTestManager {
         for (Status status : extraReportsBy) {
             String reportPath = path + "/" + status.toString() + ".html";
             ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath);
-            reportsInstance.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
+            ExtentManager.extentReportInstance()
+                    .attachReporter(sparkReporter
+                            .filter()
+                            .statusFilter()
+                            .as(new Status[]{status})
+                            .apply());
+        }
+    }
+
+    public static synchronized List<Log> getExtentLogs() {
+        try {
+            return extentTest.get()
+                    .getModel()
+                    .getLogs()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+        } catch (Exception exception) {
+            return new ArrayList<>();
         }
     }
 
@@ -52,7 +88,7 @@ public class ExtentTestManager {
      * @param driver
      * @return
      */
-    private synchronized static String base64ScreenShot(WebDriver driver) {
+    public synchronized static String base64ScreenShot(WebDriver driver) {
         try {
             return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BASE64);
         } catch (Exception ignore) {
@@ -66,19 +102,12 @@ public class ExtentTestManager {
      * @param driver
      * @return
      */
-    private synchronized static byte[] byteScreenShot(WebDriver driver) {
+    public synchronized static byte[] byteScreenShot(WebDriver driver) {
         try {
             return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
         } catch (Exception ignore) {
             return null;
         }
-    }
-    /**
-     * assignCategory
-     * @param assignCategory
-     */
-    public synchronized static void assignCategory(String assignCategory) {
-        extentTest.get().assignCategory(assignCategory);
     }
 
     /**
@@ -190,6 +219,16 @@ public class ExtentTestManager {
                         .createNode("test error, click for more details... ")
                         .log(status.getStatus(), expendMessage)
                         .log(status.getStatus(), bodyDesc);
+            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
+        } catch (Exception ignore) {}
+    }
+
+    public synchronized static <T> void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<T> bodyDesc) {
+        try {
+            if (asNewNode) {
+                ExtentTest node = extentTest.get().createNode("test error, click for more details... ");
+                node.log(status.getStatus(), expendMessage);
+                bodyDesc.forEach(message -> node.log(status.getStatus(), message.toString()));
             } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
         } catch (Exception ignore) {}
     }

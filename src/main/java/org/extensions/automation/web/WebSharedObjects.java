@@ -4,10 +4,9 @@ import com.aventstack.extentreports.Status;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
 import org.data.StringsUtilities;
-import org.data.date.DateTimeUtilExtension;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.report.ExtentTestManager;
-import org.utils.assertions.AssertionsManager;
+import org.utils.assertions.AssertJHandler;
 import org.utils.mongo.morphia.MorphiaRepository;
 
 public class WebSharedObjects {
@@ -15,9 +14,9 @@ public class WebSharedObjects {
     private MorphiaRepository morphiaRepository;
     private WebConfiguration webConfiguration;
     private MobProxyExtension mobProxyExtension;
-    private AssertionsManager assertionsManager;
+    private AssertJHandler assertJHandler;
 
-    protected void setAssertionsManager(AssertionsManager assertionsManager) { this.assertionsManager = assertionsManager; }
+    protected void setAssertionsManager(AssertJHandler assertJHandler) { this.assertJHandler = assertJHandler; }
     protected void setDriverManager(SeleniumWebDriverProvider driverManager) { this.driverManager = driverManager; }
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
@@ -31,5 +30,5 @@ public class WebSharedObjects {
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
     public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }
     public StringsUtilities getStringsUtilities() { return new StringsUtilities(); }
-    public AssertionsManager getAssertionsManager() { return this.assertionsManager; }
+    public AssertJHandler getAssertionsManager() { return this.assertJHandler; }
 }

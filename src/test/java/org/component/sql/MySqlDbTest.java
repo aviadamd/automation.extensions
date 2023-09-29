@@ -22,9 +22,10 @@ public class MySqlDbTest {
         MySqlSharedConnector mySqlSharedConnector =
                 new MySqlSharedConnector("jdbc:mysql://127.0.0.1:3306","root","5311072BsAviad");
 
-        List<Country> countriesList = mySqlSharedConnector
-                .setQuery(new SQL() {{ SELECT("*").FROM("world.city");}})
-                .findsBy(Country.class);
+        List<Country> countriesList = mySqlSharedConnector.findsBy(
+                new SQL() {{ SELECT("*").FROM("world.city");}},
+                Country.class
+        );
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());
