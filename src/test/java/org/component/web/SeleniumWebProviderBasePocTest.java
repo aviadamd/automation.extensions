@@ -1,7 +1,7 @@
 package org.component.web;
 
 import com.aventstack.extentreports.AnalysisStrategy;
-import org.base.DurationOf;
+import org.base.web.DurationOf;
 import org.base.web.SeleniumWebDriverProvider;
 import org.extensions.anontations.report.ReportConfiguration;
 import org.extensions.anontations.report.TestReportInfo;

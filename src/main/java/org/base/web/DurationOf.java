@@ -1,4 +1,4 @@
-package org.base;
+package org.base.web;
 
 public enum DurationOf {
     MINUTES,

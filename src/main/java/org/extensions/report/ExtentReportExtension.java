@@ -3,8 +3,8 @@ package org.extensions.report;
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
+import io.reactivex.rxjava3.disposables.Disposable;
 import lombok.extern.slf4j.Slf4j;
-import org.base.ObserverErrorsManager;
 import org.base.RxJavaBus;
 import org.base.configuration.PropertiesManager;
 import org.base.anontations.ReportConfigurations;
@@ -126,12 +126,12 @@ public class ExtentReportExtension implements
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                RxJavaBus.subscribe(object ->
-                        ExtentTestManager
-                                .getInstance()
-                                .onFail(true, FailStatus.SKIP, testMethod + " error ", object.toString())
-                ).dispose();
-
+                Disposable subscribe = RxJavaBus.subscribe(object -> {
+                    ExtentTestManager
+                            .getInstance()
+                            .onFail(true, FailStatus.SKIP, testMethod + " error ", object.toString());
+                });
+                subscribe.dispose();
                 ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
 
                 List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
@@ -151,11 +151,12 @@ public class ExtentReportExtension implements
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                RxJavaBus.subscribe(object ->
-                        ExtentTestManager
-                                .getInstance()
-                                .onFail(true, FailStatus.FAIL, testMethod + " error ", object.toString())
-                ).dispose();
+                Disposable subscribe = RxJavaBus.subscribe(object -> {
+                    ExtentTestManager
+                            .getInstance()
+                            .onFail(true, FailStatus.FAIL, testMethod + " error ", object.toString());
+                });
+                subscribe.dispose();
 
                 ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
 

@@ -3,7 +3,6 @@ package org.base;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,9 +40,6 @@ public final class RxJavaBus {
      * @return Disposable
      */
     public static Disposable subscribe(@NonNull Consumer<? super Object> action) {
-        return behaviorSubject
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .subscribe(action);
+        return behaviorSubject.subscribe(action);
     }
 }

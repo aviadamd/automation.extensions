@@ -246,20 +246,19 @@ public class ExtentTestManager {
     public synchronized void onFail(boolean asNewNode, FailStatus status, String expendMessage, String bodyDesc) {
         try {
             if (asNewNode) {
-                ExtentTest node = extentTest().createNode("test error, click for more details... ");
-                node.log(status.getStatus(), expendMessage);
-                node.log(status.getStatus(), bodyDesc != null ? bodyDesc : "empty");
-            } else {
-                extentTest().log(status.getStatus(), expendMessage + " " + bodyDesc);
-            }
+                extentTest().createNode("test error, click for more details... ")
+                        .log(status.getStatus(), expendMessage)
+                        .log(status.getStatus(), bodyDesc);
+            } else extentTest().log(status.getStatus(), expendMessage + " " + bodyDesc);
         } catch (Exception ignore) {}
     }
 
     public synchronized <T> void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<T> bodyDesc) {
         try {
             if (asNewNode) {
-                ExtentTest node = extentTest().createNode("test error, click for more details... ");
-                node.log(status.getStatus(), expendMessage);
+                ExtentTest node = extentTest()
+                        .createNode("test error, click for more details... ")
+                        .log(status.getStatus(), expendMessage);
                 if (bodyDesc != null && !bodyDesc.isEmpty()) {
                     bodyDesc.forEach(message -> {
                         node.log(status.getStatus(), message.toString());

@@ -1,6 +1,6 @@
 package org.extensions.anontations.web;
 
-import org.base.DurationOf;
+import org.base.web.DurationOf;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

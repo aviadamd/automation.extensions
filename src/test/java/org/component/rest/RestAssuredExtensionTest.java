@@ -41,7 +41,7 @@ public class RestAssuredExtensionTest {
                     stepId = 1,
                     urlPath = "v4/areas",
                     expectedStatusCode = 200,
-                    contentType = ContentType.ANY, requestMethod = Method.POST,
+                    contentType = ContentType.ANY, requestMethod = Method.GET,
                     headersKeys = { "Content-Type","X-Response-Control" }, headersValues = { "application/json","minified" }
             ),
             @RestStep(

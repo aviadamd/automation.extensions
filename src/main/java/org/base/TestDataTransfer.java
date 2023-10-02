@@ -17,10 +17,10 @@ public class TestDataTransfer<A,B,C> {
 
     @Override
     public String toString() {
-        return "TestDataTransfer{" +
-                "\n status:'" + status + '\'' +
-                ",\n category:'" + category + '\'' +
-                ",\n error:'" + error + '\'' +
+        return "TestDataTransfer {" +
+                "\n <br> status: " + status + "" +
+                "\n <br> category: " + category + "" +
+                "\n <br> error desc: " + error + "<br>" +
                 '}';
     }
 }

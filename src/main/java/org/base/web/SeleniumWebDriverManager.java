@@ -1,7 +1,6 @@
 package org.base.web;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.base.DurationOf;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.web.WebDriverOptions;
 import org.junit.jupiter.api.Assertions;

@@ -1,20 +1,17 @@
 package org.extensions.rest;
 
 import com.aventstack.extentreports.Status;
-import io.reactivex.rxjava3.core.Observable;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.FailureConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.base.ObserverErrorsManager;
 import org.base.RxJavaBus;
 import org.base.TestDataTransfer;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
-import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.utils.rest.assured.RestAssuredHandler;
@@ -139,13 +136,12 @@ public class RestAssuredBuilderExtension implements
                 .failureConfig(FailureConfig
                 .failureConfig()
                 .with()
-                .failureListeners((requestSpecification, responseSpecification, response) -> {
-                    RxJavaBus.publish(new TestDataTransfer<>(
-                            Status.FAIL,
-                            "Rest",
-                            "Error from " + basePath + ", with status code " + response.statusCode() + ", with body " + response.body().prettyPrint()
-                    ));
-        }));
+                .failureListeners((requestSpecification, responseSpecification, response) ->
+                        RxJavaBus.publish(new TestDataTransfer<>(
+                                Status.FAIL,
+                                "Rest",
+                                "Error from " + basePath + "<br> with status code " + response.statusCode() + "<br> with body " + response.body().prettyPrint()
+                ))));
     }
 
     private synchronized ConcurrentHashMap<String,String> arrayToMap(String[] first, String [] second) {
