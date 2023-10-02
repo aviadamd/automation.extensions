@@ -31,12 +31,13 @@ public final class RxJavaBus {
     public static void publish(@NonNull Object object) {
         log.info("publish " + object + " data");
         behaviorSubject.onNext(object);
+
     }
 
     /**
      * subscribe
      * set the logic on the action
-     * @param action
+     * @param action an observer is ready to consume items
      * @return Disposable
      */
     public static Disposable subscribe(@NonNull Consumer<? super Object> action) {

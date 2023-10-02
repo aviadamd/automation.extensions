@@ -3,7 +3,11 @@ package org.extensions.report;
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.DisposableObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.base.RxJavaBus;
 import org.base.configuration.PropertiesManager;
@@ -112,8 +116,6 @@ public class ExtentReportExtension implements
                 TestMetaData testMetaData = new TestMetaData(reportInfo, logs,"");
                 passTestsMongoCollector.add(new PassTestInfoMongo(new ObjectId(new Date()), testClass, testMetaData));
             });
-
-            ObserverErrorsManager.getInstance().reset();
         }
     }
 
@@ -131,6 +133,7 @@ public class ExtentReportExtension implements
                             .getInstance()
                             .onFail(true, FailStatus.SKIP, testMethod + " error ", object.toString());
                 });
+
                 subscribe.dispose();
                 ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
 
