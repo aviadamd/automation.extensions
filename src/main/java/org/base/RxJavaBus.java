@@ -35,12 +35,12 @@ public final class RxJavaBus {
     }
 
     /**
-     * subscribeObservable
-     * set the logic on the action
+     * subscribeToObservable
+     * Subscribes to the current Observable and provides a callback to handle the items it emits.
      * @param action an observer is ready to consume items
      * @return Disposable
      */
-    public static Disposable subscribeObservable(@NonNull Consumer<? super Object> action) {
+    public static Disposable subscribeToObservable(@NonNull Consumer<? super Object> action) {
         return behaviorSubject.subscribe(action);
     }
 }
