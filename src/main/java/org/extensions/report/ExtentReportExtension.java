@@ -128,7 +128,7 @@ public class ExtentReportExtension implements
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                Disposable subscribe = RxJavaBus.subscribe(object -> {
+                Disposable subscribe = RxJavaBus.subscribeObservable(object -> {
                     ExtentTestManager
                             .getInstance()
                             .onFail(true, FailStatus.SKIP, testMethod + " error ", object.toString());
@@ -154,7 +154,7 @@ public class ExtentReportExtension implements
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                Disposable subscribe = RxJavaBus.subscribe(object -> {
+                Disposable subscribe = RxJavaBus.subscribeObservable(object -> {
                     ExtentTestManager
                             .getInstance()
                             .onFail(true, FailStatus.FAIL, testMethod + " error ", object.toString());

@@ -137,7 +137,7 @@ public class RestAssuredBuilderExtension implements
                 .failureConfig()
                 .with()
                 .failureListeners((requestSpecification, responseSpecification, response) ->
-                        RxJavaBus.publish(new TestDataTransfer<>(
+                        RxJavaBus.publishFromObserver(new TestDataTransfer<>(
                                 Status.FAIL,
                                 "Rest",
                                 "Error from " + basePath + "<br> with status code " + response.statusCode() + "<br> with body " + response.body().prettyPrint()

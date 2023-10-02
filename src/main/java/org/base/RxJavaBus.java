@@ -24,23 +24,23 @@ public final class RxJavaBus {
     }
 
     /**
-     * publish
+     * publishFromObserver
      * use this method to send data
      * @param object any
      */
-    public static void publish(@NonNull Object object) {
+    public static void publishFromObserver(@NonNull Object object) {
         log.info("publish " + object + " data");
         behaviorSubject.onNext(object);
 
     }
 
     /**
-     * subscribe
+     * subscribeObservable
      * set the logic on the action
      * @param action an observer is ready to consume items
      * @return Disposable
      */
-    public static Disposable subscribe(@NonNull Consumer<? super Object> action) {
+    public static Disposable subscribeObservable(@NonNull Consumer<? super Object> action) {
         return behaviorSubject.subscribe(action);
     }
 }
