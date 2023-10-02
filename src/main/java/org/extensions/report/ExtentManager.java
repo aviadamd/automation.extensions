@@ -10,7 +10,17 @@ import static com.aventstack.extentreports.reporter.configuration.ViewName.LOG;
 
 public class ExtentManager {
     private static ExtentReports extentInstance;
-    protected synchronized static ExtentReports extentReportInstance() { return extentInstance; }
+    private static ExtentManager m_instance;
+
+    protected static ExtentManager getInstance() {
+        if (m_instance == null) m_instance = new ExtentManager();
+        return m_instance;
+    }
+
+    protected synchronized ExtentReports extentReportInstance() {
+        if (extentInstance == null) extentInstance = new ExtentReports();
+        return extentInstance;
+    }
 
     /**
      * setExtentManager
@@ -18,26 +28,27 @@ public class ExtentManager {
      * @param jsonSettingsPath
      * @param reportName
      */
-    protected static synchronized void setExtentManager(String file, String jsonSettingsPath, String reportName) {
+    protected synchronized void setExtentManager(String file, String jsonSettingsPath, String reportName) {
         try {
-            extentInstance = new ExtentReports();
+
             ExtentSparkReporter extentSparkReporter = new ExtentSparkReporter(file);
             ViewName[] viewNames = { DASHBOARD, TEST, AUTHOR, DEVICE, EXCEPTION, LOG };
             extentSparkReporter.viewConfigurer()
                     .viewOrder()
                     .as(viewNames)
                     .apply();
-            extentInstance.attachReporter(extentSparkReporter);
+            extentReportInstance().attachReporter(extentSparkReporter);
             extentSparkReporter.loadJSONConfig(new File(jsonSettingsPath));
             extentSparkReporter.config().setReportName(reportName);
+
         } catch (Exception exception) {
             Assertions.fail("ExtentManager createInstance error " + exception.getMessage(), exception);
         }
     }
 
-    protected static synchronized void flush() {
+    protected synchronized void flush() {
         try {
-            extentInstance.flush();
+            extentReportInstance().flush();
         } catch (Exception exception) {
             Assertions.fail("fail to flush report " + exception.getMessage(), exception);
         }

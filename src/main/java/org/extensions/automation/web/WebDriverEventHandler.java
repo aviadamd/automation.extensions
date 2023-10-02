@@ -78,7 +78,7 @@ public class WebDriverEventHandler implements WebDriverListener {
      */
     private void print(String message) {
         try {
-            ExtentTestManager.log(Status.INFO, message);
+            ExtentTestManager.getInstance().log(Status.INFO, message);
         } catch (Exception ignore) {}
     }
 
@@ -90,7 +90,7 @@ public class WebDriverEventHandler implements WebDriverListener {
     private void screenShot(WebDriver driver, String message) {
         try {
             this.print(message);
-            if (driver != null) ExtentTestManager.logScreenShot(Status.PASS, driver, message, false);
+            if (driver != null) ExtentTestManager.getInstance().logScreenShot(Status.PASS, driver, message, false);
         } catch (Exception ignore) {}
     }
 }

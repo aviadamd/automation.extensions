@@ -33,7 +33,7 @@ public class SoftAssertionManager extends SoftAssertions {
      */
     protected synchronized void print(Status status, String description) {
         try {
-            ExtentTestManager.log(status,description);
+            ExtentTestManager.getInstance().log(status,description);
         } catch (Exception ignore) {}
     }
 

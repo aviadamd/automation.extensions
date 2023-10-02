@@ -21,7 +21,7 @@ public class WebSharedObjects {
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
     protected void setMorphiaRepository(MorphiaRepository morphiaRepository) { this.morphiaRepository = morphiaRepository; }
-    public void log(Status status, String desc) { ExtentTestManager.log(status, desc); }
+    public void log(Status status, String desc) { ExtentTestManager.getInstance().log(status, desc); }
 
     public SeleniumWebDriverProvider getDriverManager() { return this.driverManager; }
     public MorphiaRepository getMorphiaRepository() {

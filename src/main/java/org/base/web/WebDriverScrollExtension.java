@@ -62,7 +62,7 @@ public class WebDriverScrollExtension {
     private void print(String message) {
         try {
             log.info(Status.INFO + " | " + message);
-            ExtentTestManager.log(Status.INFO, message);
+            ExtentTestManager.getInstance().log(Status.INFO, message);
         } catch (Exception ignore) {}
     }
 }

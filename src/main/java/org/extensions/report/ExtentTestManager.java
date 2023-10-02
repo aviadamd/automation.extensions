@@ -10,15 +10,39 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExtentTestManager {
-    private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
-    private static final Logger log = LoggerFactory.getLogger(ExtentTestManager.class);
-    protected static void remove() {
-        extentTest.remove();
+
+    private static final Logger logger = LoggerFactory.getLogger(ExtentTestManager.class);
+    private static final Map<Long, ExtentTest> extentTestMap = new HashMap<>();
+    private static synchronized ExtentTest extentTest() {
+        return extentTestMap.get(Thread.currentThread().getId());
+    }
+
+    private static ExtentTestManager m_instance;
+    public static ExtentTestManager getInstance() {
+        if (m_instance == null) {
+            m_instance = new ExtentTestManager();
+        }
+        return new ExtentTestManager();
+    }
+
+    /**
+     * setExtentManager
+     * @param file
+     * @param jsonSettingsPath
+     * @param reportName
+     */
+    protected synchronized void setExtentManager(String file, String jsonSettingsPath, String reportName) {
+        ExtentManager
+                .getInstance()
+                .setExtentManager(file, jsonSettingsPath, reportName);
     }
 
     /**
@@ -27,20 +51,29 @@ public class ExtentTestManager {
      * @param category
      * @param author
      */
-    protected synchronized static void createTest(String testMethod, String category, String author) {
-        extentTest.set(ExtentManager.extentReportInstance()
+    protected synchronized void createTest(String testMethod, String category, String author) {
+        extentTestMap.put(Thread.currentThread().getId(), ExtentManager.getInstance()
+                .extentReportInstance()
                 .createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
                 .assignAuthor(author));
     }
 
+    protected synchronized void flush() {
+        ExtentManager
+                .getInstance()
+                .flush();
+    }
+
     /**
      * setAnalysisStrategy
      * @param analysisStrategy
      */
-    protected synchronized static void setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
-        ExtentManager.extentReportInstance().setAnalysisStrategy(analysisStrategy);
+    protected synchronized void setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
+        ExtentManager.getInstance()
+                .extentReportInstance()
+                .setAnalysisStrategy(analysisStrategy);
     }
 
     /**
@@ -48,8 +81,10 @@ public class ExtentTestManager {
      * @param osName
      * @param osArch
      */
-    protected synchronized static void setSystemInfo(String osName, String osArch) {
-        ExtentManager.extentReportInstance().setSystemInfo(osName, osArch);
+    protected synchronized void setSystemInfo(String osName, String osArch) {
+        ExtentManager.getInstance()
+                .extentReportInstance()
+                .setSystemInfo(osName, osArch);
     }
 
     /**
@@ -57,11 +92,12 @@ public class ExtentTestManager {
      * @param extraReportsBy
      * @param path
      */
-    protected synchronized static void attachExtraReports(Status[] extraReportsBy, String path) {
+    protected synchronized void attachExtraReports(Status[] extraReportsBy, String path) {
         for (Status status : extraReportsBy) {
             String reportPath = path + "/" + status.toString() + ".html";
             ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath);
-            ExtentManager.extentReportInstance()
+            ExtentManager.getInstance()
+                    .extentReportInstance()
                     .attachReporter(sparkReporter
                             .filter()
                             .statusFilter()
@@ -70,9 +106,9 @@ public class ExtentTestManager {
         }
     }
 
-    public static synchronized List<Log> getExtentLogs() {
+    public synchronized List<Log> getExtentLogs() {
         try {
-            return extentTest.get()
+            return extentTest()
                     .getModel()
                     .getLogs()
                     .stream()
@@ -88,9 +124,10 @@ public class ExtentTestManager {
      * @param driver
      * @return
      */
-    public synchronized static String base64ScreenShot(WebDriver driver) {
+    public synchronized String base64ScreenShot(WebDriver driver) {
         try {
-            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BASE64);
+            return ((TakesScreenshot)driver)
+                    .getScreenshotAs(OutputType.BASE64);
         } catch (Exception ignore) {
             return "";
         }
@@ -102,9 +139,10 @@ public class ExtentTestManager {
      * @param driver
      * @return
      */
-    public synchronized static byte[] byteScreenShot(WebDriver driver) {
+    public synchronized byte[] byteScreenShot(WebDriver driver) {
         try {
-            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
+            return ((TakesScreenshot)driver)
+                    .getScreenshotAs(OutputType.BYTES);
         } catch (Exception ignore) {
             return null;
         }
@@ -115,9 +153,8 @@ public class ExtentTestManager {
      * @param status
      * @param media
      */
-    public synchronized static void log(Status status, Media media) {
-        extentTest.get().log(status, media);
-        innerLog(status, media.getTitle());
+    public synchronized void log(Status status, Media media) {
+        extentTest().log(status, media);
     }
 
     /**
@@ -125,9 +162,9 @@ public class ExtentTestManager {
      * @param status
      * @param details
      */
-    public synchronized static void log(Status status, String details) {
-        innerLog(status, details);
-        extentTest.get().log(status, details);
+    public synchronized void log(Status status, String details) {
+        logger.info(status + " " + details);
+        extentTest().log(status, details);
     }
 
     /**
@@ -135,9 +172,8 @@ public class ExtentTestManager {
      * @param status
      * @param markup
      */
-    public synchronized static void log(Status status, Markup markup) {
-        innerLog(status," " + markup.getMarkup());
-        extentTest.get().log(status, markup);
+    public synchronized void log(Status status, Markup markup) {
+        extentTest().log(status, markup);
     }
 
     /**
@@ -145,9 +181,8 @@ public class ExtentTestManager {
      * @param status
      * @param throwable
      */
-    public synchronized static void log(Status status, Throwable throwable) {
-        innerLog(status, throwable.getMessage());
-        extentTest.get().log(status, throwable);
+    public synchronized void log(Status status, Throwable throwable) {
+        extentTest().log(status, throwable);
     }
 
     /**
@@ -156,9 +191,8 @@ public class ExtentTestManager {
      * @param details
      * @param media
      */
-    public synchronized static void log(Status status, String details, Media media) {
-        innerLog(status, details);
-        extentTest.get().log(status, details, media);
+    public synchronized void log(Status status, String details, Media media) {
+        extentTest().log(status, details, media);
     }
 
     /**
@@ -167,9 +201,8 @@ public class ExtentTestManager {
      * @param throwable
      * @param media
      */
-    public synchronized static void log(Status status, Throwable throwable, Media media) {
-        innerLog(status, throwable.getMessage());
-        extentTest.get().log(status, throwable, media);
+    public synchronized void log(Status status, Throwable throwable, Media media) {
+        extentTest().log(status, throwable, media);
     }
 
     /**
@@ -179,9 +212,8 @@ public class ExtentTestManager {
      * @param throwable
      * @param media
      */
-    public synchronized static void log(Status status, String details, Throwable throwable, Media media) {
-        innerLog(status, details + " " + throwable.getMessage());
-        extentTest.get().log(status, details, throwable, media);
+    public synchronized void log(Status status, String details, Throwable throwable, Media media) {
+        extentTest().log(status, details, throwable, media);
     }
 
     /**
@@ -190,18 +222,17 @@ public class ExtentTestManager {
      * @param driver
      * @param message
      */
-    public synchronized static void logScreenShot(Status status, WebDriver driver, String message, boolean createNode) {
-        if (extentTest.get() != null && driver != null) {
-            String base64ScreenShot = base64ScreenShot(driver);
+    public synchronized void logScreenShot(Status status, WebDriver driver, String message, boolean createNode) {
+        if (extentTest() != null && driver != null) {
+            String base64ScreenShot = this.base64ScreenShot(driver);
             if (!base64ScreenShot.isEmpty()) {
-                innerLog(status, message);
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
-                if (createNode) extentTest.get()
-                        .createNode("click for more details... ")
-                        .log(status, message, media);
-                else extentTest.get().log(status, message, media);
+                if (createNode) extentTest().createNode("click for more details... ").log(status, message, media);
+                else {
+                    extentTest().log(status, message, media);
+                }
             } else {
-                extentTest.get().log(status, message);
+                extentTest().log(status, message);
             }
         }
     }
@@ -212,32 +243,31 @@ public class ExtentTestManager {
      * @param bodyDesc
      * @return
      */
-    public synchronized static void onFail(boolean asNewNode, FailStatus status, String expendMessage, String bodyDesc) {
+    public synchronized void onFail(boolean asNewNode, FailStatus status, String expendMessage, String bodyDesc) {
         try {
             if (asNewNode) {
-                extentTest.get()
-                        .createNode("test error, click for more details... ")
-                        .log(status.getStatus(), expendMessage)
-                        .log(status.getStatus(), bodyDesc);
-            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
-        } catch (Exception ignore) {}
-    }
-
-    public synchronized static <T> void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<T> bodyDesc) {
-        try {
-            if (asNewNode) {
-                ExtentTest node = extentTest.get().createNode("test error, click for more details... ");
+                ExtentTest node = extentTest().createNode("test error, click for more details... ");
                 node.log(status.getStatus(), expendMessage);
-                bodyDesc.forEach(message -> node.log(status.getStatus(), message.toString()));
-            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
+                node.log(status.getStatus(), bodyDesc != null ? bodyDesc : "empty");
+            } else {
+                extentTest().log(status.getStatus(), expendMessage + " " + bodyDesc);
+            }
         } catch (Exception ignore) {}
     }
 
-    private synchronized static void innerLog(Status status, String details) {
-        switch (status) {
-            case INFO, PASS -> log.info(status + " " +  details);
-            case WARNING -> log.warn(status + " " +  details);
-            case SKIP, FAIL -> log.error(status + " " + details);
-        }
+    public synchronized <T> void onFail(boolean asNewNode, FailStatus status, String expendMessage, List<T> bodyDesc) {
+        try {
+            if (asNewNode) {
+                ExtentTest node = extentTest().createNode("test error, click for more details... ");
+                node.log(status.getStatus(), expendMessage);
+                if (bodyDesc != null && !bodyDesc.isEmpty()) {
+                    bodyDesc.forEach(message -> {
+                        node.log(status.getStatus(), message.toString());
+                    });
+                }
+            } else {
+                extentTest().log(status.getStatus(), expendMessage + " " + bodyDesc);
+            }
+        } catch (Exception ignore) {}
     }
 }

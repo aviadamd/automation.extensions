@@ -7,6 +7,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface RestDataProvider {
-    RestStep[] restSteps();
+public @interface RestDataBaseClassProvider {
+    String scheme();
+    String basePath();
+    String[] headersKeys() default "";
+    String[] headersValues() default "";
 }

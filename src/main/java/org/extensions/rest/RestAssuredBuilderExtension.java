@@ -1,98 +1,151 @@
 package org.extensions.rest;
 
+import com.aventstack.extentreports.Status;
 import io.reactivex.rxjava3.core.Observable;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.FailureConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Header;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.base.ErrorsCollector;
+import org.base.ObserverErrorsManager;
+import org.base.RxJavaBus;
+import org.base.TestDataTransfer;
+import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
+import org.extensions.report.ExtentTestManager;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
-import org.utils.rest.assured.RestAssuredBuilder;
+import org.utils.rest.assured.RestAssuredHandler;
+import org.utils.rest.assured.ValidateResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+
 @Slf4j
 public class RestAssuredBuilderExtension implements
-        BeforeEachCallback, AfterEachCallback,
-        TestWatcher, ParameterResolver {
+        BeforeEachCallback,
+        AfterEachCallback,
+        ParameterResolver {
 
-    private static ConcurrentHashMap<Integer, Response> responseCollector = new ConcurrentHashMap<>();
+    private static final ThreadLocal<ResponseCollectorRepo> responseCollectorRepo = new ThreadLocal<>();
     private static ConcurrentHashMap<String,String> headerParamsCollector = new ConcurrentHashMap<>();
 
     @Override
     public synchronized boolean supportsParameter(ParameterContext parameter, ExtensionContext context) {
-        return parameter.getParameter().getType() == ConcurrentHashMap.class;
+        Class<ResponseCollectorRepo> responseCollectorRepoClass = ResponseCollectorRepo.class;
+        return parameter.getParameter().getType() == responseCollectorRepoClass;
     }
 
     @Override
     public synchronized Object resolveParameter(ParameterContext parameter, ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            return responseCollector;
+            return responseCollectorRepo.get();
         } else throw new RuntimeException("RestAssuredBuilderExtension register fail init rest calls");
     }
 
     @Override
     public synchronized void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
-            RestDataProvider provider = context.getElement().get().getAnnotation(RestDataProvider.class);
-            if (provider != null) {
-                for (RestStep stepProvider : provider.restSteps()) {
-                    if (stepProvider != null) {
-                        Response response = this.execute(provider, stepProvider);
-                        this.responseCollector(stepProvider.stepId(), response);
-                        this.headerCollector(response);
-                        this.print(response);
-                    }
+
+            responseCollectorRepo.set(new ResponseCollectorRepo());
+            RestDataBaseClassProvider restDataBaseClassProvider = context.getRequiredTestClass().getAnnotation(RestDataBaseClassProvider.class);
+            RestDataProvider restDataProvider = context.getElement().get().getAnnotation(RestDataProvider.class);
+
+            Assertions.assertNotNull(restDataBaseClassProvider);
+            Assertions.assertNotNull(restDataProvider);
+
+            for (RestStep stepProvider : restDataProvider.restSteps()) {
+                if (stepProvider != null) {
+                    Response response = this.execute(restDataBaseClassProvider, stepProvider);
+                    responseCollectorRepo.get().addResponse(stepProvider.stepId(), new ValidateResponse(response));
+                    this.headerCollector(response);
                 }
             }
         }
     }
 
     @Override
-    public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
-        if (context.getElement().isPresent()) {
-            String message = throwable.getClass().getSimpleName() + " has been catch in test, error: " + throwable.getMessage();
-            Observable<String> observable = Observable.just(message);
-            ErrorsCollector.getInstance().subscribeWithObserver(observable);
-        }
-    }
-
-    @Override
     public synchronized void afterEach(ExtensionContext context)  {
         if (context.getElement().isPresent()) {
-            responseCollector = new ConcurrentHashMap<>();
             headerParamsCollector = new ConcurrentHashMap<>();
+            responseCollectorRepo.remove();
         }
     }
 
-    private synchronized Response execute(RestDataProvider provider, RestStep stepProvider) {
-        ConcurrentHashMap<String, String> queryParams = this.arrayToMap(stepProvider.paramsKeys(), stepProvider.paramsValues());
-        ConcurrentHashMap<String, String> headerParams = this.arrayToMap(stepProvider.headersKeys(), stepProvider.headersValues());
-        ConcurrentHashMap<String, String> bodyParams = this.arrayToMap(stepProvider.bodyKeys(), stepProvider.bodyValues());
+    private synchronized Response execute(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
+        RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
 
-        RestAssuredBuilder assuredBuilder = new RestAssuredBuilder();
+        requestSpecBuilder
+                .setBaseUri(baseClassProvider.scheme() + "://" + baseClassProvider.basePath())
+                .setBasePath(stepProvider.urlPath())
+                .setContentType(stepProvider.contentType());
 
-        assuredBuilder.setBaseUri(provider.basePath());
-        assuredBuilder.setPath(stepProvider.urlPath());
-        assuredBuilder.setContentType(stepProvider.contentType());
-
-        if (queryParams.size() > 0) assuredBuilder.setQueryParams(queryParams);
-
-        if (headerParams.size() > 0) {
-            ConcurrentHashMap<String, String> headerCollector = this.passHeadersReceiver(stepProvider);
-            headerParams.putAll(headerCollector);
-            assuredBuilder.setHeaders(headerParams);
+        if (stepProvider.paramsKeys().length > 0 && stepProvider.paramsValues().length > 0) {
+            ConcurrentHashMap<String,String> arrayToMap = this.arrayToMap(stepProvider.paramsKeys(), stepProvider.paramsValues());
+            requestSpecBuilder.addQueryParams(arrayToMap);
         }
 
-        if (bodyParams.size() > 0) {
-            assuredBuilder.setBody(bodyParams);
+        ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
+
+        if (baseClassProvider.headersKeys().length > 0
+                && baseClassProvider.headersValues().length > 0
+                && baseClassProvider.headersKeys().length == baseClassProvider.headersValues().length) {
+            ConcurrentHashMap<String, String> headersReceiver = this.headersReceiver(baseClassProvider.headersKeys(), baseClassProvider.headersValues());
+            if (headersReceiver.size() > 0) {
+                headerCollector.putAll(headersReceiver);
+            }
         }
 
-        return assuredBuilder.build(stepProvider.method());
+        if (stepProvider.headersKeys().length > 0
+                && stepProvider.headersValues().length > 0
+                && stepProvider.headersKeys().length == stepProvider.headersValues().length) {
+            ConcurrentHashMap<String, String> headersReceiver = this.headersReceiver(stepProvider.headersKeys(), stepProvider.headersValues());
+            if (headersReceiver.size() > 0) {
+                headerCollector.putAll(headersReceiver);
+            }
+        }
+
+        if (stepProvider.receiveHeadersKeys().length > 0) {
+            ConcurrentHashMap<String, String> passHeadersReceiver = this.passHeadersReceiver(stepProvider);
+            if (passHeadersReceiver.size() > 0) {
+                headerCollector.putAll(passHeadersReceiver);
+            }
+        }
+
+        if (headerCollector.size() > 0) {
+            requestSpecBuilder.addHeaders(headerCollector);
+        }
+
+        if (stepProvider.bodyKeys().length > 0
+                && stepProvider.bodyValues().length > 0
+                && stepProvider.bodyKeys().length == stepProvider.bodyValues().length) {
+            ConcurrentHashMap<String, String> bodyParams = this.arrayToMap(stepProvider.bodyKeys(), stepProvider.bodyValues());
+            if (bodyParams.size() > 0) {
+                requestSpecBuilder.setBody(bodyParams);
+            }
+        }
+
+        final String url = baseClassProvider.scheme() + "://" + baseClassProvider.basePath() + "/" + stepProvider.urlPath();
+        return new RestAssuredHandler().build(this.failureListener(url), requestSpecBuilder, stepProvider.requestMethod(), stepProvider.expectedStatusCode());
+    }
+
+    private synchronized RestAssuredConfig failureListener(String basePath) {
+        return RestAssuredConfig.config()
+                .failureConfig(FailureConfig
+                .failureConfig()
+                .with()
+                .failureListeners((requestSpecification, responseSpecification, response) -> {
+                    RxJavaBus.publish(new TestDataTransfer<>(
+                            Status.FAIL,
+                            "Rest",
+                            "Error from " + basePath + ", with status code " + response.statusCode() + ", with body " + response.body().prettyPrint()
+                    ));
+        }));
     }
 
     private synchronized ConcurrentHashMap<String,String> arrayToMap(String[] first, String [] second) {
@@ -124,10 +177,6 @@ public class RestAssuredBuilderExtension implements
         }
     }
 
-    private synchronized void responseCollector(int stepId, Response response) {
-        responseCollector.put(stepId, response);
-    }
-
     private synchronized ConcurrentHashMap<String,String> passHeadersReceiver(RestStep stepProvider) {
         ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
 
@@ -144,13 +193,11 @@ public class RestAssuredBuilderExtension implements
         return headerCollector;
     }
 
-    private synchronized void print(Response response) {
-        try {
-            if (response != null) {
-                if (response.headers() != null) log.info("response headers " + response.headers());
-                if (response.statusCode() != 0) log.info("response status code " + response.statusCode());
-                if (response.body() != null) log.info("response body " + response.getBody().asString());
-            }
-        } catch (Exception ignore) {}
+    private synchronized ConcurrentHashMap<String,String> headersReceiver(String[] headersKeys, String[] headersValues) {
+        ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
+        for (int header = 0; header < headersKeys.length; header++) {
+            headerCollector.put(headersKeys[header], headersValues[header]);
+        }
+        return headerCollector;
     }
 }

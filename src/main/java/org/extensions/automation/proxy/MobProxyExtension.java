@@ -52,7 +52,8 @@ public class MobProxyExtension {
             trustSource.add(TrustUtil.getDefaultJavaTrustManager().getAcceptedIssuers());
             mobProxyServer.setTrustSource(trustSource);
 
-            mobProxyServer.start(1000, inetAddress);
+
+            mobProxyServer.start(0, inetAddress);
 
             if (proxyType == ProxyType.WEB) this.proxy = this.setSeleniumProxy(mobProxyServer);
             return mobProxyServer;
