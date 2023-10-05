@@ -3,7 +3,7 @@ package org.component.web;
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.base.web.DurationOf;
 import org.base.web.SeleniumWebDriverProvider;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.web.WebDriverProviderExtension;
@@ -19,7 +19,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, WebDriverProviderExtension.class })
-@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
+@ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class SeleniumWebProviderBasePocTest {
 
     @Test

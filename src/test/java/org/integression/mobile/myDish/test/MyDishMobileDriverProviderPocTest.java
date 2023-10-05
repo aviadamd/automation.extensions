@@ -2,7 +2,7 @@ package org.integression.mobile.myDish.test;
 
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.assertions.AssertJExtensionProvider;
 import org.extensions.automation.mobile.MobileDriverProviderExtension;
@@ -21,7 +21,7 @@ import static org.extensions.automation.mobile.ApplicationLaunchOption.LAUNCH;
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MobileDriverProviderExtension.class, AssertJExtensionProvider.class })
-@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST, repeatOnStatus = { FAIL } )
+@ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST, repeatOnStatus = { FAIL } )
 public class MyDishMobileDriverProviderPocTest {
 
     @Test

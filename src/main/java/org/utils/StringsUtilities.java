@@ -1,4 +1,4 @@
-package org.data;
+package org.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.GenericValidator;
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import static org.data.StringsRegexConstants.*;
+import static org.utils.StringsRegexConstants.*;
 
 @Slf4j
 public class StringsUtilities {

@@ -1,4 +1,4 @@
-package org.data.files.jsonReader;
+package org.utils.files.jsonReader;
 
 import java.io.File;
 import java.nio.file.Files;

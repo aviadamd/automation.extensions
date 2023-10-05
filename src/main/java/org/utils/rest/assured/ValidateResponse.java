@@ -1,15 +1,25 @@
 package org.utils.rest.assured;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import io.restassured.matcher.ResponseAwareMatcher;
 import io.restassured.response.*;
 import io.restassured.specification.Argument;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.jsonunit.assertj.JsonAssert;
+import net.javacrumbs.jsonunit.assertj.JsonAssertion;
+import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
-
-import static org.hamcrest.Matchers.equalTo;
+import java.util.function.Consumer;
 
 @Slf4j
 public class ValidateResponse {
@@ -23,6 +33,10 @@ public class ValidateResponse {
         return this.response;
     }
 
+    public <T> T getResponseAs(Class<T> as) {
+        return this.response.as(as);
+    }
+
     public ValidateResponse statusCode(Matcher<? super Integer> expectedStatusCode) {
         this.response.then()
                 .assertThat()
@@ -34,6 +48,25 @@ public class ValidateResponse {
         this.response.then()
                 .assertThat()
                 .statusCode(expectedStatusCode);
+        return this;
+    }
+
+    public ValidateResponse header(String header, Matcher<?> expectedValueMatcher) {
+        this.response.then()
+                .assertThat()
+                .header(header, expectedValueMatcher);
+        return this;
+    }
+
+    public ValidateResponse header(String headerName, String expectedValue) {
+        this.response.then()
+                .assertThat()
+                .header(headerName, expectedValue);
+        return this;
+    }
+    public ValidateResponse body(Consumer<JsonAssert.ConfigurableJsonAssert> consumer) {
+        consumer.accept(JsonAssertions.assertThatJson(response.body().asString()));
+        consumer.accept(JsonAssertions.assertThatJson(response.headers().asList()));
         return this;
     }
 

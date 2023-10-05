@@ -7,7 +7,7 @@ import org.extensions.mongo.legacy.MongoDbLegacyExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -16,7 +16,7 @@ import org.component.mongo.pojos.Countries;
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MongoDbLegacyExtension.class })
-@ReportConfiguration
+@ReportSetUp
 public class MongoDbExtensionTest {
     @Test
     @MongoLegacyConnector(host = "mongodb://localhost:27017", dbName = "newCollection", collectionName = "mobile")

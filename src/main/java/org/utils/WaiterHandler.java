@@ -1,4 +1,4 @@
-package org.base;
+package org.utils;
 
 import io.appium.java_client.AppiumFluentWait;
 import lombok.extern.slf4j.Slf4j;

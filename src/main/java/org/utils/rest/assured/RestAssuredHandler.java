@@ -7,8 +7,6 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
-import org.base.RxJavaBus;
-
 import java.util.List;
 import static java.util.Collections.singletonList;
 

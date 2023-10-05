@@ -441,7 +441,6 @@
                     <testFailureIgnore>true</testFailureIgnore>
                     <argLine>--illegal-access=permit</argLine>
                     <forkCount>10</forkCount>
-                    <reuseForks>true</reuseForks>
                 </configuration>
             </plugin>
 

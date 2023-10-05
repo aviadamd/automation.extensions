@@ -106,7 +106,7 @@ public class ExtentTestManager {
         }
     }
 
-    public synchronized List<Log> getExtentLogs() {
+    protected synchronized List<Log> getExtentLogs() {
         try {
             return extentTest()
                     .getModel()

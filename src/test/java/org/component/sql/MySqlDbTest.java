@@ -3,7 +3,7 @@ package org.component.sql;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.component.sql.pojo.Country;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -12,7 +12,7 @@ import org.utils.sql.MySqlSharedConnector;
 import java.util.List;
 
 @Slf4j
-@ReportConfiguration()
+@ReportSetUp()
 @Execution(ExecutionMode.SAME_THREAD)
 public class MySqlDbTest {
 

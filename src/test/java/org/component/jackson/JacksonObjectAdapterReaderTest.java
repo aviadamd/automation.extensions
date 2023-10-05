@@ -4,11 +4,11 @@ import com.aventstack.extentreports.AnalysisStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.jackson.JacksonProviderExtension;
 import org.extensions.anontations.JacksonProvider;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.automation.mobile.MobileCapabilitiesObject;
 import org.extensions.report.ExtentReportExtension;
-import org.data.files.jsonReader.JacksonObjectAdapter;
+import org.utils.files.jsonReader.JacksonObjectAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ import static com.aventstack.extentreports.Status.SKIP;
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class , JacksonProviderExtension.class })
-@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
+@ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class JacksonObjectAdapterReaderTest {
 
     @Test

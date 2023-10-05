@@ -3,7 +3,7 @@ package org.component.mongo.morphia;
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
 import org.bson.types.ObjectId;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.mongo.morphia.MongoMorphiaDbExtension;
 import org.extensions.report.ExtentReportExtension;
@@ -18,7 +18,7 @@ import static com.aventstack.extentreports.Status.SKIP;
 
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MongoMorphiaDbExtension.class })
-@ReportConfiguration(
+@ReportSetUp(
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",

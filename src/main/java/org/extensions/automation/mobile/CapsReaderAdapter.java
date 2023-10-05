@@ -2,7 +2,7 @@ package org.extensions.automation.mobile;
 
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
-import org.data.files.jsonReader.JacksonObjectAdapter;
+import org.utils.files.jsonReader.JacksonObjectAdapter;
 import org.extensions.automation.UiAutomator2OptionsHandler;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.remote.DesiredCapabilities;

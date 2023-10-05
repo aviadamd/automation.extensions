@@ -8,7 +8,7 @@ import org.extensions.report.ExtentReportExtension;
 import org.extensions.sql.MySqlDbExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -16,7 +16,7 @@ import org.utils.sql.MySqlSharedConnector;
 import java.util.List;
 
 @Slf4j
-@ReportConfiguration
+@ReportSetUp
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(value = { ExtentReportExtension.class, MySqlDbExtension.class })
 public class MySqlDbExtensionTest {

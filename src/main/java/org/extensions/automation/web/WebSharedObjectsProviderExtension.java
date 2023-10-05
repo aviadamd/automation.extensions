@@ -11,7 +11,7 @@ import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.automation.proxy.ProxyType;
 import org.extensions.factory.JunitReflectionAnnotationHandler;
-import org.data.files.jsonReader.FilesHelper;
+import org.utils.files.jsonReader.FilesHelper;
 import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
@@ -25,7 +25,6 @@ import java.lang.annotation.Annotation;
 import java.net.Inet4Address;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class WebSharedObjectsProviderExtension implements

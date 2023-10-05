@@ -3,6 +3,7 @@ package org.component.assertions;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.jsonunit.assertj.JsonAssert;
 import net.javacrumbs.jsonunit.assertj.JsonAssertions;
 import net.javacrumbs.jsonunit.core.ConfigurationWhen;
 import net.javacrumbs.jsonunit.fluent.JsonFluentAssert;
@@ -14,6 +15,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.IOException;
+import java.util.function.Consumer;
+
 import static java.util.Collections.singletonMap;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.json;
 import static org.assertj.core.api.Assertions.entry;
@@ -24,6 +27,13 @@ public class JsonAssertJExtensionProviderTest {
 
     @Test
     void objectDoesContainComplexValueError() {
+        JsonFluentAssert.assertThatJson("{\"a\":[{\"b\": 1}, {\"c\": 1}, {\"d\": 1}]}")
+                .isObject();
+        JsonAssertions.assertThatJson("{\"a\":[{\"b\": 1}, {\"c\": 1}, {\"d\": 1}]}")
+                .node("a")
+                .isArray()
+                .contains(JsonAssertions.json("{\"c\": 1}"));
+
         AssertionsForClassTypes.assertThatThrownBy(() -> JsonAssertions.assertThatJson("{\"root\":{\"a\":1, \"b\": {\"c\" :3}}}")
                 .node("root")
                 .isObject()

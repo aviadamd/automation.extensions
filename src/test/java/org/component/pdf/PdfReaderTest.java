@@ -6,10 +6,10 @@ import org.extensions.pdf.PdfReaderExtension;
 import org.extensions.report.ExtentReportExtension;
 import org.extensions.anontations.pdf.PdfConnector;
 import org.extensions.anontations.pdf.PdfFileConfig;
-import org.data.files.pdfReader.PdfReader;
+import org.utils.files.pdfReader.PdfReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 
 import static com.aventstack.extentreports.Status.FAIL;
@@ -17,7 +17,7 @@ import static com.aventstack.extentreports.Status.SKIP;
 
 @Slf4j
 @ExtendWith(value = { ExtentReportExtension.class, PdfReaderExtension.class })
-@ReportConfiguration(
+@ReportSetUp(
         reportPath = "project.report.path",
         extraReportsBy = { FAIL, SKIP },
         reportSettingsPath = "project.report.config",

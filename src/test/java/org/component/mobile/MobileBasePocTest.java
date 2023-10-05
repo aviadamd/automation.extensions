@@ -3,7 +3,7 @@ package org.component.mobile;
 import com.aventstack.extentreports.AnalysisStrategy;
 import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.automation.mobile.MobileDriverProviderExtension;
 import org.extensions.report.ExtentReportExtension;
@@ -18,7 +18,7 @@ import static com.aventstack.extentreports.Status.SKIP;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, MobileDriverProviderExtension.class })
-@ReportConfiguration(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
+@ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class MobileBasePocTest {
 
     @Test

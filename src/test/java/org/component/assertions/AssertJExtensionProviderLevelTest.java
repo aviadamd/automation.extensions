@@ -1,7 +1,7 @@
 package org.component.assertions;
 
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.assertions.AssertJExtensionProvider;
 import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Slf4j
-@ReportConfiguration
+@ReportSetUp
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, AssertJExtensionProvider.class })
 public class AssertJExtensionProviderLevelTest {

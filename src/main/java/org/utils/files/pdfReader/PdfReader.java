@@ -1,4 +1,4 @@
-package org.data.files.pdfReader;
+package org.utils.files.pdfReader;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;

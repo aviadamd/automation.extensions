@@ -1,4 +1,4 @@
-package org.data;
+package org.utils;
 
 public class StringsRegexConstants {
 

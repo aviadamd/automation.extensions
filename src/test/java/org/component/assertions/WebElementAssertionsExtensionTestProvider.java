@@ -2,7 +2,7 @@ package org.component.assertions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Condition;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.assertions.AssertJExtensionProvider;
 import org.extensions.report.ExtentReportExtension;
@@ -17,7 +17,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClick
 import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfNestedElementLocatedBy;
 
 @Slf4j
-@ReportConfiguration
+@ReportSetUp
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, AssertJExtensionProvider.class })
 public class WebElementAssertionsExtensionTestProvider {

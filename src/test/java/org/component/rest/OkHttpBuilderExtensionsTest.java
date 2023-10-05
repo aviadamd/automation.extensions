@@ -5,12 +5,13 @@ import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.utils.rest.okHttp.OkHttpBuilderExtensions;
-import org.utils.rest.okHttp.ResponseCollector;
+import org.utils.rest.okHttp.ResponseHandler;
 import java.util.Map;
 
 @Slf4j
 public class OkHttpBuilderExtensionsTest {
     private OkHttpBuilderExtensions okHttpBuilderExtensions;
+
     @BeforeEach
     public void init() {
         this.okHttpBuilderExtensions = new OkHttpBuilderExtensions();
@@ -29,14 +30,9 @@ public class OkHttpBuilderExtensionsTest {
                 .url(httpUrl.build())
                 .header("Content-Type", "application/json");
 
-        ResponseCollector optionalResponse = this.okHttpBuilderExtensions
+        ResponseHandler optionalResponse = this.okHttpBuilderExtensions
                 .withRequestBuilder(request)
-                .execute(false, false);
-
-        if (optionalResponse.isPassRequest()) {
-            log.info(optionalResponse.getResponseData().getHeadersMap().toString());
-            log.info(optionalResponse.getResponseData().getResponseBody());
-        }
+                .execute();
     }
 
     @Test
@@ -53,11 +49,8 @@ public class OkHttpBuilderExtensionsTest {
                 .headers(Headers.of(Map.of("Content-Type","application/json")))
                 .post(formBody);
 
-        ResponseCollector responseCollector = this.okHttpBuilderExtensions
+        ResponseHandler responseHandler = this.okHttpBuilderExtensions
                 .withRequestBuilder(request)
-                .execute(false, false);
-        if (responseCollector.isPassRequest()) {
-            log.info(responseCollector.getResponseData().getResponseBody());
-        }
+                .execute();
     }
 }

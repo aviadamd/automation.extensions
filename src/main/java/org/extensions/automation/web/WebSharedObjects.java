@@ -3,7 +3,7 @@ package org.extensions.automation.web;
 import com.aventstack.extentreports.Status;
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
-import org.data.StringsUtilities;
+import org.utils.StringsUtilities;
 import org.extensions.automation.proxy.MobProxyExtension;
 import org.extensions.report.ExtentTestManager;
 import org.utils.assertions.AssertJHandler;

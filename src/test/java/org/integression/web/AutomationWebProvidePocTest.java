@@ -3,7 +3,7 @@ package org.integression.web;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.anontations.ProviderConfiguration;
 import org.extensions.anontations.mongo.MongoMorphiaConnector;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.web.WebDriverType;
 import org.extensions.automation.web.WebSharedObjects;
@@ -19,7 +19,7 @@ import org.utils.assertions.AssertionsLevel;
 @Slf4j
 @Execution(ExecutionMode.CONCURRENT)
 @ExtendWith(value = { ExtentReportExtension.class, WebSharedObjectsProviderExtension.class })
-@ReportConfiguration
+@ReportSetUp
 @ProviderConfiguration(
         dbProvider = @MongoMorphiaConnector(host = "project.db.url", dbName = "dbNew"),
         driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30))

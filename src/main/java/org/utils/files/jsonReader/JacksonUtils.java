@@ -1,4 +1,4 @@
-package org.data.files.jsonReader;
+package org.utils.files.jsonReader;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;

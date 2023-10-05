@@ -3,103 +3,69 @@ package org.extensions.report;
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.observers.DisposableObserver;
 import lombok.extern.slf4j.Slf4j;
-import org.base.RxJavaBus;
+import org.utils.TestDataObserverBus;
 import org.base.configuration.PropertiesManager;
 import org.base.anontations.ReportConfigurations;
 import org.bson.types.ObjectId;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.utils.date.DateTimeUtilExtension;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
-import org.extensions.mongo.pojo.FailTestAdapter;
-import org.extensions.mongo.pojo.FailTestInfoMongo;
-import org.extensions.mongo.pojo.PassTestAdapter;
-import org.extensions.mongo.pojo.PassTestInfoMongo;
-import org.extensions.report.dto.TestMetaData;
-import org.junit.jupiter.api.Assertions;
+import org.extensions.mongo.pojo.TestInfoAdapter;
+import org.extensions.mongo.pojo.TestInfoMongo;
 import org.junit.jupiter.api.extension.*;
 import org.utils.mongo.legacy.MongoRepoImplementation;
 import java.lang.annotation.Annotation;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Slf4j
-public class ExtentReportExtension implements
-        TestWatcher,
-        BeforeAllCallback,
-        BeforeEachCallback,
-        AfterEachCallback,
-        AfterAllCallback {
+public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
-    private static final List<FailTestInfoMongo> failTestsMongoCollector = Collections.synchronizedList(new ArrayList<>());
-    private static final List<PassTestInfoMongo> passTestsMongoCollector = Collections.synchronizedList(new ArrayList<>());
     private static final HashMap<Long, ReportConfigurations> propertiesMap = new HashMap<>();
-    public static ReportConfigurations properties() {
+    private static ReportConfigurations properties() {
         return propertiesMap.get(Thread.currentThread().getId());
     }
-
+    private static final List<TestInfoMongo> testInfoCollector = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
-        try {
-            if (context.getElement().isPresent()) {
+        if (context.getElement().isPresent()) {
+            Optional<ReportSetUp> reportSetUp = this.readAnnotation(context, ReportSetUp.class);
 
-                Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
-                if (configuration.isPresent()) {
+            if (reportSetUp.isPresent()) {
+                propertiesMap.put(Thread.currentThread().getId(), new PropertiesManager().getOrCreate(ReportConfigurations.class));
+                String testClassName = context.getRequiredTestClass().getSimpleName();
+                String sparkLocation = properties().reportPath() + "/Spark.html";
+                String reportConfigurationLocation = properties().reportConfiguration();
 
-                    propertiesMap.put(Thread.currentThread().getId(), new PropertiesManager().getOrCreate(ReportConfigurations.class));
-                    final String testClassName = context.getRequiredTestClass().getSimpleName();
-                    final String sparkLocation = properties().reportPath() + "/Spark.html";
-                    final String reportConfigurationLocation = properties().reportConfiguration();
+                properties().setProperty("project.report.path", reportSetUp.get().reportPath());
+                properties().setProperty("project.report.config", reportSetUp.get().reportSettingsPath());
 
-                    properties().setProperty("project.report.path", configuration.get().reportPath());
-                    properties().setProperty("project.report.config", configuration.get().reportSettingsPath());
-
-                    AnalysisStrategy analysisStrategy = configuration.get().analysisStrategy();
-                    ExtentTestManager.getInstance().setExtentManager(sparkLocation, reportConfigurationLocation, testClassName);
-                    ExtentTestManager.getInstance().setAnalysisStrategy(analysisStrategy);
-                    ExtentTestManager.getInstance().setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
-                }
+                AnalysisStrategy analysisStrategy = reportSetUp.get().analysisStrategy();
+                ExtentTestManager.getInstance().setExtentManager(sparkLocation, reportConfigurationLocation, testClassName);
+                ExtentTestManager.getInstance().setAnalysisStrategy(analysisStrategy);
+                ExtentTestManager.getInstance().setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
             }
-        } catch (Exception exception) {
-            Assertions.fail("Fail init extent report ", exception);
         }
     }
 
     @Override
     public synchronized void beforeEach(ExtensionContext context) {
-        try {
-            if (context.getElement().isPresent()) {
-                Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
-                final String className = context.getRequiredTestClass().getSimpleName();
-                final String testMethod = context.getRequiredTestMethod().getName();
+        if (context.getElement().isPresent()) {
+            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
+            final String className = context.getRequiredTestClass().getSimpleName();
+            final String testMethod = context.getRequiredTestMethod().getName();
 
-                if (reportTest.isPresent()) {
-                    ExtentTestManager.getInstance().createTest(testMethod, reportTest.get().assignCategory(), reportTest.get().assignAuthor());
-                } else ExtentTestManager.getInstance().createTest(testMethod, className,"unknown");
-                ExtentTestManager.getInstance().log(Status.INFO, " test " + testMethod + " started");
-            }
-        } catch (Exception exception) {
-            Assertions.fail("Fail create test with extent report ", exception);
+            if (reportTest.isPresent()) {
+                ExtentTestManager.getInstance().createTest(testMethod, reportTest.get().assignCategory(), reportTest.get().assignAuthor());
+            } else ExtentTestManager.getInstance().createTest(testMethod, className,"unknown");
+            ExtentTestManager.getInstance().log(Status.INFO, " test " + testMethod + " started");
         }
     }
-
-    @Override
-    public synchronized void afterEach(ExtensionContext context) {
-        try {
-            if (context.getElement().isPresent()) {
-                final String testMethod = context.getRequiredTestMethod().getName();
-                final String testStatus = context.getExecutionException().isPresent() ? "error" : "pass";
-                ExtentTestManager.getInstance().log(Status.INFO, "test " + testMethod + " finish with " + testStatus + " status");
-            }
-        } catch (Exception exception) {
-            Assertions.fail("Fail finish test report with extent report ", exception);
-        }
-    }
-
     @Override
     public synchronized void testSuccessful(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -109,12 +75,10 @@ public class ExtentReportExtension implements
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
 
             reportTest.ifPresent(reportInfo -> {
-                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
-                if (logs.isEmpty()) logs.add(Log.builder().details("Test Class: " + testClass + ", Test Method " + testMethod + " Pass").build());
-
                 ExtentTestManager.getInstance().log(Status.PASS, "test " + testMethod + " pass");
-                TestMetaData testMetaData = new TestMetaData(reportInfo, logs,"");
-                passTestsMongoCollector.add(new PassTestInfoMongo(new ObjectId(new Date()), testClass, testMetaData));
+                Optional<ReportSetUp> reportConfiguration = Optional.ofNullable(context.getRequiredTestClass().getAnnotation(ReportSetUp.class));
+                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
+                reportConfiguration.ifPresent(configuration -> testInfoCollector.add(new TestInfoMongo(new ObjectId(new Date()), testClass, Status.PASS, reportInfo.assignCategory(), reportInfo.assignAuthor(), logs)));
             });
         }
     }
@@ -122,26 +86,28 @@ public class ExtentReportExtension implements
     @Override
     public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
         if (context.getElement().isPresent()) {
-            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
-            reportTest.ifPresent(reportInfo -> {
 
+            Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
+
+            reportTest.ifPresent(reportInfo -> {
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                Disposable subscribe = RxJavaBus.subscribeToObservable(object -> {
-                    ExtentTestManager
-                            .getInstance()
-                            .onFail(true, FailStatus.SKIP, testMethod + " error ", object.toString());
-                });
+                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
+                logs.add(Log.builder().details(throwable.getMessage()).status(Status.SKIP).build());
 
-                subscribe.dispose();
+                Disposable disposable = TestDataObserverBus.subscribe(
+                        onNext -> {
+                            logs.add(Log.builder().details(onNext.toString()).status(Status.SKIP).build());
+                            ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", onNext.toString());
+                        },
+                        onError -> {}
+                );
+                disposable.dispose();
                 ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
 
-                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
-                if (logs.isEmpty()) logs.add(Log.builder().details(throwable.getMessage()).build());
-
-                TestMetaData testMetaData = new TestMetaData(reportInfo, logs, throwable.getMessage());
-                failTestsMongoCollector.add(new FailTestInfoMongo(new ObjectId(new Date()), testClass, testMetaData, throwable.getMessage()));
+                Optional<ReportSetUp> reportSetUp = Optional.ofNullable(context.getRequiredTestClass().getAnnotation(ReportSetUp.class));
+                reportSetUp.ifPresent(configuration -> testInfoCollector.add(new TestInfoMongo(new ObjectId(new Date()), testClass, Status.SKIP, reportInfo.assignCategory(), reportInfo.assignAuthor(), logs)));
             });
         }
     }
@@ -149,25 +115,29 @@ public class ExtentReportExtension implements
     @Override
     public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
         if (context.getElement().isPresent()) {
+
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
+
             reportTest.ifPresent(reportInfo -> {
                 final String testClass = context.getRequiredTestClass().getSimpleName();
                 final String testMethod = context.getRequiredTestMethod().getName();
 
-                Disposable subscribe = RxJavaBus.subscribeToObservable(object -> {
-                    ExtentTestManager
-                            .getInstance()
-                            .onFail(true, FailStatus.FAIL, testMethod + " error ", object.toString());
-                });
-                subscribe.dispose();
+                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
+                logs.add(Log.builder().details(throwable.getMessage()).status(Status.FAIL).build());
+
+                Disposable disposable = TestDataObserverBus.subscribe(
+                        onNext -> {
+                            logs.add(Log.builder().details(onNext.toString()).status(Status.FAIL).build());
+                            ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", onNext.toString());
+                        },
+                        onError -> {}
+                );
+                disposable.dispose();
 
                 ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
 
-                List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
-                if (logs.isEmpty()) logs.add(Log.builder().details(throwable.getMessage()).build());
-
-                TestMetaData testMetaData = new TestMetaData(reportInfo, logs, throwable.getMessage());
-                failTestsMongoCollector.add(new FailTestInfoMongo(new ObjectId(new Date()), testClass, testMetaData, throwable.getMessage()));
+                Optional<ReportSetUp> reportSetUp = Optional.ofNullable(context.getRequiredTestClass().getAnnotation(ReportSetUp.class));
+                reportSetUp.ifPresent(configuration -> testInfoCollector.add(new TestInfoMongo(new ObjectId(new Date()), testClass, Status.FAIL, reportInfo.assignCategory(), reportInfo.assignAuthor(), logs)));
             });
         }
     }
@@ -184,53 +154,34 @@ public class ExtentReportExtension implements
 
     @Override
     public synchronized void afterAll(ExtensionContext context) {
-        this.createMongoReport(context);
-        this.createExtraReportAndFlushReports(context);
-    }
-
-    private synchronized void createExtraReportAndFlushReports(ExtensionContext context) {
-        try {
-            if (context.getElement().isPresent()) {
-
-                Optional<ReportConfiguration> configuration = this.readAnnotation(context, ReportConfiguration.class);
-                if (configuration.isPresent() && configuration.get().extraReportsBy().length > 0) {
-                    properties().setProperty("project.report.path", configuration.get().reportPath());
-                    ExtentTestManager.getInstance().attachExtraReports(configuration.get().extraReportsBy(), properties().reportPath());
-                } else {
-                    Status[] statuses = { Status.SKIP, Status.FAIL};
-                    ExtentTestManager.getInstance().attachExtraReports(statuses, properties().reportPath());
-                }
-
+        if (context.getElement().isPresent()) {
+            Optional<ReportSetUp> reportSetUp = this.readAnnotation(context, ReportSetUp.class);
+            if (reportSetUp.isPresent()) {
+                this.addExtentExtraReports(reportSetUp.get());
                 ExtentTestManager.getInstance().flush();
+
+                String className = context.getRequiredTestClass().getSimpleName();
+                this.addMongoDbReport(reportSetUp.get(), className);
             }
-        } catch (Exception exception) {
-            Assertions.fail("Fail create create extra test report with extent report ", exception);
         }
     }
 
-    private synchronized void createMongoReport(ExtensionContext context) {
-        try {
-            if (context.getElement().isPresent()) {
-                Optional<ReportConfiguration> reportConfiguration = this.readAnnotation(context, ReportConfiguration.class);
-                reportConfiguration.ifPresent(configuration -> {
-                    properties().setProperty("project.mongo.connection", configuration.mongoConnection());
-                    final String mongoConnection = properties().mongoConnection();
+    private synchronized void addExtentExtraReports(ReportSetUp reportSetUp) {
+        if (reportSetUp.extraReportsBy().length > 0) {
+            properties().setProperty("project.report.path", reportSetUp.reportPath());
+            ExtentTestManager.getInstance().attachExtraReports(reportSetUp.extraReportsBy(), properties().reportPath());
+        }
+    }
 
-                    MongoRepoImplementation mongo;
-                    if (passTestsMongoCollector.size() > 0) {
-                        mongo = new MongoRepoImplementation(mongoConnection, configuration.mongoDbName(), "PassTestResults");
-                        mongo.insertElements(PassTestAdapter.toDocuments(passTestsMongoCollector));
-                        mongo.close();
-                    }
-
-                    if (failTestsMongoCollector.size() > 0) {
-                        mongo = new MongoRepoImplementation(mongoConnection, configuration.mongoDbName(), "FailTestResults");
-                        mongo.insertElements(FailTestAdapter.toDocuments(failTestsMongoCollector));
-                        mongo.close();
-                    }
-                });
-            }
-        } catch (Exception ignore) {}
+    private synchronized void addMongoDbReport(ReportSetUp reportSetUp, String className) {
+        properties().setProperty("project.mongo.connection", reportSetUp.mongoConnection());
+        String mongoConnection = properties().mongoConnection();
+        DateTimeUtilExtension dateTimeUtilExtension = new DateTimeUtilExtension();
+        LocalDate localDate = dateTimeUtilExtension.buildDate(LocalDate.now(), LocalTime.now(), ZoneOffset.UTC);
+        String date =  dateTimeUtilExtension.dateToString("dd MMMM yyyy", localDate, Locale.CANADA, null, null);
+        MongoRepoImplementation mongo = new MongoRepoImplementation(mongoConnection, reportSetUp.mongoDbName(), className + "_" + date);
+        mongo.insertElements(TestInfoAdapter.toDocuments(ExtentReportExtension.testInfoCollector));
+        mongo.close();
     }
 
     private synchronized <T extends Annotation> Optional<T> readAnnotation(ExtensionContext context, Class<T> annotation) {
