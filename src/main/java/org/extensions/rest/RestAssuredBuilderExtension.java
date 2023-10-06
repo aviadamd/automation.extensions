@@ -6,34 +6,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.FailureConfig;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.ErrorLoggingFilter;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.http.Header;
+import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.*;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.exec.LogOutputStream;
 import org.extensions.anontations.Step;
-import org.extensions.report.Category;
-import org.extensions.report.ExtentReportExtension;
-import org.utils.TestDataObserverBus;
-import org.extensions.report.TestData;
+import org.extensions.report.*;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
 import org.junit.jupiter.api.extension.*;
+import org.utils.TestDataObserverBus;
 import org.utils.rest.assured.RestAssuredHandler;
 import org.utils.rest.assured.ValidateResponse;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import static io.restassured.filter.log.LogDetail.ALL;
 
 @Slf4j
 public class RestAssuredBuilderExtension extends ExtentReportExtension implements
         BeforeAllCallback,
         BeforeEachCallback,
         AfterEachCallback,
+        AfterAllCallback,
         TestWatcher,
         ParameterResolver {
 
@@ -69,9 +70,9 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
             RestDataProvider restDataProvider = context.getElement().get().getAnnotation(RestDataProvider.class);
 
             if (restDataBaseClassProvider != null && restDataProvider != null) {
-                for (RestStep stepProvider : restDataProvider.restSteps()) {
+                for (RestStep stepProvider: restDataProvider.restSteps()) {
                     if (stepProvider != null) {
-                        Response response = this.execute(restDataBaseClassProvider, stepProvider);
+                        Response response = this.request(restDataBaseClassProvider, stepProvider);
                         responseCollectorRepo.get().addResponse(stepProvider.stepId(), new ValidateResponse(response));
                         this.headerCollector(response);
                     }
@@ -98,13 +99,20 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
     public synchronized void afterEach(ExtensionContext context)  {
         if (context.getElement().isPresent()) {
             headerParamsCollector = new ConcurrentHashMap<>();
+        }
+    }
+
+    @Override
+    public synchronized void afterAll(ExtensionContext context) {
+        super.afterAll(context);
+        if (context.getElement().isPresent()) {
+            responseCollectorRepo.get().deleteAll();
             responseCollectorRepo.remove();
         }
     }
 
-
     @Step(desc = "execute rest assured step ")
-    private synchronized Response execute(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
+    private synchronized Response request(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
 
         String baseUri = "";
@@ -133,7 +141,26 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
                 .setBaseUri(baseUri)
                 .setBasePath(stepProvider.urlPath())
                 .setContentType(stepProvider.contentType())
-                .addFilter(new RequestLoggingFilter(ALL));
+                .addFilter(new RequestLoggingFilter(LogDetail.ALL, new PrintStream(new LogOutputStream() {
+                    @Override
+                    protected void processLine(String message, int i) {
+                        log.debug(message);
+                        ExtentTestManager.getInstance().log(Status.INFO, message);
+                    }
+                })))
+                .addFilter(new ResponseLoggingFilter(LogDetail.STATUS, new PrintStream(new LogOutputStream() {
+                    @Override
+                    protected void processLine(String message, int i) {
+                        log.debug(message);
+                    }
+                })))
+                .addFilter(new ErrorLoggingFilter(new PrintStream(new LogOutputStream() {
+                    @Override
+                    protected void processLine(String message, int i) {
+                        log.error(message);
+                        ExtentTestManager.getInstance().log(Status.FAIL, message);
+                    }
+                })));
 
         if (stepProvider.paramsKeys().length > 0 && stepProvider.paramsValues().length > 0) {
             ConcurrentHashMap<String,String> arrayToMap = this.arrayToMap(stepProvider.paramsKeys(), stepProvider.paramsValues());
@@ -178,9 +205,8 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
             }
         }
 
-        final String url = baseUri + "/" + stepProvider.urlPath();
         return new RestAssuredHandler().build(
-                this.failureListener(url),
+                this.failureListener(baseUri + "/" + stepProvider.urlPath()),
                 requestSpecBuilder,
                 stepProvider.requestMethod(),
                 stepProvider.expectedStatusCode()
@@ -254,4 +280,5 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
         }
         return headerCollector;
     }
+
 }

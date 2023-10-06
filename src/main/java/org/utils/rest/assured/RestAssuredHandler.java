@@ -7,6 +7,8 @@ import io.restassured.http.Method;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestClientResponseException;
+
 import java.util.List;
 import static java.util.Collections.singletonList;
 
@@ -43,6 +45,7 @@ import static java.util.Collections.singletonList;
             List<RestAssuredConfig> restAssuredConfigs,
             RequestSpecBuilder requestSpecBuilder,
             Method method, int responseCode) {
+
         try {
 
             RequestSpecification requestSpecification = RestAssured.given()

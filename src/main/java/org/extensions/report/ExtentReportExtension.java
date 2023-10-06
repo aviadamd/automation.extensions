@@ -3,7 +3,10 @@ package org.extensions.report;
 import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.SingleObserver;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.DisposableSingleObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.utils.TestDataObserverBus;
 import org.base.configuration.PropertiesManager;
@@ -96,15 +99,15 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                 List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
                 logs.add(Log.builder().details(throwable.getMessage()).status(Status.SKIP).build());
 
-                Disposable disposable = TestDataObserverBus.subscribe(
-                        onNext -> {
-                            logs.add(Log.builder().details(onNext.toString()).status(Status.SKIP).build());
-                            ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", onNext.toString());
-                        },
-                        onError -> {}
-                );
+                Disposable disposable = TestDataObserverBus.subscribe(onNext -> {
+                    if (onNext.size() > 0) {
+                        onNext.forEach(action -> {
+                            logs.add(Log.builder().details(action.toString()).status(Status.SKIP).build());
+                            ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP , testMethod + " error ", action.toString());
+                        });
+                    }
+                });
                 disposable.dispose();
-                ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
 
                 Optional<ReportSetUp> reportSetUp = Optional.ofNullable(context.getRequiredTestClass().getAnnotation(ReportSetUp.class));
                 reportSetUp.ifPresent(configuration -> testInfoCollector.add(new TestInfoMongo(new ObjectId(new Date()), testClass, Status.SKIP, reportInfo.assignCategory(), reportInfo.assignAuthor(), logs)));
@@ -125,16 +128,15 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                 List<Log> logs = ExtentTestManager.getInstance().getExtentLogs();
                 logs.add(Log.builder().details(throwable.getMessage()).status(Status.FAIL).build());
 
-                Disposable disposable = TestDataObserverBus.subscribe(
-                        onNext -> {
-                            logs.add(Log.builder().details(onNext.toString()).status(Status.FAIL).build());
-                            ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", onNext.toString());
-                        },
-                        onError -> {}
-                );
+                Disposable disposable = TestDataObserverBus.subscribe(onNext -> {
+                    if (onNext.size() > 0) {
+                        onNext.forEach(action -> {
+                            logs.add(Log.builder().details(action.toString()).status(Status.FAIL).build());
+                            ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", action.toString());
+                        });
+                    }
+                });
                 disposable.dispose();
-
-                ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
 
                 Optional<ReportSetUp> reportSetUp = Optional.ofNullable(context.getRequiredTestClass().getAnnotation(ReportSetUp.class));
                 reportSetUp.ifPresent(configuration -> testInfoCollector.add(new TestInfoMongo(new ObjectId(new Date()), testClass, Status.FAIL, reportInfo.assignCategory(), reportInfo.assignAuthor(), logs)));

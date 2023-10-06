@@ -1,12 +1,13 @@
 package org.utils;
 
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.report.TestData;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * RxJavaBus
@@ -14,28 +15,8 @@ import org.extensions.report.TestData;
  */
 @Slf4j
 public final class TestDataObserverBus {
-
-    private static final BehaviorSubject<TestData<?>> testDataBehaviorSubject = BehaviorSubject.create();
-
-    /**
-     * subscribeToObservable
-     * Subscribes to the current Observable and provides a callback to handle the items it emits.
-     * @param observer an observer is ready to consume items
-     */
-    public static void subscribe(@NonNull Observer<TestData<?>> observer) {
-        testDataBehaviorSubject.subscribe(observer);
-    }
-
-    /**
-     * subscribeToObservable
-     * Subscribes to the current Observable and provides a callback to handle the items it emits.
-     * @return Disposable
-     */
-    public static @NonNull Disposable subscribe(
-            @NonNull Consumer<? super TestData<?>> onNext,
-            @NonNull Consumer<? super Throwable> onError) {
-        return testDataBehaviorSubject.subscribe(onNext, onError);
-    }
+    private static final List<TestData<?>> testDataList = new ArrayList<>();
+    private static final BehaviorSubject<List<TestData<?>>> testDataBehaviorSubject = BehaviorSubject.create();
 
     /**
      * publishFromObserver
@@ -43,7 +24,19 @@ public final class TestDataObserverBus {
      * @param testData any
      */
     public static void onNext(@NonNull TestData<?> testData) {
-        log.debug("publish " + testData.toString() + " data");
-        testDataBehaviorSubject.onNext(testData);
+        log.info("publish " + testData.toString() + " data");
+        testDataList.add(testData);
+        testDataBehaviorSubject.onNext(testDataList);
+    }
+
+    /**
+     * subscribeToObservable
+     * Subscribes to the current Observable and provides a callback to handle the items it emits.
+     *
+     * @return Disposable
+     */
+    public static @NonNull Disposable subscribe(
+            @NonNull Consumer<? super List<TestData<?>>> onNext) {
+        return testDataBehaviorSubject.subscribe(onNext);
     }
 }

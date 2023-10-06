@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExtentTestManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(ExtentTestManager.class);
     private static final Map<Long, ExtentTest> extentTestMap = new HashMap<>();
     private static synchronized ExtentTest extentTest() {
         return extentTestMap.get(Thread.currentThread().getId());
@@ -159,12 +157,13 @@ public class ExtentTestManager {
 
     /**
      * log
+     *
      * @param status
      * @param details
+     * @return
      */
-    public synchronized void log(Status status, String details) {
-        logger.info(status + " " + details);
-        extentTest().log(status, details);
+    public synchronized ExtentTest log(Status status, String details) {
+        return extentTest().log(status, details);
     }
 
     /**
