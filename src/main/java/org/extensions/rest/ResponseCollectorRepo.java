@@ -32,7 +32,7 @@ public class ResponseCollectorRepo {
                 return entry.getValue();
             }
         }
-        return null;
+        throw new RuntimeException("unable to find response with id number: " + findBy);
     }
 
 }

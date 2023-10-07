@@ -39,21 +39,15 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+            <version>2.12.3</version>
         </dependency>
 
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser</artifactId>
             <version>2.1.14</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>spring-web-test-client</artifactId>
-            <version>5.3.2</version>
         </dependency>
 
         <dependency>
@@ -155,7 +149,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <version>8.0.33</version>
         </dependency>
 
         <dependency>
@@ -205,7 +199,7 @@
         <dependency>
             <groupId>org.junit</groupId>
             <artifactId>junit-bom</artifactId>
-            <version>5.7.0-M1</version>
+            <version>5.9.2</version>
             <type>pom</type>
         </dependency>
 
@@ -242,13 +236,13 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.11</version>
+            <version>3.12.12</version>
         </dependency>
 
         <dependency>
             <groupId>org.mongojack</groupId>
             <artifactId>mongojack</artifactId>
-            <version>4.7.0</version>
+            <version>4.8.0</version>
         </dependency>
 
         <dependency>

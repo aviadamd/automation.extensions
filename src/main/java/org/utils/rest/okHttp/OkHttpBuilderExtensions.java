@@ -2,6 +2,8 @@ package org.utils.rest.okHttp;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.jetbrains.annotations.NotNull;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -38,8 +40,8 @@ public class OkHttpBuilderExtensions {
                     .newCall(this.requestBuilder.build())
                     .execute();
 
-        } catch (IOException ioException) {
-            throw new RuntimeException(ioException);
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
         }
 
         return okHttpLoggingInterceptor.getResponse();

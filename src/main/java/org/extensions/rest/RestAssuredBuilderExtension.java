@@ -13,6 +13,7 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.*;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
+import io.restassured.specification.ProxySpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.exec.LogOutputStream;
 import org.extensions.anontations.Step;
@@ -148,7 +149,7 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
                         ExtentTestManager.getInstance().log(Status.INFO, message);
                     }
                 })))
-                .addFilter(new ResponseLoggingFilter(LogDetail.STATUS, new PrintStream(new LogOutputStream() {
+                .addFilter(new ResponseLoggingFilter(LogDetail.ALL, new PrintStream(new LogOutputStream() {
                     @Override
                     protected void processLine(String message, int i) {
                         log.debug(message);
@@ -209,7 +210,8 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
                 this.failureListener(baseUri + "/" + stepProvider.urlPath()),
                 requestSpecBuilder,
                 stepProvider.requestMethod(),
-                stepProvider.expectedStatusCode()
+                stepProvider.expectedStatusCode(),
+                null
         );
     }
 

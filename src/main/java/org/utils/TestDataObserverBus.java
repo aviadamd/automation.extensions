@@ -1,6 +1,7 @@
 package org.utils;
 
 import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -35,8 +36,17 @@ public final class TestDataObserverBus {
      *
      * @return Disposable
      */
-    public static @NonNull Disposable subscribe(
-            @NonNull Consumer<? super List<TestData<?>>> onNext) {
+    public static @NonNull Disposable subscribe(@NonNull Consumer<? super List<TestData<?>>> onNext) {
         return testDataBehaviorSubject.subscribe(onNext);
+    }
+
+    /**
+     * subscribeToObservable
+     * Subscribes to the current Observable and provides a callback to handle the items it emits.
+     *
+     * @return Disposable
+     */
+    public static @NonNull void subscribe(@NonNull Observer<? super List<TestData<?>>> onNext) {
+        testDataBehaviorSubject.subscribe(onNext);
     }
 }

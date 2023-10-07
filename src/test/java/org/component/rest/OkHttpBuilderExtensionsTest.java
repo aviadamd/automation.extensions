@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.utils.rest.okHttp.OkHttpBuilderExtensions;
 import org.utils.rest.okHttp.ResponseHandler;
+
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
