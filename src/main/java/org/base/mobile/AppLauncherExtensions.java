@@ -1,6 +1,6 @@
 package org.base.mobile;
 
-import org.extensions.automation.mobile.ApplicationLaunchOption;
+import org.extensions.mobile.ApplicationLaunchOption;
 
 public class AppLauncherExtensions {
     private final MobileDriverProvider mobileDriverProvider;

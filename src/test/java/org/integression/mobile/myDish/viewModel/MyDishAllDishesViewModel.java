@@ -2,7 +2,7 @@ package org.integression.mobile.myDish.viewModel;
 
 import org.assertj.core.api.BooleanAssert;
 import org.base.mobile.gestures.ScrollDirection;
-import org.extensions.automation.mobile.MobileProvider;
+import org.extensions.mobile.MobileProvider;
 import org.integression.mobile.myDish.view.MyDishAllDishesView;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;

@@ -1,4 +1,4 @@
-package org.extensions.automation.mobile;
+package org.extensions.mobile;
 
 public enum ApplicationLaunchOption {
     CLEAR_CASH,

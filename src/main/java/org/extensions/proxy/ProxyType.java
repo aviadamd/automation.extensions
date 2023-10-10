@@ -1,4 +1,4 @@
-package org.extensions.automation.proxy;
+package org.extensions.proxy;
 
 public enum ProxyType {
     MOBILE,

@@ -67,15 +67,6 @@ import static org.awaitility.Awaitility.with;
 
         try {
 
-//            try (AsyncHttpClient asyncHttpClient = Dsl.asyncHttpClient()) {
-//                Future<org.asynchttpclient.Response> responseFuture = asyncHttpClient.executeRequest(new RequestBuilder()
-//                        .setUri(Uri.create(""))
-//                        .setRequestTimeout(10)
-//                        .setMethod("GET"));
-//                responseFuture.get().getResponseBody();
-//            }
-
-
             RequestSpecification requestSpecification = RestAssured.given()
                     .relaxedHTTPSValidation();
 

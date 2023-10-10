@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 public @interface WebDriverType {
     String baseUrl() default "";
     DurationOf durationOf() default DurationOf.SECONDS;
-    int generalTo() default 10;
+    int fluentWaitGeneralTo() default 10;
     String driversInstance();
 }

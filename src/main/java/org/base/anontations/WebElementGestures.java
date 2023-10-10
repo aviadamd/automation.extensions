@@ -17,8 +17,8 @@ public interface WebElementGestures {
     String getText(WebElement element);
     List<WebElement> findElements(By by);
     WebElement findElement(By by);
-
+    WebElement findElement(By byFather, By son);
     WebElement findElement(ExpectedCondition<WebElement> expectedConditions);
-
+    List<WebElement> findElements(By byFather, By son);
     String getPageSource();
 }

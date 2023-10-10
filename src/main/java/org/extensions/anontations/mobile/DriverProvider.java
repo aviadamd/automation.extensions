@@ -1,6 +1,6 @@
 package org.extensions.anontations.mobile;
 
-import org.extensions.automation.mobile.ApplicationLaunchOption;
+import org.extensions.mobile.ApplicationLaunchOption;
 
 import java.lang.annotation.*;
 

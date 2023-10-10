@@ -43,6 +43,7 @@ public class SoftAssertionManager extends SoftAssertions {
      */
     protected synchronized void failAll(List<AssertionError> assertionErrors) {
         if (assertionErrors.size() > 0) {
+            SoftAssertionManager.assertionErrors = new ArrayList<>();
             Assertions.fail("assertion errors test fails " + assertionErrors);
         }
     }

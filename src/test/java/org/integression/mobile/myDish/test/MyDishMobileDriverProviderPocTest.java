@@ -1,13 +1,13 @@
 package org.integression.mobile.myDish.test;
 
 import com.aventstack.extentreports.AnalysisStrategy;
+import com.aventstack.extentreports.Status;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.assertions.AssertJExtensionProvider;
-import org.extensions.automation.mobile.MobileDriverProviderExtension;
-import org.extensions.automation.mobile.MobileProvider;
-import org.extensions.report.ExtentReportExtension;
+import org.extensions.mobile.MobileDriverProviderExtension;
+import org.extensions.mobile.MobileProvider;
 import org.integression.mobile.myDish.viewModel.MyDishAllDishesViewModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -17,10 +17,10 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import java.util.concurrent.TimeUnit;
 import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
-import static org.extensions.automation.mobile.ApplicationLaunchOption.LAUNCH;
+import static org.extensions.mobile.ApplicationLaunchOption.LAUNCH;
 
 @Execution(ExecutionMode.CONCURRENT)
-@ExtendWith(value = { ExtentReportExtension.class, MobileDriverProviderExtension.class, AssertJExtensionProvider.class })
+@ExtendWith(value = {  MobileDriverProviderExtension.class, AssertJExtensionProvider.class })
 @ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST, repeatOnStatus = { FAIL } )
 public class MyDishMobileDriverProviderPocTest {
 
@@ -32,6 +32,7 @@ public class MyDishMobileDriverProviderPocTest {
         MyDishAllDishesViewModel myDishAllDishesViewModel = new MyDishAllDishesViewModel(mobileProvider);
         myDishAllDishesViewModel.lowerBarNavigation();
         myDishAllDishesViewModel.selectSavedDish(10,"Almost Heaven Cake");
+        mobileProvider.extentManager().log(Status.INFO,"bla bla");
     }
 
     @Test

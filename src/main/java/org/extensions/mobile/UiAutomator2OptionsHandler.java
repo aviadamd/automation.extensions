@@ -1,8 +1,8 @@
-package org.extensions.automation;
+package org.extensions.mobile;
 
 import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import org.extensions.automation.mobile.MobileCapabilitiesObject;
+import org.extensions.mobile.MobileCapabilitiesObject;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

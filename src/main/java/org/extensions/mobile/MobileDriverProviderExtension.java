@@ -1,8 +1,9 @@
-package org.extensions.automation.mobile;
+package org.extensions.mobile;
 
 import org.base.configuration.PropertiesManager;
 import org.base.mobile.*;
 import org.extensions.anontations.mobile.DriverProvider;
+import org.extensions.report.ExtentReportExtension;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.*;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -10,7 +11,8 @@ import org.utils.assertions.AssertJHandler;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-public class MobileDriverProviderExtension implements ParameterResolver, BeforeEachCallback, AfterAllCallback {
+public class MobileDriverProviderExtension extends ExtentReportExtension
+        implements ParameterResolver, BeforeEachCallback, AfterAllCallback {
 
     private final ThreadLocal<MobileProvider> mobileProvider = new ThreadLocal<>();
 
@@ -33,6 +35,7 @@ public class MobileDriverProviderExtension implements ParameterResolver, BeforeE
 
     @Override
     public synchronized void beforeEach(ExtensionContext context) {
+        super.beforeEach(context);
         try {
             if (context.getElement().isPresent()) {
 
@@ -57,6 +60,7 @@ public class MobileDriverProviderExtension implements ParameterResolver, BeforeE
 
     @Override
     public synchronized void afterAll(ExtensionContext extensionContext)  {
+        super.afterAll(extensionContext);
         if (extensionContext.getElement().isPresent()) {
             try {
                 if (this.mobileProvider.get().getAppiumServiceManager() != null) {

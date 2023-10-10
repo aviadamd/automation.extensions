@@ -4,7 +4,6 @@ import com.aventstack.extentreports.AnalysisStrategy;
 import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.model.Log;
 import io.reactivex.rxjava3.disposables.Disposable;
-import lombok.extern.slf4j.Slf4j;
 import org.utils.TestDataObserverBus;
 import org.base.configuration.PropertiesManager;
 import org.base.anontations.ReportConfigurations;
@@ -22,14 +21,19 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-@Slf4j
-public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
+public class ExtentReportExtension implements
+        TestWatcher, BeforeAllCallback,
+        BeforeEachCallback, AfterAllCallback {
+
+//    @RegisterExtension
+//    private static final LoggingExtension loggingExtension = new LoggingExtension();
 
     private static final HashMap<Long, ReportConfigurations> propertiesMap = new HashMap<>();
     private static ReportConfigurations properties() {
         return propertiesMap.get(Thread.currentThread().getId());
     }
     private static final List<TestInfoMongo> testInfoCollector = Collections.synchronizedList(new ArrayList<>());
+
 
     @Override
     public synchronized void beforeAll(ExtensionContext context) {
@@ -46,9 +50,10 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
                 properties().setProperty("project.report.config", reportSetUp.get().reportSettingsPath());
 
                 AnalysisStrategy analysisStrategy = reportSetUp.get().analysisStrategy();
-                ExtentTestManager.getInstance().setExtentManager(sparkLocation, reportConfigurationLocation, testClassName);
-                ExtentTestManager.getInstance().setAnalysisStrategy(analysisStrategy);
-                ExtentTestManager.getInstance().setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
+                ExtentTestManager.getInstance()
+                        .setExtentManager(sparkLocation, reportConfigurationLocation, testClassName)
+                        .setAnalysisStrategy(analysisStrategy)
+                        .setSystemInfo(System.getProperty("os.name"), System.getProperty("os.arch"));
             }
         }
     }
@@ -57,15 +62,13 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
     public synchronized void beforeEach(ExtensionContext context) {
         if (context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
-            final String className = context.getRequiredTestClass().getSimpleName();
             final String testMethod = context.getRequiredTestMethod().getName();
-
-            if (reportTest.isPresent()) {
-                ExtentTestManager.getInstance().createTest(testMethod, reportTest.get().assignCategory(), reportTest.get().assignAuthor());
-            } else ExtentTestManager.getInstance().createTest(testMethod, className,"unknown");
-            ExtentTestManager.getInstance().log(Status.INFO, " test " + testMethod + " started");
+            reportTest.ifPresent(reportInfo -> ExtentTestManager
+                    .getInstance()
+                    .createTest(testMethod, reportInfo.assignCategory(), reportInfo.assignAuthor()));
         }
     }
+
     @Override
     public synchronized void testSuccessful(ExtensionContext context) {
         if (context.getElement().isPresent()) {
@@ -98,11 +101,11 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
 
                 Disposable disposable = TestDataObserverBus.subscribe(onNext -> {
                     if (onNext.size() > 0) {
-                        onNext.forEach(action -> {
+                        onNext.stream().distinct().forEach(action -> {
                             logs.add(Log.builder().details(action.toString()).status(Status.SKIP).build());
                             ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP , testMethod + " error ", action.toString());
                         });
-                    }
+                    } else ExtentTestManager.getInstance().onFail(true, FailStatus.SKIP, testMethod + " error ", throwable.getMessage());
                 });
                 disposable.dispose();
 
@@ -127,11 +130,11 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
 
                 Disposable disposable = TestDataObserverBus.subscribe(onNext -> {
                     if (onNext.size() > 0) {
-                        onNext.forEach(action -> {
+                        onNext.stream().distinct().forEach(action -> {
                             logs.add(Log.builder().details(action.toString()).status(Status.FAIL).build());
                             ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", action.toString());
                         });
-                    }
+                    } else ExtentTestManager.getInstance().onFail(true, FailStatus.FAIL, testMethod + " error ", throwable.getMessage());
                 });
                 disposable.dispose();
 
@@ -156,6 +159,7 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
         if (context.getElement().isPresent()) {
             Optional<ReportSetUp> reportSetUp = this.readAnnotation(context, ReportSetUp.class);
             if (reportSetUp.isPresent()) {
+                TestDataObserverBus.reset();
                 this.addExtentExtraReports(reportSetUp.get());
                 ExtentTestManager.getInstance().flush();
 
@@ -193,4 +197,5 @@ public class ExtentReportExtension implements TestWatcher, BeforeAllCallback, Be
         }
         return Optional.empty();
     }
+
 }

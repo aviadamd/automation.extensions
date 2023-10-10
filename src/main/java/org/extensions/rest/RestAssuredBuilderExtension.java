@@ -13,10 +13,8 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.*;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
-import io.restassured.specification.ProxySpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.exec.LogOutputStream;
-import org.extensions.anontations.Step;
 import org.extensions.report.*;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
@@ -112,7 +110,6 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
         }
     }
 
-    @Step(desc = "execute rest assured step ")
     private synchronized Response request(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
 

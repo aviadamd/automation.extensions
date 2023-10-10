@@ -1,4 +1,4 @@
-package org.extensions.automation.mobile;
+package org.extensions.mobile;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

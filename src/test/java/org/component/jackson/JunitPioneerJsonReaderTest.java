@@ -1,7 +1,7 @@
 package org.component.jackson;
 
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.automation.mobile.MobileCapabilitiesObject;
+import org.extensions.mobile.MobileCapabilitiesObject;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junitpioneer.jupiter.RetryingTest;
 import org.junitpioneer.jupiter.json.JsonClasspathSource;

@@ -6,7 +6,7 @@ import org.extensions.jackson.JacksonProviderExtension;
 import org.extensions.anontations.JacksonProvider;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
-import org.extensions.automation.mobile.MobileCapabilitiesObject;
+import org.extensions.mobile.MobileCapabilitiesObject;
 import org.extensions.report.ExtentReportExtension;
 import org.utils.files.jsonReader.JacksonObjectAdapter;
 import org.junit.jupiter.api.DisplayName;

@@ -2,14 +2,19 @@ package org.base.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.base.anontations.WebElementGestures;
-import org.extensions.automation.web.WebDriverEventHandler;
+import org.extensions.web.WebDriverListenerImpl;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.v110.browser.Browser;
+import org.openqa.selenium.devtools.v110.log.Log;
+import org.openqa.selenium.devtools.v110.network.Network;
+import org.openqa.selenium.devtools.v110.runtime.Runtime;
+import org.openqa.selenium.devtools.v110.security.Security;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import java.io.IOException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 
@@ -24,12 +29,16 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     public WebDriverWaitExtensions getWaitExtensions() { return this.waitExtensions.get(); }
     public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
 
-    public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
-        new EventFiringDecorator<>(new WebDriverEventHandler(webDriver));
-        this.driver.set(webDriver);
+    public SeleniumWebDriverProvider(SeleniumWebDriverManager driverManager) {
+        this.driver.set(new EventFiringDecorator<>(new WebDriverListenerImpl()).decorate(driverManager.getDriver()));
+       // this.addDriverDevTools(this.getDriver());
+        this.waitExtensions.set(new WebDriverWaitExtensions(this, driverManager.getDuration()));
+        this.scrollExtension.set(new WebDriverScrollExtension(this));
+    }
 
+    public SeleniumWebDriverProvider(Duration duration, WebDriver webDriver) {
+        this.driver.set(new EventFiringDecorator<>(new WebDriverListenerImpl()).decorate(webDriver));
         this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
-        if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));
     }
 
@@ -39,12 +48,27 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
         return this;
     }
 
-    public void checkConnection(String url) {
-        try {
-            if (!url.isEmpty()) new URL(url).openConnection().connect();
-        } catch (IOException ioException) {
-            Assertions.fail("connection to " + url + ", error: " + ioException.getMessage(), ioException);
-        }
+    private synchronized void addDriverDevTools(WebDriver driver) {
+        DevTools devTools = ((HasDevTools) driver).getDevTools();
+        devTools.send(Network.enable(Optional.of(100000000), Optional.empty(), Optional.empty()));
+        devTools.createSession(driver.getWindowHandle());
+
+        devTools.send(Browser.getVersion());
+        devTools.send(Log.enable());
+        devTools.send(Runtime.enable());
+        devTools.send(Network.enableReportingApi(true));
+        devTools.send(Security.setIgnoreCertificateErrors(true));
+        devTools.send(Browser.getBrowserCommandLine());
+        devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+
+        devTools.addListener(Network.responseReceived(), requestSent -> {
+            log.debug("------------------------------------------------------");
+            log.debug("URL => " + requestSent.getResponse().getUrl());
+            log.debug("Status => " + requestSent.getResponse().getStatus());
+            log.debug("Headers => " + requestSent.getResponse().getHeaders().toString());
+            log.debug("------------------------------------------------------");
+        });
+
     }
 
     @Override
@@ -200,6 +224,16 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
 
     @Override
+    public List<WebElement> findElements(By byFather, By son) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElements(son));
+    }
+
+    @Override
     public WebElement findElement(By by) {
         return this.waitExtensions
                 .get()
@@ -207,6 +241,16 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElement(by));
+    }
+
+    @Override
+    public WebElement findElement(By byFather, By son) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElement(son));
     }
 
     @Override

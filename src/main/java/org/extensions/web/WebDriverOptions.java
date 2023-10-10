@@ -1,4 +1,4 @@
-package org.extensions.automation.web;
+package org.extensions.web;
 
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class WebDriverOptions {
 
-    public ChromeOptions chromeOptions() {
+    public ChromeOptions chrome() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--disable-popup-blocking");
@@ -20,11 +20,14 @@ public class WebDriverOptions {
         chromeOptions.addArguments("--allow-running-insecure-content");
         chromeOptions.addArguments("enable-automation");
         chromeOptions.addArguments("start-maximized");
+        chromeOptions.addArguments("--disable-web-security");
+        chromeOptions.addArguments("--allow-insecure-localhost");
+        chromeOptions.addArguments("--ignore-urlfetcher-cert-requests");
         chromeOptions.addArguments(Arrays.asList("--no-sandbox","--ignore-certificate-errors","--homepage=about:blank","--no-first-run"));
         chromeOptions.addArguments("disable-infobars");
         return chromeOptions;
     }
-    public FirefoxOptions firefoxOptions() {
+    public FirefoxOptions firefox() {
         FirefoxOptions firefoxOptions = new FirefoxOptions();
         firefoxOptions.addPreference("network.automatic-ntlm-auth.trusted-uris", "http://,https://");
         firefoxOptions.addPreference("network.automatic-ntlm-auth.allow-non-fqdn", true);
@@ -32,6 +35,9 @@ public class WebDriverOptions {
         firefoxOptions.addPreference("network.negotiate-auth.trusted-uris", "http://,https://");
         firefoxOptions.addPreference("network.http.phishy-userpass-length", 255);
         firefoxOptions.addPreference("security.csp.enable", false);
+        firefoxOptions.addArguments("--disable-web-security");
+        firefoxOptions.addArguments("--allow-insecure-localhost");
+        firefoxOptions.addArguments("--ignore-urlfetcher-cert-requests");
         FirefoxProfile firefoxProfile = new FirefoxProfile();
         firefoxProfile.setAcceptUntrustedCertificates(true);
         return firefoxOptions;

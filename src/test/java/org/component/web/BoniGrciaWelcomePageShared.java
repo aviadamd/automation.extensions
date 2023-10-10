@@ -2,45 +2,46 @@ package org.component.web;
 
 import org.assertj.core.api.StringAssert;
 import org.base.web.ScrollDirection;
-import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
-import org.utils.assertions.AssertionsLevel;
-import org.utils.assertions.AssertJHandler;
+import org.extensions.web.WebSharedObjects;
+import org.utils.Step;
 
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 
 public class BoniGrciaWelcomePageShared {
     private final BoniGrciaWelcomePage boniGrciaWelcomePage;
-    private final SeleniumWebDriverProvider seleniumWebDriverProvider;
-    private final AssertJHandler assertJHandler;
+    private final WebSharedObjects webSharedObjects;
 
-    public BoniGrciaWelcomePageShared(SeleniumWebDriverProvider seleniumWebDriverProvider) {
-        this.seleniumWebDriverProvider = seleniumWebDriverProvider;
-        this.boniGrciaWelcomePage = new BoniGrciaWelcomePage(seleniumWebDriverProvider.getDriver());
-        this.assertJHandler = new AssertJHandler();
+    public BoniGrciaWelcomePageShared(WebSharedObjects webSharedObjects) {
+        this.webSharedObjects = webSharedObjects;
+        this.boniGrciaWelcomePage = new BoniGrciaWelcomePage(webSharedObjects.getDriverManager().getDriver());
     }
 
-    public BoniGrciaWelcomePageShared setAssertionLevel(AssertionsLevel level) {
-        this.assertJHandler.setAssertionLevel(level);
-        return this;
-    }
     public BoniGrciaWelcomePageShared openPage(WebConfiguration webConfiguration) {
-        this.seleniumWebDriverProvider.get(webConfiguration.projectUrl());
+        this.webSharedObjects
+                .getDriverManager()
+                .get(webConfiguration.projectUrl());
         return this;
     }
 
     public BoniGrciaWelcomePageShared resumeTab() {
-        this.seleniumWebDriverProvider.click(boniGrciaWelcomePage.resumeTab);
+        this.webSharedObjects
+                .getDriverManager()
+                .click(boniGrciaWelcomePage.resumeTab);
         return this;
     }
 
+    @Step(desc = "/lksdnfvl/dfknv/dlfknvdl/fnvkd/lfnv")
     public BoniGrciaWelcomePageShared homeTab() {
-        this.seleniumWebDriverProvider.click(boniGrciaWelcomePage.homeTab);
+        this.webSharedObjects
+                .getDriverManager()
+                .click(boniGrciaWelcomePage.homeTab);
         return this;
     }
 
     public BoniGrciaWelcomePageShared gitHubLink() {
-        this.seleniumWebDriverProvider
+        this.webSharedObjects
+                .getDriverManager()
                 .getScrollExtension()
                 .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.gitHubLink))
                 .click(boniGrciaWelcomePage.gitHubLink);
@@ -48,15 +49,18 @@ public class BoniGrciaWelcomePageShared {
     }
 
     public BoniGrciaWelcomePageShared linkedinLink() {
-        this.seleniumWebDriverProvider
+        this.webSharedObjects
+                .getDriverManager()
                 .getScrollExtension()
                 .scrollToElement(2, ScrollDirection.DOWN, elementToBeClickable(boniGrciaWelcomePage.gitHubLink))
                 .click(boniGrciaWelcomePage.linkedinLink);
         return this;
     }
 
-    public StringAssert assertHomeTab() {
-        return null;
-                //this.assertionsManager.assertElementText(elementToBeClickable(boniGrciaWelcomePage.homeTab));
+    public void assertHomeTab(String expected) {
+        String homeTab = this.webSharedObjects.getDriverManager().getText(boniGrciaWelcomePage.homeTab);
+        this.webSharedObjects.getAssertionsManager()
+                .proxy(StringAssert.class, String.class, homeTab)
+                .isEqualTo(expected);
     }
 }

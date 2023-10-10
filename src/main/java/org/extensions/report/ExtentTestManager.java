@@ -37,10 +37,11 @@ public class ExtentTestManager {
      * @param jsonSettingsPath
      * @param reportName
      */
-    protected synchronized void setExtentManager(String file, String jsonSettingsPath, String reportName) {
+    protected synchronized ExtentTestManager setExtentManager(String file, String jsonSettingsPath, String reportName) {
         ExtentManager
                 .getInstance()
                 .setExtentManager(file, jsonSettingsPath, reportName);
+        return getInstance();
     }
 
     /**
@@ -49,13 +50,14 @@ public class ExtentTestManager {
      * @param category
      * @param author
      */
-    protected synchronized void createTest(String testMethod, String category, String author) {
+    protected synchronized ExtentTestManager createTest(String testMethod, String category, String author) {
         extentTestMap.put(Thread.currentThread().getId(), ExtentManager.getInstance()
                 .extentReportInstance()
                 .createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
                 .assignAuthor(author));
+        return getInstance();
     }
 
     protected synchronized void flush() {
@@ -68,10 +70,11 @@ public class ExtentTestManager {
      * setAnalysisStrategy
      * @param analysisStrategy
      */
-    protected synchronized void setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
+    protected synchronized ExtentTestManager setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
         ExtentManager.getInstance()
                 .extentReportInstance()
                 .setAnalysisStrategy(analysisStrategy);
+        return getInstance();
     }
 
     /**
@@ -79,10 +82,11 @@ public class ExtentTestManager {
      * @param osName
      * @param osArch
      */
-    protected synchronized void setSystemInfo(String osName, String osArch) {
+    protected synchronized ExtentTestManager setSystemInfo(String osName, String osArch) {
         ExtentManager.getInstance()
                 .extentReportInstance()
                 .setSystemInfo(osName, osArch);
+        return getInstance();
     }
 
     /**
@@ -151,8 +155,9 @@ public class ExtentTestManager {
      * @param status
      * @param media
      */
-    public synchronized void log(Status status, Media media) {
+    public synchronized ExtentTestManager log(Status status, Media media) {
         extentTest().log(status, media);
+        return getInstance();
     }
 
     /**
@@ -162,8 +167,9 @@ public class ExtentTestManager {
      * @param details
      * @return
      */
-    public synchronized ExtentTest log(Status status, String details) {
-        return extentTest().log(status, details);
+    public synchronized ExtentTestManager log(Status status, String details) {
+        extentTest().log(status, details);
+        return getInstance();
     }
 
     /**
@@ -171,8 +177,9 @@ public class ExtentTestManager {
      * @param status
      * @param markup
      */
-    public synchronized void log(Status status, Markup markup) {
+    public synchronized ExtentTestManager log(Status status, Markup markup) {
         extentTest().log(status, markup);
+        return getInstance();
     }
 
     /**
@@ -180,8 +187,9 @@ public class ExtentTestManager {
      * @param status
      * @param throwable
      */
-    public synchronized void log(Status status, Throwable throwable) {
+    public synchronized ExtentTestManager log(Status status, Throwable throwable) {
         extentTest().log(status, throwable);
+        return getInstance();
     }
 
     /**
@@ -190,8 +198,9 @@ public class ExtentTestManager {
      * @param details
      * @param media
      */
-    public synchronized void log(Status status, String details, Media media) {
+    public synchronized ExtentTestManager log(Status status, String details, Media media) {
         extentTest().log(status, details, media);
+        return getInstance();
     }
 
     /**
@@ -200,8 +209,9 @@ public class ExtentTestManager {
      * @param throwable
      * @param media
      */
-    public synchronized void log(Status status, Throwable throwable, Media media) {
+    public synchronized ExtentTestManager log(Status status, Throwable throwable, Media media) {
         extentTest().log(status, throwable, media);
+        return getInstance();
     }
 
     /**
@@ -211,8 +221,9 @@ public class ExtentTestManager {
      * @param throwable
      * @param media
      */
-    public synchronized void log(Status status, String details, Throwable throwable, Media media) {
+    public synchronized ExtentTestManager log(Status status, String details, Throwable throwable, Media media) {
         extentTest().log(status, details, throwable, media);
+        return getInstance();
     }
 
     /**
@@ -227,9 +238,7 @@ public class ExtentTestManager {
             if (!base64ScreenShot.isEmpty()) {
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
                 if (createNode) extentTest().createNode("click for more details... ").log(status, message, media);
-                else {
-                    extentTest().log(status, message, media);
-                }
+                else extentTest().log(status, message, media);
             } else {
                 extentTest().log(status, message);
             }

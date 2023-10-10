@@ -21,12 +21,14 @@ import org.base.anontations.WebElementGestures;
 import org.base.anontations.MobileGestures;
 import org.base.mobile.data.ElementsAttributes;
 import org.base.mobile.gestures.MobileSwipeExtensions;
+import org.extensions.web.WebDriverListenerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.net.URL;
@@ -98,19 +100,21 @@ public class MobileDriverProvider implements
      */
     public MobileDriverProvider(
             DriverType driverType, UiAutomator2Options uiAutomator2Options,
-            XCUITestOptions xcuiTestOptions, String driverPath) {
+            XCUITestOptions xcuiTestOptions, String driverPath, Duration implicitlyWait) {
         try {
             this.mobileDriverType.set(new MobileDriverType(driverType));
             switch (this.mobileDriverType.get().getDriverType()) {
                 case ANDROID -> {
-                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), uiAutomator2Options));
+                    EventFiringDecorator<AndroidDriver> decorator = new EventFiringDecorator<>(new WebDriverListenerImpl());
+                    this.androidDriver.set(decorator.decorate(new AndroidDriver(new URL(driverPath), uiAutomator2Options)));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.androidDriver.get()));
-                    this.androidDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+                    this.androidDriver.get().manage().timeouts().implicitlyWait(implicitlyWait);
                 }
                 case IOS -> {
-                    this.iosDriver.set(new IOSDriver(new URL(driverPath), xcuiTestOptions));
+                    EventFiringDecorator<IOSDriver> decorator = new EventFiringDecorator<>(new WebDriverListenerImpl());
+                    this.iosDriver.set(decorator.decorate(new IOSDriver(new URL(driverPath), xcuiTestOptions)));
                     this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.iosDriver.get()));
-                    this.iosDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+                    this.iosDriver.get().manage().timeouts().implicitlyWait(implicitlyWait);
                 }
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
             }
@@ -118,7 +122,7 @@ public class MobileDriverProvider implements
             this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
             this.appLauncherExtensions.set(new AppLauncherExtensions(this));
         } catch (Exception exception) {
-            Assertions.fail("init driver fail " + exception.getMessage(), exception);
+            throw new RuntimeException("init driver fail " + exception.getMessage(), exception);
         }
     }
 
@@ -142,7 +146,7 @@ public class MobileDriverProvider implements
             this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
             this.appLauncherExtensions.set(new AppLauncherExtensions(this));
         } catch (Exception exception) {
-            Assertions.fail("init driver fail " + exception.getMessage(), exception);
+            throw new RuntimeException("init driver fail " + exception.getMessage(), exception);
         }
     }
 
@@ -350,7 +354,10 @@ public class MobileDriverProvider implements
                 .until(condition -> element.getAttribute(name));
     }
     @Override
-    public String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair) {
+    public String getAttribute(
+            WebElement element,
+            Pair<ElementsAttributes.AndroidElementsAttributes,
+                    ElementsAttributes.IosElementsAttributes> attributesPair) {
         String setAttribute = isAndroid() ? attributesPair.getLeft().getTag() : attributesPair.getRight().getTag();
         return this.getWebDriverWait()
                 .getWebDriverWait()
@@ -401,6 +408,24 @@ public class MobileDriverProvider implements
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(expectedConditions);
+    }
+
+    @Override
+    public List<WebElement> findElements(By byFather, By son) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElements(son));
+    }
+
+    @Override
+    public WebElement findElement(By byFather, By son) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElement(son));
     }
 
     @Override

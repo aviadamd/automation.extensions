@@ -18,7 +18,8 @@ import org.utils.assertions.AssertJHandler;
 import java.util.ArrayList;
 
 @Slf4j
-public class AssertJExtensionProvider extends SoftAssertions implements AfterEachCallback, BeforeTestExecutionCallback, ParameterResolver {
+public class AssertJExtensionProvider
+        extends SoftAssertions implements AfterEachCallback, BeforeTestExecutionCallback, ParameterResolver {
 
     private final ThreadLocal<AssertJHandler> assertionsManager = new ThreadLocal<>();
 

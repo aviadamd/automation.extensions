@@ -5,8 +5,7 @@ import org.base.mobile.MobileDriverProvider;
 import org.extensions.anontations.mobile.DriverProvider;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
-import org.extensions.automation.mobile.MobileDriverProviderExtension;
-import org.extensions.report.ExtentReportExtension;
+import org.extensions.mobile.MobileDriverProviderExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
@@ -17,7 +16,7 @@ import static com.aventstack.extentreports.Status.FAIL;
 import static com.aventstack.extentreports.Status.SKIP;
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 @Execution(ExecutionMode.CONCURRENT)
-@ExtendWith(value = { ExtentReportExtension.class, MobileDriverProviderExtension.class })
+@ExtendWith(value = { MobileDriverProviderExtension.class })
 @ReportSetUp(extraReportsBy = { FAIL, SKIP }, analysisStrategy = AnalysisStrategy.TEST)
 public class MobileBasePocTest {
 

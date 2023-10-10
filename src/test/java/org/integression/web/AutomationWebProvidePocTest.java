@@ -1,37 +1,32 @@
 package org.integression.web;
 
+import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.anontations.ProviderConfiguration;
-import org.extensions.anontations.mongo.MongoMorphiaConnector;
+import org.extensions.anontations.WebProviderConfiguration;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.web.WebDriverType;
-import org.extensions.automation.web.WebSharedObjects;
-import org.extensions.automation.web.WebSharedObjectsProviderExtension;
-import org.extensions.report.ExtentReportExtension;
+import org.extensions.web.WebSharedObjects;
+import org.extensions.web.WebSharedObjectsProviderExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.component.web.BoniGrciaWelcomePageShared;
-import org.utils.assertions.AssertionsLevel;
 
 @Slf4j
-@Execution(ExecutionMode.CONCURRENT)
-@ExtendWith(value = { ExtentReportExtension.class, WebSharedObjectsProviderExtension.class })
 @ReportSetUp
-@ProviderConfiguration(
-        dbProvider = @MongoMorphiaConnector(host = "project.db.url", dbName = "dbNew"),
-        driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", generalTo = 30))
+@Execution(ExecutionMode.SAME_THREAD)
+@ExtendWith(value = WebSharedObjectsProviderExtension.class)
 public class AutomationWebProvidePocTest {
 
     @Test
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestOne")
+    @WebProviderConfiguration(driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", fluentWaitGeneralTo = 30))
     void boniGrciaWelcomePageTestOne(WebSharedObjects webSharedObjects) {
-        BoniGrciaWelcomePageShared boniGrciaShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());
+        BoniGrciaWelcomePageShared boniGrciaShared = new BoniGrciaWelcomePageShared(webSharedObjects);
 
-        boniGrciaShared.setAssertionLevel(AssertionsLevel.HARD_AFTER_ERROR);
-        boniGrciaShared.assertHomeTab().isEqualTo("Home");
+        boniGrciaShared.assertHomeTab("Home");
 
         boniGrciaShared.resumeTab()
                 .homeTab()
@@ -39,27 +34,33 @@ public class AutomationWebProvidePocTest {
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink()
                 .openPage(webSharedObjects.getWebConfiguration());
+
+        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 
     @Test
     @TestReportInfo(testId = 2, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestTwo")
+    @WebProviderConfiguration(driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", fluentWaitGeneralTo = 30))
     void boniGrciaWelcomePageTestTwo(WebSharedObjects webSharedObjects) {
-        BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());
+        BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects);
         boniGrciaWelcomePageShared.resumeTab()
                 .homeTab()
                 .gitHubLink()
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink();
+        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 
     @Test
     @TestReportInfo(testId = 3, assignCategory = "poc", assignAuthor = "aviad", info = "boniGrciaWelcomePageTestThree")
+    @WebProviderConfiguration(driverProvider = @WebDriverType(baseUrl = "project.url", driversInstance = "project.client", fluentWaitGeneralTo = 30))
     void boniGrciaWelcomePageTestThree(WebSharedObjects webSharedObjects) {
-        BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects.getDriverManager());
+        BoniGrciaWelcomePageShared boniGrciaWelcomePageShared = new BoniGrciaWelcomePageShared(webSharedObjects);
         boniGrciaWelcomePageShared.resumeTab()
                 .homeTab()
                 .gitHubLink()
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink();
+        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 }
