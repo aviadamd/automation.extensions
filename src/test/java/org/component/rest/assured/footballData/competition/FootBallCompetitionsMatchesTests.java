@@ -1,6 +1,9 @@
 package org.component.rest.assured.footballData.competition;
 
+import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.Method;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
@@ -39,7 +42,7 @@ public class FootBallCompetitionsMatchesTests {
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getMatches(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo
-                .findByStepId(1)
+                .findById(1)
                 .statusCode(200);
     }
 }

@@ -39,7 +39,7 @@ public class FootBallCompetitionsStandingsTests {
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getMatches(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo
-                .findByStepId(1)
+                .findById(1)
                 .statusCode(200);
     }
 }

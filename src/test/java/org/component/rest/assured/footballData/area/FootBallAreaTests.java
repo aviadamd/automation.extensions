@@ -2,6 +2,8 @@ package org.component.rest.assured.footballData.area;
 
 import io.restassured.http.Method;
 import lombok.extern.slf4j.Slf4j;
+import org.ahocorasick.trie.Emit;
+import org.ahocorasick.trie.Trie;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -37,8 +40,15 @@ public class FootBallAreaTests {
     @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getAreas(ResponseCollectorRepo responseCollectorRepo) {
+        Trie trie = Trie.builder()
+                .ignoreCase()
+                .addKeyword("casing")
+                .build();
+        Collection<Emit> emits = trie.parseText("CaSiNg");
+
+        emits.stream().forEach(a -> a.getKeyword());
         responseCollectorRepo
-                .findByStepId(1)
+                .findById(1)
                 .statusCode(200);
     }
 }

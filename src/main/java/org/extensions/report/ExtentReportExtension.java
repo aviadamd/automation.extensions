@@ -25,9 +25,6 @@ public class ExtentReportExtension implements
         TestWatcher, BeforeAllCallback,
         BeforeEachCallback, AfterAllCallback {
 
-//    @RegisterExtension
-//    private static final LoggingExtension loggingExtension = new LoggingExtension();
-
     private static final HashMap<Long, ReportConfigurations> propertiesMap = new HashMap<>();
     private static ReportConfigurations properties() {
         return propertiesMap.get(Thread.currentThread().getId());
@@ -63,9 +60,12 @@ public class ExtentReportExtension implements
         if (context.getElement().isPresent()) {
             Optional<TestReportInfo> reportTest = this.readAnnotation(context, TestReportInfo.class);
             final String testMethod = context.getRequiredTestMethod().getName();
-            reportTest.ifPresent(reportInfo -> ExtentTestManager
-                    .getInstance()
-                    .createTest(testMethod, reportInfo.assignCategory(), reportInfo.assignAuthor()));
+            reportTest.ifPresent(reportInfo -> {
+                ExtentTestManager
+                        .getInstance()
+                        .createTest(testMethod, reportInfo.assignCategory(), reportInfo.assignAuthor());
+                ExtentTestManager.getInstance().log(Status.INFO,"test " + testMethod + " started");
+            });
         }
     }
 

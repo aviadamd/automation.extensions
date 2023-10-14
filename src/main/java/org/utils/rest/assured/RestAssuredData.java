@@ -1,17 +1,18 @@
-package org.extensions.rest;
+package org.utils.rest.assured;
 
-public class RestAssuredError {
+import io.restassured.response.Response;
 
+public class RestAssuredData {
     private final String url;
     private final int statusCode;
     private final String headers;
     private final String body;
 
-    public RestAssuredError(String url, int statusCode, String headers, String body) {
+    public RestAssuredData(String url, Response response) {
         this.url = url;
-        this.statusCode = statusCode;
-        this.headers = headers;
-        this.body = body;
+        this.statusCode = response.statusCode();
+        this.headers = response.headers().toString();
+        this.body = response.body().prettyPrint();
     }
 
     @Override

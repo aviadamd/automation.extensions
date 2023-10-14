@@ -1,6 +1,7 @@
 package org.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.ahocorasick.trie.Trie;
 import org.apache.commons.validator.GenericValidator;
 import org.hamcrest.Matcher;
 
@@ -19,6 +20,10 @@ public class StringsUtilities {
             return primaryString;
         }
         return stringSpilt[index];
+    }
+
+    public static Trie.TrieBuilder trieBuilder() {
+        return Trie.builder();
     }
 
     public List<String> stringToList(String text, String splitBy) {

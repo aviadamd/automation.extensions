@@ -4,7 +4,6 @@ import org.assertj.core.api.StringAssert;
 import org.base.web.ScrollDirection;
 import org.base.web.WebConfiguration;
 import org.extensions.web.WebSharedObjects;
-import org.utils.Step;
 
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 
@@ -31,7 +30,6 @@ public class BoniGrciaWelcomePageShared {
         return this;
     }
 
-    @Step(desc = "/lksdnfvl/dfknv/dlfknvdl/fnvkd/lfnv")
     public BoniGrciaWelcomePageShared homeTab() {
         this.webSharedObjects
                 .getDriverManager()

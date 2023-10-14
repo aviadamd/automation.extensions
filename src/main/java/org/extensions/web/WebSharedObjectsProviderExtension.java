@@ -63,13 +63,13 @@ public class WebSharedObjectsProviderExtension extends ExtentReportExtension imp
 
     @Override
     public synchronized void testFailed(ExtensionContext context, Throwable throwable) {
-        TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.WEB, throwable.getMessage() + " " + throwable.getCause(), throwable.getClass()));
+        TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.WEB, throwable.getMessage() + " " + throwable.getCause()));
         super.testFailed(context, throwable);
     }
 
     @Override
     public synchronized void testAborted(ExtensionContext context, Throwable throwable) {
-        TestDataObserverBus.onNext(new TestData<>(Status.SKIP, Category.WEB, throwable.getMessage() + " " + throwable.getCause(), throwable.getClass()));
+        TestDataObserverBus.onNext(new TestData<>(Status.SKIP, Category.WEB, throwable.getMessage() + " " + throwable.getCause()));
         super.testFailed(context, throwable);
     }
 

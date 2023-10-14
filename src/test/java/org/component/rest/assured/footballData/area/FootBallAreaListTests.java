@@ -35,7 +35,6 @@ public class FootBallAreaListTests {
             @RestStep(
                     stepId = 1,
                     urlPath = "v4/areas",
-                    expectedStatusCode = 200,
                     requestMethod = Method.GET
             )
     })
@@ -43,7 +42,7 @@ public class FootBallAreaListTests {
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getAreas(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo
-                .findByStepId(1)
+                .findById(1)
                 .statusCode(200)
                 .header("Transfer-Encoding", "chunked")
                 .header("Content-Type", "application/json;charset=UTF-8")

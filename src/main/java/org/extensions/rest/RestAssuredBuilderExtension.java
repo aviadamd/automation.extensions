@@ -4,12 +4,7 @@ import com.aventstack.extentreports.Status;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.config.FailureConfig;
-import io.restassured.config.RestAssuredConfig;
-import io.restassured.filter.log.ErrorLoggingFilter;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.config.*;
 import io.restassured.http.*;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
@@ -21,8 +16,7 @@ import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
 import org.junit.jupiter.api.extension.*;
 import org.utils.TestDataObserverBus;
-import org.utils.rest.assured.RestAssuredHandler;
-import org.utils.rest.assured.ValidateResponse;
+import org.utils.rest.assured.*;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,7 +66,8 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
                 for (RestStep stepProvider: restDataProvider.restSteps()) {
                     if (stepProvider != null) {
                         Response response = this.request(restDataBaseClassProvider, stepProvider);
-                        responseCollectorRepo.get().addResponse(stepProvider.stepId(), new ValidateResponse(response));
+                        responseCollectorRepo.get().addResponse(stepProvider.stepId(), new RestAssuredValidateResponse(response));
+                        responseCollectorRepo.get().findById(stepProvider.stepId()).statusCode(stepProvider.expectedStatusCode());
                         this.headerCollector(response);
                     }
                 }
@@ -81,14 +76,14 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
     }
 
     @Override
-    public void testFailed(ExtensionContext context, Throwable cause) {
+    public synchronized void testFailed(ExtensionContext context, Throwable cause) {
         if (context.getElement().isPresent() && cause != null) {
             if (cause instanceof AssertionError) {
                 AssertionError assertionError = (AssertionError) cause;
-                TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, assertionError.getMessage(), assertionError.getClass()));
+                TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, assertionError.getMessage()));
             } else if (cause instanceof JsonPathException) {
                 JsonPathException jsonPathException = (JsonPathException) cause;
-                TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, jsonPathException.getMessage(), jsonPathException.getClass()));
+                TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, jsonPathException.getMessage()  ));
             }
         }
         super.testFailed(context, cause);
@@ -113,7 +108,7 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
     private synchronized Response request(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
 
-        String baseUri = "";
+        String baseUri;
         ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
 
         if (!baseClassProvider.jsonPath().isEmpty()) {
@@ -131,34 +126,13 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
 
                 keys.forEach(key -> headerCollector.put(key, jsonNode.findValue(key).asText()));
 
-            } catch (Exception ignore) {}
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
 
         } else baseUri = baseClassProvider.scheme() + "://" + baseClassProvider.basePath();
 
-        requestSpecBuilder
-                .setBaseUri(baseUri)
-                .setBasePath(stepProvider.urlPath())
-                .setContentType(stepProvider.contentType())
-                .addFilter(new RequestLoggingFilter(LogDetail.ALL, new PrintStream(new LogOutputStream() {
-                    @Override
-                    protected void processLine(String message, int i) {
-                        log.debug(message);
-                        ExtentTestManager.getInstance().log(Status.INFO, message);
-                    }
-                })))
-                .addFilter(new ResponseLoggingFilter(LogDetail.ALL, new PrintStream(new LogOutputStream() {
-                    @Override
-                    protected void processLine(String message, int i) {
-                        log.debug(message);
-                    }
-                })))
-                .addFilter(new ErrorLoggingFilter(new PrintStream(new LogOutputStream() {
-                    @Override
-                    protected void processLine(String message, int i) {
-                        log.error(message);
-                        ExtentTestManager.getInstance().log(Status.FAIL, message);
-                    }
-                })));
+        requestSpecBuilder.setContentType(stepProvider.contentType());
 
         if (stepProvider.paramsKeys().length > 0 && stepProvider.paramsValues().length > 0) {
             ConcurrentHashMap<String,String> arrayToMap = this.arrayToMap(stepProvider.paramsKeys(), stepProvider.paramsValues());
@@ -203,24 +177,20 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
             }
         }
 
-        return new RestAssuredHandler().build(
-                this.failureListener(baseUri + "/" + stepProvider.urlPath()),
-                requestSpecBuilder,
-                stepProvider.requestMethod(),
-                stepProvider.expectedStatusCode(),
-                null
-        );
+        RestAssuredLoggingBuilder loggingBuilder = RestAssuredLoggingBuilder
+                .builder()
+                .baseUri(baseUri)
+                .configs(
+                        List.of(
+                                RestAssuredConfig.config().failureConfig(FailureConfig.failureConfig().with().failureListeners((requestSpec, responseSpec, response) -> {
+                                    RestAssuredData restAssuredData = new RestAssuredData(baseUri + "/" +  stepProvider.urlPath(), response);
+                                    TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, restAssuredData));
+                                }))
+                        )
+                ).build();
+        RestAssuredGenericHandler restAssuredHandler = new RestAssuredGenericHandler(loggingBuilder);
+        return restAssuredHandler.execute(stepProvider.requestMethod(), stepProvider.urlPath(), requestSpecBuilder);
     }
-
-    private synchronized RestAssuredConfig failureListener(String basePath) {
-        return RestAssuredConfig.config()
-                .failureConfig(FailureConfig.failureConfig()
-                .with().failureListeners((requestSpecification, responseSpecification, response) -> {
-                    RestAssuredError restAssuredError = new RestAssuredError(basePath, response.getStatusCode(), response.headers().toString(), response.body().prettyPrint());
-                    TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, restAssuredError, Exception.class));
-                }));
-    }
-
     private synchronized ConcurrentHashMap<String,String> arrayToMap(String[] first, String [] second) {
         ConcurrentHashMap<String, String> collector = new ConcurrentHashMap<>();
         for (int i = 0; i < first.length; i++) collector.put(first[i], second[i]);

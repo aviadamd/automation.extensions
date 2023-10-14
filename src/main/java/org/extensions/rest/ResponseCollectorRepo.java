@@ -1,16 +1,15 @@
 package org.extensions.rest;
 
-import org.utils.rest.assured.ValidateResponse;
+import org.utils.rest.assured.RestAssuredValidateResponse;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ResponseCollectorRepo {
 
-    private static ConcurrentHashMap<Integer, ValidateResponse> responseCollectorMap = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Integer, RestAssuredValidateResponse> responseCollectorMap = new ConcurrentHashMap<>();
 
-    public void addResponse(Integer key , ValidateResponse responseData) {
+    public void addResponse(Integer key , RestAssuredValidateResponse responseData) {
         responseCollectorMap.put(key, responseData);
     }
 
@@ -22,17 +21,18 @@ public class ResponseCollectorRepo {
         responseCollectorMap = new ConcurrentHashMap<>();
     }
 
-    public ConcurrentHashMap<Integer, ValidateResponse> findByAll() {
+    public ConcurrentHashMap<Integer, RestAssuredValidateResponse> findByAll() {
         return responseCollectorMap;
     }
 
-    public ValidateResponse findByStepId(Integer findBy) {
-        for (Map.Entry<Integer, ValidateResponse> entry : responseCollectorMap.entrySet()) {
-            if (entry.getKey().equals(findBy)) {
-                return entry.getValue();
-            }
-        }
-        throw new RuntimeException("unable to find response with id number: " + findBy);
-    }
+    public RestAssuredValidateResponse findById(Integer findBy) {
+        Map.Entry<Integer, RestAssuredValidateResponse> validateResponseEntry = responseCollectorMap
+                .entrySet()
+                .stream()
+                .filter(byId -> byId.getKey().equals(findBy))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("unable to find response with id number: " + findBy));
 
+        return validateResponseEntry.getValue();
+    }
 }

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface RestStep {
     int stepId();
     ContentType contentType() default ContentType.ANY;
-    int expectedStatusCode();
+    int expectedStatusCode() default 0;
     Method requestMethod();
     String urlPath() default "";
     String[] paramsKeys() default {};

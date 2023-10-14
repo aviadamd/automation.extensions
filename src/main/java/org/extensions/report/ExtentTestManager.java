@@ -18,9 +18,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExtentTestManager {
-    private static final Map<Long, ExtentTest> extentTestMap = new HashMap<>();
+    private static final ThreadLocal<ExtentTest> extentTestMap = new ThreadLocal<>();
     private static synchronized ExtentTest extentTest() {
-        return extentTestMap.get(Thread.currentThread().getId());
+        return extentTestMap.get();
     }
 
     private static ExtentTestManager m_instance;
@@ -51,7 +51,7 @@ public class ExtentTestManager {
      * @param author
      */
     protected synchronized ExtentTestManager createTest(String testMethod, String category, String author) {
-        extentTestMap.put(Thread.currentThread().getId(), ExtentManager.getInstance()
+        extentTestMap.set(ExtentManager.getInstance()
                 .extentReportInstance()
                 .createTest(testMethod)
                 .createNode(testMethod)
