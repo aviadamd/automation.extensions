@@ -1,9 +1,0 @@
-{
-  "client": "ANDROID",
-  "appiumBasePath" : "http://127.0.0.2:4724/wd/hub",
-  "appPath" : "C:\\Users\\Lenovo\\IdeaProjects\\com.automation.mobile\\app\\application.apk",
-  "platformVersion" : "11",
-  "avd" : "Google Nexus 5",
-  "udid" : "192.168.192.105:5555",
-  "appBundleId": "com.ideomobile.hapoalim"
-}

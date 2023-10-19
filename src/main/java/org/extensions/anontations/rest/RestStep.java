@@ -12,16 +12,17 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface RestStep {
     int stepId();
-    ContentType contentType();
-    Method method();
-    String path();
-
-    Class<?> value();
-    String[] paramsKeys() default "";
-    String[] paramsValues() default "";
-    String[] headersKeys() default "";
-    String[] headersValues() default "";
-    String[] bodyKeys() default "";
-    String[] bodyValues() default "";
+    ContentType contentType() default ContentType.ANY;
+    int expectedStatusCode();
+    Method requestMethod();
+    String urlPath() default "";
+    String[] paramsKeys() default {};
+    String[] paramsValues() default {};
+    String[] headersKeys() default {};
+    String[] headersValues() default {};
+    String[] bodyKeys() default {};
+    String[] bodyValues() default {};
+    String[] receiveHeadersKeys() default {};
 
 }
+

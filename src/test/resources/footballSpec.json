@@ -1,0 +1,10 @@
+{
+  "scheme" : "https",
+  "basePath" : "api.football-data.org",
+  "headers" : {
+    "X-Auth-Token":"731a32c6d41046fcb8fc746278d66d31",
+    "Accept" : "*/*",
+    "Accept-Encoding" : "gzip, deflate, br",
+    "Connection" : "keep-alive"
+  }
+}

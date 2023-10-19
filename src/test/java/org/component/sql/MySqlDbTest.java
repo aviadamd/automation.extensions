@@ -1,11 +1,9 @@
 package org.component.sql;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.jdbc.SQL;
 import org.component.sql.pojo.Country;
-import org.extensions.anontations.Repeat;
-import org.extensions.anontations.report.ReportConfiguration;
+import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.report.TestReportInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -14,20 +12,20 @@ import org.utils.sql.MySqlSharedConnector;
 import java.util.List;
 
 @Slf4j
-@ReportConfiguration()
+@ReportSetUp()
 @Execution(ExecutionMode.SAME_THREAD)
 public class MySqlDbTest {
 
     @Test
-    @Repeat(onStatus = { Status.FAIL, Status.SKIP })
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "pixel")
     public void a_mySqlConnectionTest() {
         MySqlSharedConnector mySqlSharedConnector =
                 new MySqlSharedConnector("jdbc:mysql://127.0.0.1:3306","root","5311072BsAviad");
 
-        List<Country> countriesList = mySqlSharedConnector
-                .setQuery(new SQL() {{ SELECT("*").FROM("world.city");}})
-                .findsBy(Country.class);
+        List<Country> countriesList = mySqlSharedConnector.findsBy(
+                new SQL() {{ SELECT("*").FROM("world.city");}},
+                Country.class
+        );
 
         for (Country countries: countriesList) {
             log.info("id: " + countries.getId());

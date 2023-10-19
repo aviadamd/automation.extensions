@@ -2,7 +2,6 @@ package org.base.web;
 
 import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
-import org.extensions.report.ExtentTestManager;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -62,7 +61,6 @@ public class WebDriverScrollExtension {
     private void print(String message) {
         try {
             log.info(Status.INFO + " | " + message);
-            ExtentTestManager.log(Status.INFO, message);
         } catch (Exception ignore) {}
     }
 }

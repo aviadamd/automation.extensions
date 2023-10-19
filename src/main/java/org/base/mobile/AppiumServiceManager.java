@@ -1,59 +1,97 @@
 package org.base.mobile;
 
-import io.appium.java_client.service.local.AppiumDriverLocalService;
-import io.appium.java_client.service.local.AppiumServiceBuilder;
+import com.goebl.david.Response;
+import com.goebl.david.Webb;
+import io.appium.java_client.service.local.*;
 import io.appium.java_client.service.local.flags.GeneralServerFlag;
-import io.appium.java_client.service.local.flags.ServerArgument;
+import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
+import org.json.JSONObject;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Duration;
+import java.util.Map;
 
+@Slf4j
 public class AppiumServiceManager {
-    private final String ip;
+    private AppiumDriverLocalService localService;
     private final int port;
-    private String appiumBasePath = "/wd/hub";
-    private final String nodeJs;
-    private final String appiumExecutable;
-    private List<ServerArgument> serverArgumentList = new ArrayList<>();
-    private HashMap<ServerArgument, String> serverArgumentsMap = new HashMap<>();
+    private final String ip;
 
+    /**
+     *
+     * @param nodeJs
+     * @param appiumExecutable
+     * @param ip
+     * @param port
+     * @param androidHome
+     */
+    public AppiumServiceManager(
+            String nodeJs, String appiumExecutable,
+            String ip, int port, String androidHome) {
 
-    public AppiumServiceManager addAppiumBasePath(String appiumBasePath) {
-        this.appiumBasePath = appiumBasePath;
-        return this;
-    }
-
-    public AppiumServiceManager addServerArgsList(List<ServerArgument> serverArgumentList) {
-        this.serverArgumentList = serverArgumentList;
-        return this;
-    }
-
-    public AppiumServiceManager addServerArgsMap(HashMap<ServerArgument, String> serverArgumentsMap) {
-        this.serverArgumentsMap = serverArgumentsMap;
-        return this;
-    }
-
-    public AppiumServiceManager(String nodeJs, String appiumExecutable, String ip, int port) {
-        this.nodeJs = nodeJs;
-        this.appiumExecutable = appiumExecutable;
         this.ip = ip;
         this.port = port;
+
+        try {
+
+            if (this.isServerRunning(ip, String.valueOf(port))) return;
+
+            localService = new AppiumServiceBuilder()
+                    .usingDriverExecutable(new File(nodeJs))
+                    .withAppiumJS(new File(appiumExecutable))
+                    .withIPAddress(ip)
+                    .usingPort(port)
+                    .withArgument(GeneralServerFlag.RELAXED_SECURITY)
+                    .withArgument(GeneralServerFlag.ALLOW_INSECURE, "ALLOW_INSECURE")
+                    .withTimeout(Duration.ofMinutes(2))
+                    .withEnvironment(Map.of("ANDROID_HOME", androidHome))
+                    .build();
+            localService.start();
+
+        } catch (Exception exception) {
+            this.onFail(exception);
+        }
     }
 
-    public AppiumDriverLocalService initService() {
-        AppiumServiceBuilder serviceBuilder = new AppiumServiceBuilder();
+    public void close() {
+        try {
+            if (this.isServerRunning(this.ip, String.valueOf(this.port))) {
+                this.localService.close();
+            }
+        } catch (Exception ignore) {}
 
-        if (!this.serverArgumentsMap.isEmpty()) this.serverArgumentsMap.forEach(serviceBuilder::withArgument);
-        if (!this.serverArgumentList.isEmpty()) this.serverArgumentList.forEach(serviceBuilder::withArgument);
-
-        return serviceBuilder
-                .usingDriverExecutable(new File(this.nodeJs))
-                .withAppiumJS(new File(this.appiumExecutable))
-                .withIPAddress(this.ip).usingPort(this.port)
-                .withArgument(GeneralServerFlag.BASEPATH, this.appiumBasePath)
-                .withArgument(GeneralServerFlag.ALLOW_INSECURE)
-                .withArgument(GeneralServerFlag.ASYNC_TRACE)
-                .build();
     }
+
+    public boolean isServerRunning(String ip, String port) {
+        try {
+            Response<JSONObject> appiumResponse = Webb.create()
+                    .get("http://"+ip+":"+port+"/status")
+                    .asJsonObject();
+            return appiumResponse.isSuccess() && !appiumResponse.getResponseMessage().isEmpty();
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    private void onFail(Exception exception) {
+        if (exception instanceof AppiumServerHasNotBeenStartedLocallyException) {
+            Assertions.fail("AppiumServerHasNotBeenStartedLocallyException " + exception.getMessage());
+        } else if (exception instanceof InvalidNodeJSInstance) {
+            Assertions.fail("InvalidNodeJSInstance " + exception.getMessage());
+        } else if (exception instanceof InvalidServerInstanceException) {
+            Assertions.fail("InvalidServerInstanceException " + exception.getMessage());
+        } else Assertions.fail("Exception " + exception.getMessage());
+    }
+
+
+//        WaiterHandler waiterHandler = new WaiterHandler(Boolean.class);
+//        boolean isAppiumUp = waiterHandler
+//                .getFluentWait()
+//                .withTimeout(Duration.ofSeconds(5))
+//                .pollingEvery(Duration.ofSeconds(1))
+//                .until(e -> localService.isRunning());
+//        Assertions.assertThat(isAppiumUp).isTrue();
+
+//        Awaitility.pollExecutorService(Executors.newFixedThreadPool(3));
+//        Awaitility.await().atMost(Duration.ofSeconds(3)).until(localService::isRunning);
 }

@@ -1,6 +1,6 @@
 package org.extensions.anontations.web;
 
-import org.base.DurationOf;
+import org.base.web.DurationOf;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 public @interface WebDriverType {
     String baseUrl() default "";
     DurationOf durationOf() default DurationOf.SECONDS;
-    int generalTo() default 10;
+    int fluentWaitGeneralTo() default 10;
     String driversInstance();
 }

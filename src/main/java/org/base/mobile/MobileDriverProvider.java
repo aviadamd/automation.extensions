@@ -4,24 +4,31 @@ import io.appium.java_client.*;
 import io.appium.java_client.android.Activity;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.appmanagement.AndroidInstallApplicationOptions;
+import io.appium.java_client.android.appmanagement.AndroidRemoveApplicationOptions;
+import io.appium.java_client.android.appmanagement.AndroidTerminateApplicationOptions;
 import io.appium.java_client.android.connection.ConnectionState;
 import io.appium.java_client.android.connection.ConnectionStateBuilder;
+import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.driverscripts.ScriptOptions;
 import io.appium.java_client.driverscripts.ScriptValue;
 import io.appium.java_client.ios.IOSDriver;
+import io.appium.java_client.ios.options.XCUITestOptions;
 import io.appium.java_client.serverevents.CustomEvent;
 import io.appium.java_client.serverevents.ServerEvents;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.base.WebElementGestures;
+import org.base.anontations.WebElementGestures;
+import org.base.anontations.MobileGestures;
 import org.base.mobile.data.ElementsAttributes;
-import org.extensions.automation.mobile.CapsReaderAdapter;
+import org.base.mobile.gestures.MobileSwipeExtensions;
+import org.extensions.web.WebDriverListenerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Augmentable;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.net.URL;
@@ -40,22 +47,42 @@ public class MobileDriverProvider implements
     private final ThreadLocal<IOSDriver> iosDriver = new ThreadLocal<>();
     private final ThreadLocal<AndroidDriver> androidDriver = new ThreadLocal<>();
     private final ThreadLocal<AppiumWebDriverWaitExtensions> appiumWebDriverWait = new ThreadLocal<>();
-    private final ThreadLocal<MobileDriverActions> mobileDriverActions = new ThreadLocal<>();
+    private final ThreadLocal<MobileSwipeExtensions> mobileSwipeExtensions = new ThreadLocal<>();
+    private final ThreadLocal<AppLauncherExtensions> appLauncherExtensions = new ThreadLocal<>();
+    private final ThreadLocal<MobileDriverType> mobileDriverType = new ThreadLocal<>();
+
 
     public IOSDriver getIosDriver() { return this.iosDriver.get(); }
     public AndroidDriver getAndroidDriver() { return this.androidDriver.get(); }
-    public AppiumWebDriverWaitExtensions getWebDriverWaitExtension() { return this.appiumWebDriverWait.get(); }
-    public MobileDriverActions getMobileDriverActions() { return mobileDriverActions.get(); }
+    public AppiumWebDriverWaitExtensions getWebDriverWait() { return this.appiumWebDriverWait.get(); }
+    public MobileSwipeExtensions getSwipeExtensions() { return this.mobileSwipeExtensions.get(); }
+    public AppLauncherExtensions getAppLauncherExtensions() { return this.appLauncherExtensions.get(); }
+    public MobileDriverType getDriverType() { return this.mobileDriverType.get(); }
 
-    private boolean isAndroid() {
-        return this.mobileDriverActions.get()
+    public boolean isAndroid() {
+        return this.mobileDriverType.get()
                 .getDriverType()
-                .equals(MobileDriverActions.DriverType.ANDROID);
+                .getDriverName()
+                .equalsIgnoreCase(DriverType.ANDROID.getDriverName());
     }
+
+    public boolean isIos() {
+        return this.mobileDriverType.get()
+                .getDriverType()
+                .getDriverName()
+                .equalsIgnoreCase(DriverType.IOS.getDriverName());
+    }
+
     public WebDriver getMobileDriver() {
-        return this.isAndroid()
-                ? this.getAndroidDriver()
-                : this.getIosDriver();
+        return switch (this.getDriverType().getDriverType()) {
+            case ANDROID -> this.getAndroidDriver();
+            case IOS -> this.getIosDriver();
+            default -> throw new RuntimeException("unable to identify driver instance");
+        };
+    }
+
+    public AppiumDriver getAppiumDriver() {
+        return  (AppiumDriver) this.getMobileDriver();
     }
 
     public MobileDriverProvider oveRideTimeOut(Duration generalTimeOut, Duration pollingEvery) {
@@ -65,36 +92,62 @@ public class MobileDriverProvider implements
     }
 
     /**
-     * @param type
-     * @param caps
-     * @param appiumBasePath appium url connection
+     *
+     * @param driverType
+     * @param uiAutomator2Options
+     * @param xcuiTestOptions
+     * @param driverPath
      */
-    public MobileDriverProvider(String type, DesiredCapabilities caps, String appiumBasePath) {
+    public MobileDriverProvider(
+            DriverType driverType, UiAutomator2Options uiAutomator2Options,
+            XCUITestOptions xcuiTestOptions, String driverPath, Duration implicitlyWait) {
         try {
-            this.mobileDriverActions.set(new MobileDriverActions(type,this));
-            MobileDriverActions.DriverType driverType = this.mobileDriverActions.get().getDriverType();
-            switch (driverType) {
+            this.mobileDriverType.set(new MobileDriverType(driverType));
+            switch (this.mobileDriverType.get().getDriverType()) {
                 case ANDROID -> {
-                    this.androidDriver.set(new AndroidDriver(new URL(appiumBasePath), caps));
-                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    EventFiringDecorator<AndroidDriver> decorator = new EventFiringDecorator<>(new WebDriverListenerImpl());
+                    this.androidDriver.set(decorator.decorate(new AndroidDriver(new URL(driverPath), uiAutomator2Options)));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.androidDriver.get()));
+                    this.androidDriver.get().manage().timeouts().implicitlyWait(implicitlyWait);
                 }
                 case IOS -> {
-                    this.iosDriver.set(new IOSDriver(new URL(appiumBasePath), caps));
-                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this));
+                    EventFiringDecorator<IOSDriver> decorator = new EventFiringDecorator<>(new WebDriverListenerImpl());
+                    this.iosDriver.set(decorator.decorate(new IOSDriver(new URL(driverPath), xcuiTestOptions)));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.iosDriver.get()));
+                    this.iosDriver.get().manage().timeouts().implicitlyWait(implicitlyWait);
                 }
                 case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
             }
+
+            this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
+            this.appLauncherExtensions.set(new AppLauncherExtensions(this));
         } catch (Exception exception) {
-            Assertions.fail("init driver fail ", exception);
+            throw new RuntimeException("init driver fail " + exception.getMessage(), exception);
         }
     }
 
-    /**
-     * MobileDriverManager
-     * @param capsReader
-     */
-    public MobileDriverProvider(CapsReaderAdapter capsReader) {
-        this(capsReader.getJsonObject().getClient(), capsReader.getCapabilities(), capsReader.getJsonObject().getAppiumBasePath());
+    public MobileDriverProvider(DriverType driverType, DesiredCapabilities caps, String driverPath, int implicitlyWait) {
+        try {
+            this.mobileDriverType.set(new MobileDriverType(driverType));
+            switch (this.mobileDriverType.get().getDriverType()) {
+                case ANDROID -> {
+                    this.androidDriver.set(new AndroidDriver(new URL(driverPath), caps));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.androidDriver.get()));
+                    this.androidDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitlyWait));
+                }
+                case IOS -> {
+                    this.iosDriver.set(new IOSDriver(new URL(driverPath), caps));
+                    this.appiumWebDriverWait.set(new AppiumWebDriverWaitExtensions(this.iosDriver.get()));
+                    this.iosDriver.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitlyWait));
+                }
+                case UNKNOWN -> throw new RuntimeException("driver type is not android and not ios");
+            }
+
+            this.mobileSwipeExtensions.set(new MobileSwipeExtensions(this));
+            this.appLauncherExtensions.set(new AppLauncherExtensions(this));
+        } catch (Exception exception) {
+            throw new RuntimeException("init driver fail " + exception.getMessage(), exception);
+        }
     }
 
     /**
@@ -121,6 +174,14 @@ public class MobileDriverProvider implements
         this.androidDriver.get().installApp(appPath, options);
     }
 
+    public void setAndroidRemoveOptions(String appPath, AndroidRemoveApplicationOptions options) {
+        this.androidDriver.get().removeApp(appPath, options);
+    }
+
+    public void setAndroidTerminateAppOptions(String appPath, AndroidTerminateApplicationOptions options) {
+        this.androidDriver.get().terminateApp(appPath, options);
+    }
+
     /**
      * setAndroidActivity
      * @param appPackage ...
@@ -133,7 +194,7 @@ public class MobileDriverProvider implements
      *  .setOptionalIntentArguments("");
      * @return setAndroidActivity options
      */
-    public Activity setAndroidActivity(String appPackage, String appActivity) {
+    public Activity getAndroidActivity(String appPackage, String appActivity) {
         try {
             return new Activity(appPackage, appActivity);
         } catch (Exception exception) {
@@ -237,7 +298,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(WebElement element) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(3))
                 .pollingEvery(Duration.ofSeconds(1))
@@ -247,7 +308,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -256,7 +317,7 @@ public class MobileDriverProvider implements
     }
     @Override
     public void click(ExpectedCondition<WebElement> expectedCondition, Duration generalTimeOut, Duration pollingEvery) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(generalTimeOut)
                 .pollingEvery(pollingEvery)
@@ -266,7 +327,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void sendKeys(ExpectedCondition<WebElement> expectedCondition, CharSequence... keysToSend) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -276,7 +337,7 @@ public class MobileDriverProvider implements
 
     @Override
     public void sendKeys(WebElement element, CharSequence... keysToSend) {
-        this.getWebDriverWaitExtension()
+        this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -286,16 +347,19 @@ public class MobileDriverProvider implements
 
     @Override
     public String getAttribute(WebElement element, String name) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getAttribute(name));
     }
     @Override
-    public String getAttribute(WebElement element, Pair<ElementsAttributes.AndroidElementsAttributes, ElementsAttributes.IosElementsAttributes> attributesPair) {
+    public String getAttribute(
+            WebElement element,
+            Pair<ElementsAttributes.AndroidElementsAttributes,
+                    ElementsAttributes.IosElementsAttributes> attributesPair) {
         String setAttribute = isAndroid() ? attributesPair.getLeft().getTag() : attributesPair.getRight().getTag();
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -304,23 +368,33 @@ public class MobileDriverProvider implements
 
     @Override
     public String getText(WebElement element) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> element.getText());
     }
+
     @Override
     public List<WebElement> findElements(By by) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElements(by));
     }
+
+    public WebElement findElement(WebElement webElement, By child) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> webElement.findElement(child));
+    }
+
     @Override
     public WebElement findElement(By by) {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
@@ -328,8 +402,35 @@ public class MobileDriverProvider implements
     }
 
     @Override
+    public WebElement findElement(ExpectedCondition<WebElement> expectedConditions) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedConditions);
+    }
+
+    @Override
+    public List<WebElement> findElements(By byFather, By son) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElements(son));
+    }
+
+    @Override
+    public WebElement findElement(By byFather, By son) {
+        return this.getWebDriverWait()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElement(son));
+    }
+
+    @Override
     public String getPageSource() {
-        return this.getWebDriverWaitExtension()
+        return this.getWebDriverWait()
                 .getWebDriverWait()
                 .withTimeout(Duration.ofSeconds(2))
                 .pollingEvery(Duration.ofSeconds(1))
@@ -343,11 +444,17 @@ public class MobileDriverProvider implements
 
     @Override
     public void close() {
-        if (this.getMobileDriver() != null) this.getMobileDriver().close();
+        if (this.isAndroid()) {
+            this.getAndroidDriver().closeApp();
+        } else this.getIosDriver().closeApp();
     }
 
     @Override
     public void quit() {
-        if (this.getMobileDriver() != null)  this.getMobileDriver().quit();
+        if (this.isAndroid()) {
+            this.getAndroidDriver().closeApp();
+        } else this.getIosDriver().closeApp();
     }
+
+
 }

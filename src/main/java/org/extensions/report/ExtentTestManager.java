@@ -1,33 +1,53 @@
 package org.extensions.report;
 
 import com.aventstack.extentreports.*;
+import com.aventstack.extentreports.markuputils.CodeLanguage;
 import com.aventstack.extentreports.markuputils.Markup;
+import com.aventstack.extentreports.markuputils.MarkupHelper;
+import com.aventstack.extentreports.model.Log;
 import com.aventstack.extentreports.model.Media;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
+import io.restassured.http.Header;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-@Slf4j
 public class ExtentTestManager {
+
     private static final ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
     protected static ExtentReports getReportsInstance = ExtentManager.getReportsInstance();
     protected synchronized static ExtentTest getExtentTest() { return extentTest.get(); }
 
-    /**
-     * createTest
-     * @param testMethod
-     * @param category
-     * @param author
-     */
+
     protected synchronized static void createTest(String testMethod, String category, String author) {
-        extentTest.set(getReportsInstance.createTest(testMethod)
+        ExtentTest test = getReportsInstance
+                .createTest(testMethod)
                 .createNode(testMethod)
                 .assignCategory(category)
-                .assignAuthor(author)
-        );
+                .assignAuthor(author);
+        extentTest.set(test);
+    }
+
+
+    /**
+     * setAnalysisStrategy
+     * @param analysisStrategy
+     */
+    protected synchronized static void setAnalysisStrategy(AnalysisStrategy analysisStrategy) {
+        getReportsInstance.setAnalysisStrategy(analysisStrategy);
+    }
+
+    /**
+     * setSystemInfo
+     * @param osName
+     * @param osArch
+     */
+    protected synchronized static void setSystemInfo(String osName, String osArch) {
+        getReportsInstance.setSystemInfo(osName, osArch);
     }
 
     /**
@@ -39,42 +59,13 @@ public class ExtentTestManager {
         for (Status status : extraReportsBy) {
             String reportPath = path + "/" + status.toString() + ".html";
             ExtentSparkReporter sparkReporter = new ExtentSparkReporter(reportPath);
-            getReportsInstance.attachReporter(sparkReporter.filter().statusFilter().as(new Status[]{status}).apply());
+            getReportsInstance
+                    .attachReporter(sparkReporter
+                    .filter()
+                    .statusFilter()
+                    .as(new Status[]{status})
+                    .apply());
         }
-    }
-
-    /**
-     * base64ScreenShot
-     * @param driver
-     * @return
-     */
-    private synchronized static String base64ScreenShot(WebDriver driver) {
-        try {
-            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BASE64);
-        } catch (Exception ignore) {
-            return "";
-        }
-    }
-
-    /**
-     * base64ScreenShot
-     *
-     * @param driver
-     * @return
-     */
-    private synchronized static byte[] byteScreenShot(WebDriver driver) {
-        try {
-            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
-        } catch (Exception ignore) {
-            return null;
-        }
-    }
-    /**
-     * assignCategory
-     * @param assignCategory
-     */
-    public synchronized static void assignCategory(String assignCategory) {
-        extentTest.get().assignCategory(assignCategory);
     }
 
     /**
@@ -84,17 +75,17 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Media media) {
         extentTest.get().log(status, media);
-        innerLog(status, media.getTitle());
     }
 
     /**
      * log
+     *
      * @param status
      * @param details
+     * @return
      */
     public synchronized static void log(Status status, String details) {
         extentTest.get().log(status, details);
-        innerLog(status, details);
     }
 
     /**
@@ -104,7 +95,6 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Markup markup) {
         extentTest.get().log(status, markup);
-        innerLog(status," " + markup.getMarkup());
     }
 
     /**
@@ -114,7 +104,6 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Throwable throwable) {
         extentTest.get().log(status, throwable);
-        innerLog(status, throwable.getMessage());
     }
 
     /**
@@ -125,7 +114,6 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, String details, Media media) {
         extentTest.get().log(status, details, media);
-        innerLog(status, details);
     }
 
     /**
@@ -136,7 +124,6 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, Throwable throwable, Media media) {
         extentTest.get().log(status, throwable, media);
-        innerLog(status, throwable.getMessage());
     }
 
     /**
@@ -148,7 +135,24 @@ public class ExtentTestManager {
      */
     public synchronized static void log(Status status, String details, Throwable throwable, Media media) {
         extentTest.get().log(status, details, throwable, media);
-        innerLog(status, details + " " + throwable.getMessage());
+    }
+
+    public synchronized static void logJson(Status status, String nodeDesc, String json) {
+        extentTest.get().createNode(nodeDesc).log(status, MarkupHelper.createCodeBlock(json, CodeLanguage.JSON));
+    }
+
+    public synchronized static void logTable(Status status, String nodeDesc, List<Header> list) {
+        String[][] array = list.stream().map(header -> new String[] {header.getName(), header.getValue()}).toArray(String[][] :: new);
+        extentTest.get().createNode(nodeDesc).log(status, MarkupHelper.createTable(array));
+    }
+
+    public synchronized static void logTable(Status status, String nodeDesc, Map<String,String> map) {
+        String[][] array = map.entrySet().stream().map(e -> new String[] { e.getKey(), e.getValue() }).toArray(String[][]::new);
+        extentTest.get().createNode(nodeDesc).log(status, MarkupHelper.createTable(array));
+    }
+
+    public synchronized static void logCodeBlock(Status status, String nodeDesc, String message) {
+        extentTest.get().createNode(nodeDesc).log(status, MarkupHelper.createCodeBlock(message));
     }
 
     /**
@@ -162,28 +166,12 @@ public class ExtentTestManager {
             String base64ScreenShot = base64ScreenShot(driver);
             if (!base64ScreenShot.isEmpty()) {
                 Media media = MediaEntityBuilder.createScreenCaptureFromBase64String(base64ScreenShot).build();
-                if (createNode) extentTest.get()
-                        .createNode("click for more details... ")
-                        .log(status, message, media);
+                if (createNode) extentTest.get().createNode("click for more details... ").log(status, message, media);
                 else extentTest.get().log(status, message, media);
-                innerLog(status, message);
+            } else {
+                extentTest.get().log(status, message);
             }
         }
-    }
-
-    /**
-     * @param expendMessage
-     * @param bodyDesc
-     */
-    public synchronized static void onPass(boolean asNewNode,String expendMessage, String bodyDesc) {
-        try {
-            if (asNewNode) {
-                extentTest.get()
-                        .createNode("test pass, click for more details... ")
-                        .log(Status.PASS, expendMessage)
-                        .log(Status.PASS, bodyDesc);
-            } else extentTest.get().log(Status.PASS, expendMessage + " " + bodyDesc);
-        } catch (Exception ignore) {}
     }
 
     /**
@@ -192,23 +180,61 @@ public class ExtentTestManager {
      * @param bodyDesc
      * @return
      */
-    public synchronized static void onFail(boolean asNewNode, FailStatus status, String expendMessage, String bodyDesc) {
+    public synchronized static void onFail(FailStatus status, String expendMessage, String bodyDesc) {
         try {
-            if (asNewNode) {
-                extentTest.get()
-                        .createNode("test error, click for more details... ")
-                        .log(status.getStatus(), expendMessage)
-                        .log(status.getStatus(), bodyDesc);
-            } else extentTest.get().log(status.getStatus(), expendMessage + " " + bodyDesc);
+            extentTest.get().createNode("test error, click for more details... ")
+                    .log(status.getStatus(), expendMessage)
+                    .log(status.getStatus(), bodyDesc);
         } catch (Exception ignore) {}
-
     }
 
-    private synchronized static void innerLog(Status status, String details) {
-        switch (status) {
-            case INFO, PASS -> log.info(status + " " +  details);
-            case WARNING -> log.warn(status + " " +  details);
-            case SKIP, FAIL -> log.error(status + " " + details);
+    public synchronized static <T> void onFail(FailStatus status, String expendMessage, List<T> bodyDesc) {
+        try {
+            extentTest.get()
+                    .createNode("test error, click for more details... ")
+                    .log(status.getStatus(), expendMessage)
+                    .log(status.getStatus(), MarkupHelper.createOrderedList(bodyDesc));
+        } catch (Exception ignore) {}
+    }
+
+    protected synchronized static List<Log> getExtentLogs() {
+        try {
+            return extentTest.get()
+                    .getModel()
+                    .getLogs()
+                    .stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+        } catch (Exception exception) {
+            return new ArrayList<>();
         }
     }
+
+    /**
+     * base64ScreenShot
+     * @param driver
+     * @return
+     */
+    public synchronized static String base64ScreenShot(WebDriver driver) {
+        try {
+            return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+        } catch (Exception ignore) {
+            return "";
+        }
+    }
+
+    /**
+     * base64ScreenShot
+     *
+     * @param driver
+     * @return
+     */
+    public synchronized static byte[] byteScreenShot(WebDriver driver) {
+        try {
+            return ((TakesScreenshot)driver).getScreenshotAs(OutputType.BYTES);
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
+
 }

@@ -18,20 +18,7 @@ import java.util.function.Consumer;
 
 @Slf4j
 public class MySqlSharedConnector {
-
-    private SQL sqlQuery;
     private final Connection connection;
-
-
-    /**
-     * setQuery
-     * @param sqlQuery query
-     * @return this
-     */
-    public MySqlSharedConnector setQuery(SQL sqlQuery) {
-        this.sqlQuery = sqlQuery;
-        return this;
-    }
 
     /**
      * MySqlSharedConnector constructor
@@ -49,13 +36,13 @@ public class MySqlSharedConnector {
      * @param <T> the type of pojo class
      * @return generate pojo class
      */
-    public synchronized <T> List<T> findsBy(Class<T> tClass) {
+    public synchronized <T> List<T> findsBy(SQL sqlQuery, Class<T> tClass) {
         try {
             BeanListHandler<T> beanListHandler = new BeanListHandler<>(tClass);
             QueryRunner queryRunner = new QueryRunner();
-            this.print(Status.INFO,"create query with: " + this.sqlQuery.toString());
+            this.print(Status.INFO,"create query with: " + sqlQuery.toString());
             this.print(Status.INFO,"with bean object : " + tClass.toString());
-            return queryRunner.query(this.connection, this.sqlQuery.toString(), beanListHandler);
+            return queryRunner.query(this.connection, sqlQuery.toString(), beanListHandler);
         } catch (Exception exception) {
             Assertions.fail("queryToObjectsList error ", exception);
             return new ArrayList<>();
@@ -127,9 +114,8 @@ public class MySqlSharedConnector {
      */
     private synchronized void print(Status status, String message) {
         try {
-            ExtentTestManager.log(status, message);
         } catch (Exception ignore) {
-            log.info(message);
+            log.error(message);
         }
     }
 }

@@ -1,17 +1,13 @@
 package org.base.web;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.extern.slf4j.Slf4j;
-import org.base.WebElementGestures;
-import org.extensions.automation.WebDriverEventHandler;
+import org.base.anontations.WebElementGestures;
+import org.extensions.web.WebDriverListenerImpl;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import java.io.IOException;
-import java.net.URL;
 import java.time.Duration;
 import java.util.*;
 
@@ -26,11 +22,15 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     public WebDriverWaitExtensions getWaitExtensions() { return this.waitExtensions.get(); }
     public WebDriverScrollExtension getScrollExtension() { return this.scrollExtension.get(); }
 
-    public SeleniumWebDriverProvider(String baseUrl, Duration duration, WebDriver webDriver) {
-        WebDriverEventHandler eventHandler = new WebDriverEventHandler(webDriver);
-        this.driver.set(new EventFiringDecorator<>(eventHandler).decorate(webDriver));
+    public SeleniumWebDriverProvider(SeleniumWebDriverManager driverManager) {
+        this.driver.set(new EventFiringDecorator<>(new WebDriverListenerImpl()).decorate(driverManager.getDriver()));
+        this.waitExtensions.set(new WebDriverWaitExtensions(this, driverManager.getDuration()));
+        this.scrollExtension.set(new WebDriverScrollExtension(this));
+    }
+
+    public SeleniumWebDriverProvider(Duration duration, WebDriver webDriver) {
+        this.driver.set(new EventFiringDecorator<>(new WebDriverListenerImpl()).decorate(webDriver));
         this.waitExtensions.set(new WebDriverWaitExtensions(this, duration));
-        if (!baseUrl.isEmpty()) this.get(baseUrl);
         this.scrollExtension.set(new WebDriverScrollExtension(this));
     }
 
@@ -38,14 +38,6 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
         this.generalTimeOut = generalTimeOut;
         this.pollingEvery = pollingEvery;
         return this;
-    }
-
-    public void checkConnection(String url) {
-        try {
-            if (!url.isEmpty()) new URL(url).openConnection().connect();
-        } catch (IOException ioException) {
-            Assertions.fail("connection to " + url + ", error: " + ioException.getMessage(), ioException);
-        }
     }
 
     @Override
@@ -201,6 +193,16 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
     }
 
     @Override
+    public List<WebElement> findElements(By byFather, By son) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElements(son));
+    }
+
+    @Override
     public WebElement findElement(By by) {
         return this.waitExtensions
                 .get()
@@ -208,6 +210,26 @@ public class SeleniumWebDriverProvider implements WebDriver, WebElementGestures 
                 .withTimeout(this.generalTimeOut)
                 .pollingEvery(this.pollingEvery)
                 .until(condition -> condition.findElement(by));
+    }
+
+    @Override
+    public WebElement findElement(By byFather, By son) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(condition -> condition.findElement(byFather).findElement(son));
+    }
+
+    @Override
+    public WebElement findElement(ExpectedCondition<WebElement> expectedConditions) {
+        return this.waitExtensions
+                .get()
+                .getWebDriverWait()
+                .withTimeout(this.generalTimeOut)
+                .pollingEvery(this.pollingEvery)
+                .until(expectedConditions);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package org.component.date;
 
 import lombok.extern.slf4j.Slf4j;
-import org.data.date.DateTimeUtilExtension;
+import org.utils.date.DateTimeUtilExtension;
 import org.junit.jupiter.api.Test;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
-import java.util.function.Predicate;
 
 @Slf4j
 public class DateTimeUtilTest {
@@ -13,18 +13,15 @@ public class DateTimeUtilTest {
     @Test
     public void testDate() {
         String format = "dd MMMM yyyy";
-        LocalDate localDate = new DateTimeUtilExtension()
-                .withFutureDate(true)
-                .withStringFormat(format)
-                .withStartDateAs(Period.of(0,0,0))
-                .buildDate();
+        DateTimeUtilExtension dateUtils = new DateTimeUtilExtension();
 
-        LocalDate backUp = LocalDate.now().plusDays(1);
-        Predicate<DayOfWeek> dayPredicate = day -> day.equals(DayOfWeek.FRIDAY) || day.equals(DayOfWeek.SATURDAY);
-        String checkDate1 = new DateTimeUtilExtension().dateString(format, localDate, backUp, Locale.CANADA, dayPredicate);
+        LocalDate localDate = dateUtils.buildDate(LocalDate.now(), LocalTime.now(), ZoneOffset.UTC);
+        log.info(localDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy'T'HH:mm:ss'Z'")));
+
+        String checkDate1 = dateUtils.dateToString(format, localDate, Locale.ITALIAN, backUp -> backUp.equals(DayOfWeek.FRIDAY) || backUp.equals(DayOfWeek.SATURDAY), LocalDate.now().plusDays(1));
         log.info(checkDate1);
 
-        String checkDate2 = new DateTimeUtilExtension().dateString(format, localDate, Locale.CANADA);
+        String checkDate2 = dateUtils.dateToString(format, localDate, Locale.CANADA, null, null);
         log.info(checkDate2);
     }
 }

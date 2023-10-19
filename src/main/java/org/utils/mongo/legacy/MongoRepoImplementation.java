@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
+import com.mongodb.event.*;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecProvider;
@@ -36,13 +37,11 @@ public class MongoRepoImplementation {
             this.dbName = dbName;
             this.collectionName = collectionName;
 
-            MongoClientSettings settings = MongoClientSettings.builder()
+            this.mongoClient.set(MongoClients.create(MongoClientSettings.builder()
                     .applyConnectionString(new ConnectionString(stringConnection))
                     .addCommandListener(new MongoDbListener())
                     .applyToConnectionPoolSettings(builder -> builder.addConnectionPoolListener(new MongoConnectionPoolListener()))
-                    .build();
-
-            this.mongoClient.set(MongoClients.create(settings));
+                    .build()));
             this.mongoDatabase.set(this.mongoClient.get().getDatabase(dbName).withCodecRegistry(registry));
 
         } catch (Exception exception) {
@@ -130,7 +129,10 @@ public class MongoRepoImplementation {
 
     public void insertElements(List<Document> documentList) {
         try {
-            this.mongoDatabase.get().getCollection(this.collectionName).insertMany(documentList);
+            this.mongoDatabase
+                    .get()
+                    .getCollection(this.collectionName)
+                    .insertMany(documentList);
         } catch (Exception e) {
             log.error("insertElements error: " + e.getMessage());
         }

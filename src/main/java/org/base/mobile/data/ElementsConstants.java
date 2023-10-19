@@ -5,11 +5,6 @@ import lombok.Data;
 @Data
 public class ElementsConstants {
 
-    public static class ClientPackages {
-        public static final String IOS = "EP.hapoalim.hapoalim";
-        public static final String ANDROID = "com.ideomobile.hapoalim";
-    }
-
     public static class Drivers {
         public static final String ANDROID = "io.appium.java_client.android.AndroidDriver";
         public static final String IOS = "io.appium.java_client.android.IOSDriver";
