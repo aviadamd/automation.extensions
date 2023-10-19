@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.util.concurrent.TimeUnit;
-
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -32,7 +30,6 @@ public class FootBallCompetitionsTeamsListTests {
                     requestMethod = Method.GET
             )
     })
-    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getMatches(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo

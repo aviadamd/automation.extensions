@@ -1,15 +1,11 @@
 package org.extensions.rest;
 
 import com.aventstack.extentreports.Status;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.config.*;
 import io.restassured.http.*;
 import io.restassured.path.json.exception.JsonPathException;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.exec.LogOutputStream;
 import org.extensions.report.*;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
@@ -17,19 +13,14 @@ import org.extensions.anontations.rest.RestStep;
 import org.junit.jupiter.api.extension.*;
 import org.utils.TestDataObserverBus;
 import org.utils.rest.assured.*;
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class RestAssuredBuilderExtension extends ExtentReportExtension implements
-        BeforeAllCallback,
-        BeforeEachCallback,
-        AfterEachCallback,
-        AfterAllCallback,
-        TestWatcher,
-        ParameterResolver {
+public class RestAssuredBuilderExtension implements
+        BeforeEachCallback, AfterEachCallback,
+        AfterAllCallback, TestWatcher, ParameterResolver {
 
     private static final ThreadLocal<ResponseCollectorRepo> responseCollectorRepo = new ThreadLocal<>();
     private static ConcurrentHashMap<String,String> headerParamsCollector = new ConcurrentHashMap<>();
@@ -48,16 +39,8 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
     }
 
     @Override
-    public synchronized void beforeAll(ExtensionContext context) {
-        super.beforeAll(context);
-    }
-
-    @Override
     public synchronized void beforeEach(ExtensionContext context) {
-        super.beforeEach(context);
-
         if (context.getElement().isPresent()) {
-
             responseCollectorRepo.set(new ResponseCollectorRepo());
             RestDataBaseClassProvider restDataBaseClassProvider = context.getRequiredTestClass().getAnnotation(RestDataBaseClassProvider.class);
             RestDataProvider restDataProvider = context.getElement().get().getAnnotation(RestDataProvider.class);
@@ -86,7 +69,6 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
                 TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, jsonPathException.getMessage()  ));
             }
         }
-        super.testFailed(context, cause);
     }
 
     @Override
@@ -98,7 +80,6 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
 
     @Override
     public synchronized void afterAll(ExtensionContext context) {
-        super.afterAll(context);
         if (context.getElement().isPresent()) {
             responseCollectorRepo.get().deleteAll();
             responseCollectorRepo.remove();
@@ -108,30 +89,20 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
     private synchronized Response request(RestDataBaseClassProvider baseClassProvider, RestStep stepProvider) {
         RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
 
-        String baseUri;
         ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
+        RestAssuredSpecFileReader restAssuredSpecFileReader;
 
         if (!baseClassProvider.jsonPath().isEmpty()) {
-            try {
-
-                JsonNode jsonNode = this.readApplicationJson(baseClassProvider.jsonPath());
-
-                String scheme = jsonNode.findValue("scheme").asText();
-                String basePath = jsonNode.findValue("basePath").asText();
-                baseUri = scheme + "://" + basePath;
-
-                List<String> keys = new ArrayList<>();
-                Iterator<String> fieldNames = jsonNode.findValue("headers").fieldNames();
-                fieldNames.forEachRemaining(keys::add);
-
-                keys.forEach(key -> headerCollector.put(key, jsonNode.findValue(key).asText()));
-
-            } catch (Exception exception) {
-                throw new RuntimeException(exception);
+            restAssuredSpecFileReader = new RestAssuredSpecFileReader(baseClassProvider.jsonPath());
+            if (restAssuredSpecFileReader.getHeaders() != null) {
+                headerCollector.putAll(restAssuredSpecFileReader.getHeaders());
             }
+        } else {
+            restAssuredSpecFileReader = new RestAssuredSpecFileReader();
+            restAssuredSpecFileReader.setBaseUri(baseClassProvider.scheme() + "://" + baseClassProvider.basePath());
+        }
 
-        } else baseUri = baseClassProvider.scheme() + "://" + baseClassProvider.basePath();
-
+        requestSpecBuilder.setBaseUri(restAssuredSpecFileReader.getBaseUri());
         requestSpecBuilder.setContentType(stepProvider.contentType());
 
         if (stepProvider.paramsKeys().length > 0 && stepProvider.paramsValues().length > 0) {
@@ -179,18 +150,12 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
 
         RestAssuredLoggingBuilder loggingBuilder = RestAssuredLoggingBuilder
                 .builder()
-                .baseUri(baseUri)
-                .configs(
-                        List.of(
-                                RestAssuredConfig.config().failureConfig(FailureConfig.failureConfig().with().failureListeners((requestSpec, responseSpec, response) -> {
-                                    RestAssuredData restAssuredData = new RestAssuredData(baseUri + "/" +  stepProvider.urlPath(), response);
-                                    TestDataObserverBus.onNext(new TestData<>(Status.FAIL, Category.REST, restAssuredData));
-                                }))
-                        )
-                ).build();
+                .baseUri(restAssuredSpecFileReader.getBaseUri())
+                .build();
         RestAssuredGenericHandler restAssuredHandler = new RestAssuredGenericHandler(loggingBuilder);
         return restAssuredHandler.execute(stepProvider.requestMethod(), stepProvider.urlPath(), requestSpecBuilder);
     }
+
     private synchronized ConcurrentHashMap<String,String> arrayToMap(String[] first, String [] second) {
         ConcurrentHashMap<String, String> collector = new ConcurrentHashMap<>();
         for (int i = 0; i < first.length; i++) collector.put(first[i], second[i]);
@@ -236,12 +201,6 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
         return headerCollector;
     }
 
-    private synchronized JsonNode readApplicationJson(String jsonPath) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String path = ClassLoader.getSystemResource(jsonPath).getPath();
-        return objectMapper.readTree(new FileReader(path));
-    }
-
     private synchronized ConcurrentHashMap<String,String> headersReceiver(String[] headersKeys, String[] headersValues) {
         ConcurrentHashMap<String, String> headerCollector = new ConcurrentHashMap<>();
         for (int header = 0; header < headersKeys.length; header++) {
@@ -249,5 +208,4 @@ public class RestAssuredBuilderExtension extends ExtentReportExtension implement
         }
         return headerCollector;
     }
-
 }

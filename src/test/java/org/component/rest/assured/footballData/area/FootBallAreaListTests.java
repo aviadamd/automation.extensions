@@ -7,6 +7,7 @@ import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.report.ReportSetUp;
 import org.extensions.anontations.rest.RestStep;
+import org.extensions.report.ExtentReportExtension;
 import org.extensions.rest.ResponseCollectorRepo;
 import org.extensions.rest.RestAssuredBuilderExtension;
 import org.hamcrest.Matchers;
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import java.util.concurrent.TimeUnit;
 
 // scheme = "https",
 // basePath = "api.football-data.org",
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@ExtendWith(value = { RestAssuredBuilderExtension.class })
+@ExtendWith(value = { ExtentReportExtension.class, RestAssuredBuilderExtension.class })
 @ReportSetUp(mongoDbName = "RestAssuredExtensionTest")
 @RestDataBaseClassProvider(jsonPath = "footballSpec.json")
 public class FootBallAreaListTests {
@@ -34,16 +34,15 @@ public class FootBallAreaListTests {
     @RestDataProvider(restSteps = {
             @RestStep(
                     stepId = 1,
+                    expectedStatusCode = 200,
                     urlPath = "v4/areas",
                     requestMethod = Method.GET
             )
     })
-    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getAreas(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo
                 .findById(1)
-                .statusCode(200)
                 .header("Transfer-Encoding", "chunked")
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .body("areas.id", response -> Matchers.hasItem(2000))

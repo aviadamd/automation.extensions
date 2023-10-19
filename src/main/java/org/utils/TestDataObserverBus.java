@@ -7,6 +7,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.report.TestData;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ import java.util.List;
  */
 @Slf4j
 public final class TestDataObserverBus {
-    private static List<TestData<?>> testDataList = new ArrayList<>();
+    private static List<TestData<?>> testDataList = Collections.synchronizedList(new ArrayList<>());
     private static BehaviorSubject<List<TestData<?>>> testDataBehaviorSubject = BehaviorSubject.create();
 
     /**

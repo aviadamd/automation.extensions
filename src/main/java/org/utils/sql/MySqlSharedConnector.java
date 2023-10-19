@@ -114,7 +114,6 @@ public class MySqlSharedConnector {
      */
     private synchronized void print(Status status, String message) {
         try {
-            ExtentTestManager.getInstance().log(status, message);
         } catch (Exception ignore) {
             log.error(message);
         }

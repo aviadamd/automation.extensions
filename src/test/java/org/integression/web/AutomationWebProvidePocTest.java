@@ -1,6 +1,5 @@
 package org.integression.web;
 
-import com.aventstack.extentreports.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.extensions.anontations.WebProviderConfiguration;
 import org.extensions.anontations.report.ReportSetUp;
@@ -34,8 +33,6 @@ public class AutomationWebProvidePocTest {
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink()
                 .openPage(webSharedObjects.getWebConfiguration());
-
-        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 
     @Test
@@ -48,7 +45,6 @@ public class AutomationWebProvidePocTest {
                 .gitHubLink()
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink();
-        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 
     @Test
@@ -61,6 +57,5 @@ public class AutomationWebProvidePocTest {
                 .gitHubLink()
                 .openPage(webSharedObjects.getWebConfiguration())
                 .linkedinLink();
-        webSharedObjects.extentManager().log(Status.INFO,"bla bla");
     }
 }

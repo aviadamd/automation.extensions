@@ -3,6 +3,7 @@ package org.extensions.rest;
 import org.utils.rest.assured.RestAssuredValidateResponse;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ResponseCollectorRepo {
@@ -26,13 +27,11 @@ public class ResponseCollectorRepo {
     }
 
     public RestAssuredValidateResponse findById(Integer findBy) {
-        Map.Entry<Integer, RestAssuredValidateResponse> validateResponseEntry = responseCollectorMap
-                .entrySet()
-                .stream()
-                .filter(byId -> byId.getKey().equals(findBy))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("unable to find response with id number: " + findBy));
-
-        return validateResponseEntry.getValue();
+        for (Map.Entry<Integer, RestAssuredValidateResponse> byId: responseCollectorMap.entrySet()) {
+            if (byId.getKey().equals(findBy)) {
+               return byId.getValue();
+            }
+        }
+        throw new RuntimeException("unable to find response with id number: " + findBy);
     }
 }

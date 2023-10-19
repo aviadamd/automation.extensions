@@ -1,14 +1,9 @@
 package org.extensions.mobile;
 
-import com.aventstack.extentreports.Status;
 import org.base.mobile.AppiumServiceManager;
 import org.base.mobile.MobileConfiguration;
 import org.base.mobile.MobileDriverProvider;
-import org.extensions.assertions.AssertJExtensionProvider;
-import org.extensions.report.ExtentTestManager;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.utils.assertions.AssertJHandler;
-
 
 public class MobileProvider {
     private MobileDriverProvider driverManager;
@@ -29,7 +24,6 @@ public class MobileProvider {
     public void setAssertionsExtension(AssertJHandler assertJHandler) {this.assertJHandler = assertJHandler;}
     public AssertJHandler getAssertionsManager() { return assertJHandler; }
     public void setMobileConfiguration(MobileConfiguration mobileConfiguration) {this.mobileConfiguration = mobileConfiguration;}
-    public ExtentTestManager extentManager() { return ExtentTestManager.getInstance(); }
     public MobileConfiguration getConfiguration() {
         return mobileConfiguration;
     }

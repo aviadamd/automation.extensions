@@ -2,9 +2,7 @@ package org.extensions.web;
 
 import org.base.web.SeleniumWebDriverProvider;
 import org.base.web.WebConfiguration;
-import org.utils.StringsUtilities;
 import org.extensions.proxy.MobProxyExtension;
-import org.extensions.report.ExtentTestManager;
 import org.utils.assertions.AssertJHandler;
 
 public class WebSharedObjects {
@@ -17,7 +15,6 @@ public class WebSharedObjects {
     protected void setDriverManager(SeleniumWebDriverProvider driverManager) { this.driverManager = driverManager; }
     protected void setMobProxyExtension(MobProxyExtension mobProxyExtension) { this.mobProxyExtension = mobProxyExtension; }
     protected void setWebConfiguration(WebConfiguration webConfiguration) {this.webConfiguration = webConfiguration; }
-    public ExtentTestManager extentManager() { return ExtentTestManager.getInstance(); }
     public SeleniumWebDriverProvider getDriverManager() { return this.driverManager; }
     public WebConfiguration getWebConfiguration() { return this.webConfiguration; }
     public MobProxyExtension getMobProxyExtension() { return this.mobProxyExtension; }

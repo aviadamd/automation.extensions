@@ -7,6 +7,7 @@ import org.extensions.anontations.report.TestReportInfo;
 import org.extensions.anontations.rest.RestDataBaseClassProvider;
 import org.extensions.anontations.rest.RestDataProvider;
 import org.extensions.anontations.rest.RestStep;
+import org.extensions.report.ExtentReportExtension;
 import org.extensions.rest.ResponseCollectorRepo;
 import org.extensions.rest.RestAssuredBuilderExtension;
 import org.junit.jupiter.api.*;
@@ -14,12 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import java.util.concurrent.TimeUnit;
-
 @Slf4j
 @Execution(ExecutionMode.SAME_THREAD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@ExtendWith(value = { RestAssuredBuilderExtension.class })
+@ExtendWith(value = { ExtentReportExtension.class, RestAssuredBuilderExtension.class })
 @ReportSetUp(mongoDbName = "RestAssuredExtensionTest")
 @RestDataBaseClassProvider(jsonPath = "footballSpec.json")
 public class FootBallCompetitionsStandingsTests {
@@ -35,7 +34,6 @@ public class FootBallCompetitionsStandingsTests {
                     paramsKeys = {"season", "matchday"}, paramsValues = {"2020","3"}
             )
     })
-    @Timeout(value = 1, unit = TimeUnit.MINUTES, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
     @TestReportInfo(testId = 1, assignCategory = "poc", assignAuthor = "aviad", info = "testRestCalls1")
     void getMatches(ResponseCollectorRepo responseCollectorRepo) {
         responseCollectorRepo
